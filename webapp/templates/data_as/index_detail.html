@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include "data_as/menu.html" %}
+
+<div class="card">
+    <div class="card-header">
+        {{ page.title }}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_1"></div>
+                </figure>
+            </div>
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_2"></div>
+                </figure>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+Highcharts.chart('container_1', {
+    chart: {
+        width: 1200,
+        height: 260,
+    },
+    title: {
+        text: 'Tiempos de respuesta',
+        align: 'center'
+    },
+    yAxis: {
+        title: {
+            text: 'Número de incidentes'
+        }
+    },
+    xAxis: {
+        accessibility: {
+            rangeDescription: 'Range: 1 to {{ data[total]|length }}'
+        }
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    plotOptions: {
+        series: {
+            label: {
+                connectorAllowed: false
+            },
+            pointStart: 1
+        }
+    },
+    series: [{
+        name: 'Total = {{ data["total_sum"] }}',
+        data: {{ data["total"] }}
+    }, {
+        name: 'No Cumplen = {{ data["fails_sum"] }}',
+        data: {{ data["fails"] }}
+    }, {
+        name: 'Indefinidas = {{ data["undefined_sum"] }}',
+        data: {{ data["undefined"] }}
+    }, {
+        name: 'Cumplen = {{  data["success_sum"] }}',
+        data: {{ data["success"] }}
+        
+    }],
+    responsive: {
+        rules: [{
+            condition: {
+                maxWidth: 500
+            },
+            chartOptions: {
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                }
+            }
+        }]
+    }
+});
+
+Highcharts.chart('container_2', {
+    chart: {
+        width: 1200,
+        height: 260,
+    },
+    title: {
+        text: 'Criticidad',
+        align: 'center'
+    },
+    yAxis: {
+        title: {
+            text: 'Número de incidentes'
+        }
+    },
+    xAxis: {
+        accessibility: {
+            rangeDescription: 'Range: 1 to {{ data["total"]|length }}'
+        }
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    plotOptions: {
+        series: {
+            label: {
+                connectorAllowed: false
+            },
+            pointStart: 1
+        }
+    },
+    series: [{
+        name: 'Baja = {{ data["low_sum"] }}',
+        data: {{ data["low"] }}
+    }, {
+        name: 'Media = {{ data["mean_sum"] }}',
+        data: {{ data["mean"] }}
+    }, {
+        name: 'Alta = {{ data["high_sum"] }}',
+        data: {{ data["high"] }}
+    }],
+    responsive: {
+        rules: [{
+            condition: {
+                maxWidth: 500
+            },
+            chartOptions: {
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                }
+            }
+        }]
+    }
+});
+</script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menuData{{ current_year }}").addClass("active");
+    });
+</script>
+{% endblock %}

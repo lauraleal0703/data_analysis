@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include "data_as/menu.html" %}
+
+{{ ticket }}
+<br>
+
+<div class="card d-none">
+    <div class="card-header">
+        {{ page.title }}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_1"></div>
+                </figure>
+            </div>
+
+            <div class="row p-4">
+                <div class="col-6 text-center">
+                    <a class="btn btn-sm btn-outline-primary"
+                        {% if current_month %}
+                        href="/data_as/detail?year={{ current_year }}&month={{ current_month }}&type=handwork"
+                        {% else %}
+                        href="/data_as/detail?year={{ current_year }}&type=handwork"
+                        {% endif %}>
+                        Manuales
+                    </a>
+                </div>
+
+                <div class="col-6 text-center">
+                    <a class="btn btn-sm btn-outline-primary"
+                        {% if current_month %}
+                        href="/data_as/detail?year={{ current_year }}&month={{ current_month }}&type=automatic"
+                        {% else %}
+                        href="/data_as/detail?year={{ current_year }}&type=automatic"
+                        {% endif %}>
+                        Automaticas
+                    </a>
+                </div>
+
+                <!-- <div class="col-4 text-center">
+                    <a class="btn btn-sm btn-outline-primary"
+                        {% if current_month %}
+                        href="/data_as/detail?year={{ current_year }}&month={{ current_month }}&type=undefined"
+                        {% else %}
+                        href="/data_as/detail?year={{ current_year }}&type=undefined"
+                        {% endif %}>
+                        Indefinidas
+                    </a>
+                </div> -->
+            </div>
+
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_2"></div>
+                </figure>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+Highcharts.chart('container_1', {
+    chart: {
+        width: 1200,
+        height: 260,
+    },
+    title: {
+        text: 'Número total de incidentes de seguridad {{ data["total_sum"] }}',
+        align: 'center'
+    },
+    yAxis: {
+        title: {
+            text: 'Número de incidentes'
+        }
+    },
+    xAxis: {
+        accessibility: {
+            rangeDescription: 'Range: 1 to {{ data["handwork"]["success"]["low"]|length }}'
+        }
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    plotOptions: {
+        series: {
+            label: {
+                connectorAllowed: false
+            },
+            pointStart: 1
+        }
+    },
+    series: [{
+        name: 'Total = {{ data["total_sum"] }}',
+        data: {{ data["total"] }} 
+    }, {
+        name: 'Manuales = {{ data["handwork_total_sum"] }}',
+        data: {{ data["handwork_total"] }}
+    }, {
+        name: 'Automáticas = {{ data["automatic_total_sum"] }}',
+        data: {{ data["automatic_total"] }}
+    }, {
+        name: 'Indefinidas = {{ data["undefined_sum"] }}',
+        data: {{ data["undefined"] }}
+    }],
+    responsive: {
+        rules: [{
+            condition: {
+                maxWidth: 500
+            },
+            chartOptions: {
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                }
+            }
+        }]
+    }
+});
+
+Highcharts.chart('container_2', {
+    chart: {
+        width: 1200,
+        height: 260,
+        type: 'column'
+    },
+    title: {
+        text: 'Estadísticas'
+    },
+    xAxis: {
+        categories: {{ cases_statistics | safe }},
+        crosshair: true
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: 'Número de incidentes'
+        }
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+        '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+        pointPadding: 0.2,
+        borderWidth: 0
+        }
+    },
+    series: [{
+        name: 'Total',
+        data: {{ cases_statistics_total["total"]  }}
+    }, {
+        name: 'Manuales',
+        data: {{ cases_statistics_total["handwork_total"]  }}
+    }, {
+        name: 'Automaticas',
+        data: {{ cases_statistics_total["automatic_total"] }}
+    }, {
+        name: 'Indefinidas',
+        data: {{ cases_statistics_total["undefined"] }}
+    }]
+});
+</script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menuData{{ current_year }}").addClass("active");
+    });
+</script>
+{% endblock %}
