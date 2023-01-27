@@ -19,7 +19,7 @@ tickets_offenses = Blueprint("tickets_offenses", __name__, url_prefix="/tickets_
 @tickets_offenses.get("/")
 def index():
     list_year = list(range(2018, 2024))
-    print(list_year)
+    list_year.reverse()
 
     return render_template(
         "tickets_offenses/index.html",

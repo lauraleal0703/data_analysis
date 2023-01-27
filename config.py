@@ -9,7 +9,7 @@ class DevelopmentConfig(Config):
     ENV = "development"
     DEBUG = True
     HOST = "0.0.0.0"
-    PORT = 9400
+    PORT = 9402
     LIFETIME = 100000
 
 class ProductionConfig(Config):

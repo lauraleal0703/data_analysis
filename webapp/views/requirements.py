@@ -15,23 +15,20 @@ import calendar
 from datetime import datetime
 
 
-tickets = Blueprint("tickets", __name__, url_prefix="/tickets")
+requirements = Blueprint("requirements", __name__, url_prefix="/requirements")
 
 
-@tickets.get("/")
+@requirements.get("/")
 def index():
-    list_year = list(range(2018, 2024))
+    list_year = list(range(2019, 2024))
+    list_year.reverse()
     
     if request.method == "GET":
         year = request.args.get("year", type=int)
         month =  request.args.get("month", type=str)
 
         if not year:
-            return render_template(
-                "tickets/index.html",
-                page={"title": "Data Adaptive Security"},
-                list_year=list_year
-            )
+            year = 2023
 
         if year == datetime.today().year:
             months = {num : calendar.month_name[num] for num in list(range(1, datetime.today().month+1))}
@@ -40,9 +37,12 @@ def index():
         
         if year and month:
             print("jj")
+        
+        data = totalization_tickets.tickests_for_clientes()
+        print(data)
 
         return render_template(
-            "tickets/index.html",
+            "requirements/index.html",
             page={"title": "Data Adaptive Security"},
             list_year=list_year,
             current_year=year,

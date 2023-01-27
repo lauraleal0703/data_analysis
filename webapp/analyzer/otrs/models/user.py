@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import String
@@ -28,6 +26,10 @@ class User(db.Base):
 
 	tickets = relationship("Ticket", back_populates="user", lazy=True)
 
+	@property
+	def full_name(self):
+		return f"{self.first_name} {self.last_name}"
+
 	@classmethod
 	def get(cls: SelfUser, user_id: int) -> SelfUser:
 		"""Obtener un usuario por su ID
@@ -54,8 +56,3 @@ class User(db.Base):
 			Una lista de objetos User
 		"""
 		return db.session.query(cls).all()
-
-	@property
-	def full_name(self):
-		return f"{self.first_name} {self.last_name}"
-

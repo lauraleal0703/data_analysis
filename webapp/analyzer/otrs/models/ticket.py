@@ -11,8 +11,15 @@ from sqlalchemy.orm import relationship
 from typing import TypeVar, List
 
 from . import db
+from .ticket_type import TicketType
+from .service import Service
+from .sla import Sla
 from .user import User
+from .ticket_priority import TicketPriority
+from .ticket_state import TicketState
+from .queue import Queue
 from .ticket_history import TicketHistory
+
 
 SelfTicket = TypeVar("SelfTicket", bound="Ticket")
 
@@ -21,15 +28,15 @@ class Ticket(db.Base):
 	id = Column(Integer, primary_key=True)
 	tn = Column(String, nullable=False)
 	title = Column(String, nullable=True)
-	queue_id = Column(Integer, nullable=False)
+	queue_id = Column(Integer, ForeignKey("queue.id"), nullable=False)
 	ticket_lock_id = Column(Integer, nullable=False)
-	type_id = Column(Integer, nullable=True)
-	service_id = Column(Integer, nullable=True)
-	sla_id = Column(Integer, nullable=True)
+	type_id = Column(Integer, ForeignKey("ticket_type.id"), nullable=True)
+	service_id = Column(Integer, ForeignKey("service.id"), nullable=True)
+	sla_id = Column(Integer, ForeignKey("sla.id"), nullable=True)
 	user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 	responsible_user_id = Column(Integer, nullable=False)
-	ticket_priority_id = Column(Integer, nullable=False)
-	ticket_state_id = Column(Integer, nullable=False)
+	ticket_priority_id = Column(Integer, ForeignKey("ticket_priority.id"), nullable=False)
+	ticket_state_id = Column(Integer, ForeignKey("ticket_state.id"), nullable=False)
 	customer_id = Column(String, nullable=True)
 	customer_user_id = Column(String, nullable=True)
 	timeout = Column(Integer, nullable=False)
@@ -44,8 +51,27 @@ class Ticket(db.Base):
 	change_time = Column(DateTime, nullable=False)
 	change_by = Column(Integer, nullable=False)
 
+	queue: Queue = relationship("Queue", lazy=True)
+	type: TicketType = relationship("TicketType", lazy=True)
+	service: Service = relationship("Service", lazy=True)
+	sla: Sla = relationship("Sla", lazy=True)
 	user: User = relationship("User", back_populates="tickets", lazy=True)
+	ticket_priority: TicketPriority = relationship("TicketPriority", lazy=True)
+	ticket_state: TicketState = relationship("TicketState", lazy=True)
 	ticket_history: TicketHistory = relationship("TicketHistory", back_populates="ticket", lazy=True)
+	
+	@property
+	def last_history(self):
+		""""Obtener el último registro del historial de un ticket
+		
+		Returns
+		-------
+		TicketHistory
+			Un objeto del tipo TicketHistory
+		"""
+		return db.session.query(TicketHistory).join(Ticket).filter(
+			TicketHistory.ticket_id == self.id
+		).order_by(desc(TicketHistory.change_time)).first()
 
 	@classmethod
 	def get(cls: SelfTicket, ticket_id: int) -> SelfTicket:
@@ -78,6 +104,99 @@ class Ticket(db.Base):
 			Un objeto del tipo ticket
 		"""
 		return db.session.query(cls).filter_by(tn=tn).first()
+	
+	@classmethod
+	def tickets_from_id(cls: SelfTicket, tickets_id: int) -> List[SelfTicket]:
+		"""Obtener los tickets desde un id determinado.
+		
+		Parameters
+		----------
+		tickets_id: int
+			ID del ultimo ticket
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		return db.session.query(cls).filter(cls.id > tickets_id).all()
+	
+	@classmethod
+	def tickets_by_date(cls: SelfTicket, date: str) -> List[SelfTicket]:
+		"""Obtener los ticket de una determinada fecha.
+		
+		Parameters
+		----------
+		date: str
+			Fecha  en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		return db.session.query(cls).filter(
+				cls.create_time>=f"{date} 00:00:00",
+				cls.create_time<=f"{date} 23:59:59").all()
+	
+	@classmethod
+	def tickets_by_customer_date(cls: SelfTicket, customer_id: str, date: str) -> List[SelfTicket]:
+		"""Obtener los tickets diarios generados por un cliente.
+		
+		Parameters
+		----------
+		customer_id: str
+			ID del customer.
+		date: str
+			Fecha del día en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		return db.session.query(cls).filter(
+				cls.customer_id == customer_id,
+				cls.create_time>=f"{date} 00:00:00",
+				cls.create_time<=f"{date} 23:59:59").all()
+	
+	@classmethod
+	def tickets_by_customer(cls: SelfTicket, customer_id: str) -> List[SelfTicket]:
+		"""Obtener los ticket de un cliente.
+		
+		Parameters
+		----------
+		customer_id: str
+			ID del customer.
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		return db.session.query(cls).filter(
+				cls.customer_id == customer_id).all()
+	
+	@classmethod
+	def last_ticket_customer(cls: SelfTicket, customer_id: str) -> SelfTicket:
+		"""Obtener el ultimo ticket del cliente .
+		
+		Parameters
+		----------
+		customer_id: str
+			ID del customer.
+		
+		Returns
+		-------
+		Ticket
+			Una objeto Ticket
+		"""
+
+		return db.session.query(cls).filter(cls.customer_id == customer_id).order_by(desc(cls.create_time)).first()
 
 	@classmethod
 	def tickets_by_marca_in_title(cls: SelfTicket, marca=str) -> SelfTicket:
@@ -206,7 +325,7 @@ class Ticket(db.Base):
                 cls.create_time<f"{end_date} 23:00:00").all()
 		
 	@classmethod
-	def tickets_by_date(cls: SelfTicket, start_date: str, end_date: str=None) -> List[SelfTicket]:
+	def tickets_by_dates(cls: SelfTicket, start_date: str, end_date: str=None) -> List[SelfTicket]:
 		"""Obtener los ticket de una cola en determinada fecha.
 		
 		Parameters
@@ -227,16 +346,3 @@ class Ticket(db.Base):
 		return db.session.query(cls).filter(
 				cls.create_time>=f"{start_date} 00:00:00",
 				cls.create_time<f"{end_date} 23:00:00").all()
-	
-	@property
-	def last_history(self):
-		""""Obtener el último registro del historial de un ticket
-		
-		Returns
-		-------
-		TicketHistory
-			Un objeto del tipo TicketHistory
-		"""
-		return db.session.query(TicketHistory).join(Ticket).filter(
-			TicketHistory.ticket_id == self.id
-		).order_by(desc(TicketHistory.change_time)).first()

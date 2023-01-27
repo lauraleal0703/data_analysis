@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "tickets/menu.html" %}
+{% include "requirements/menu.html" %}
 
 <div class="row p-4">
     <div class="col">
         {% for month in months %}
         <a id="btn{{ month }}"
             class="btn btn-sm btn-outline-primary"
-            href="/tickets?year={{ current_year }}&month={{ month }}">
+            href="/requirements?year={{ current_year }}&month={{ month }}">
             {{ months[month] }}
         </a>
         {% endfor %}
@@ -17,8 +17,8 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-    $("#menuRegistroTickets").addClass("active");
-    $("#menuTickets{{ current_year }}").addClass("active");
+    $("#menuRequirements").addClass("active");
+    $("#menuRequirements{{ current_year }}").addClass("active");
     $("#btn{{ current_month }}").addClass("active");
 });
 </script>
