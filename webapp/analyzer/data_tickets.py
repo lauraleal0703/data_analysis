@@ -3,11 +3,13 @@ try:
     from .otrs.models.customer_company import CustomerCompany
     from .otrs.models.service import Service
     from .otrs.models.user import User
+    from .qradar import qradar
 except:
     from otrs.models.ticket import Ticket
     from otrs.models.customer_company import CustomerCompany
     from otrs.models.service import Service
     from otrs.models.user import User
+    from qradar import qradar
 
 import os
 import json
@@ -227,7 +229,7 @@ def tickets_queue_customers():
 
     return customers_active_temp
 
-a_ = tickets_queue_customers()
+# a_ = tickets_queue_customers()
 
 ##########################################################################################
 ###Reponde a la pregunta: Cantidad de tickets generados por plataformas en cada usuario
@@ -336,7 +338,7 @@ def tickets_queue_users():
 
     return customers_active_temp
 
-b_ = tickets_queue_users()
+# b_ = tickets_queue_users()
 
 
 '''
