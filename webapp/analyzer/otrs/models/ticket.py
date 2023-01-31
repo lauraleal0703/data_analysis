@@ -9,6 +9,7 @@ from sqlalchemy import desc
 from sqlalchemy.orm import relationship
 
 from typing import TypeVar, List
+from typing import Union
 
 from . import db
 from .ticket_type import TicketType
@@ -30,9 +31,9 @@ class Ticket(db.Base):
 	title = Column(String, nullable=True)
 	queue_id = Column(Integer, ForeignKey("queue.id"), nullable=False)
 	ticket_lock_id = Column(Integer, nullable=False)
-	type_id = Column(Integer, ForeignKey("ticket_type.id"), nullable=True)
-	service_id = Column(Integer, ForeignKey("service.id"), nullable=True)
-	sla_id = Column(Integer, ForeignKey("sla.id"), nullable=True)
+	_type_id = Column("type_id",Integer, ForeignKey("ticket_type.id"), nullable=True)
+	_service_id = Column("service_id", Integer, ForeignKey("service.id"), nullable=True)
+	_sla_id = Column("sla_id", Integer, ForeignKey("sla.id"), nullable=True)
 	user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 	responsible_user_id = Column(Integer, nullable=False)
 	ticket_priority_id = Column(Integer, ForeignKey("ticket_priority.id"), nullable=False)
@@ -60,6 +61,27 @@ class Ticket(db.Base):
 	ticket_state: TicketState = relationship("TicketState", lazy=True)
 	ticket_history: TicketHistory = relationship("TicketHistory", back_populates="ticket", lazy=True)
 	
+	@property
+	def service_id(self: SelfTicket) -> Union[int, str]:
+		"""Redefinir la variable en caso de que sea NULL"""
+		if not self._service_id:
+			return "Undefined"
+		return self._service_id
+
+	@property
+	def sla_id(self: SelfTicket)  -> Union[int, str]:
+		"""Redefinir la variable en caso de que sea NULL"""
+		if not self._sla_id:
+			return "Undefined"
+		return self._sla_id
+	
+	@property
+	def type_id(self: SelfTicket)  -> Union[int, str]:
+		"""Redefinir la variable en caso de que sea NULL"""
+		if not self._type_id:
+			return "Undefined"
+		return self._type_id
+
 	@property
 	def last_history(self: SelfTicket) -> TicketHistory:
 		""""Obtener el último registro del historial de un ticket
@@ -135,6 +157,18 @@ class Ticket(db.Base):
 		return db.session.query(cls).order_by(desc(cls.create_time)).first()
 	
 	@classmethod
+	def last_ticket_offense(cls: SelfTicket) -> SelfTicket:
+		"""Obtener el ultimo ticket que tenga en el titulo "Ofensa"
+	
+		Returns
+		-------
+		Ticket
+			Un objeto de typo Ticket
+		"""
+
+		return db.session.query(cls).filter(cls.title.ilike("%Ofensa%")).order_by(desc(cls.create_time)).first()
+	
+	@classmethod
 	def last_ticket_queue(cls: SelfTicket, queue_id:int) -> SelfTicket:
 		"""Obtener el ultimo ticket.
 
@@ -175,7 +209,28 @@ class Ticket(db.Base):
 				cls.queue_id==queue_id,
 				cls.create_time>=f"{start_period}",
 				cls.create_time<f"{end_period}").all()
+	
+	@classmethod
+	def tickets_offenses_by_period(cls: SelfTicket, start_period: str, end_period: str) -> List[SelfTicket]:
+		"""Obtener los ticket de un determinado periodo, con la palabra "Ofense" en el titulo.
+		
+		Parameters
+		----------
+		start_period: str
+			Fecha inicio en formato Y-M-D
+		end_period: str
+			Fecha fin en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
 
+		return db.session.query(cls).filter(
+				cls.title.ilike("%Ofensa%"),
+				cls.create_time>=f"{start_period}",
+				cls.create_time<f"{end_period}").all()
 
 	@classmethod
 	def tickets_by_date(cls: SelfTicket, date: str) -> List[SelfTicket]:

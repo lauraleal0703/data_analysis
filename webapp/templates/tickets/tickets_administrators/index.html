@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include "tickets/tickets_administrators/menu.html" %}
+
+<div class="card">
+    <div class="card-header">
+        {% if months_year %}
+        <div class="row p-4">
+            <div class="col">
+                {% for month in months_year %}
+                <a id="btnMonthYear{{ month }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/administrators?year={{ current_year }}&month_year={{ month }}">
+                    {{ months_year[month][0] }}={{ months_year[month][1] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <div class="row p-4">
+            <div class="col">
+                {% for administrator in administrators %}
+                <a id="btnAdministrator{{ administrator }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/administrators?year={{ current_year }}&administrator={{ administrator }}">
+                    {{ administrators[administrator] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% if months_administrator %}
+        <div class="row p-4">
+            <div class="col">
+                {% for month in months_administrator %}
+                <a id="btnMonthAdministrator{{ month }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/administrators?year={{ current_year }}&administrator={{ current_administrator }}&month={{ month }}">
+                    {{ months_administrator[month][0] }}={{ months_administrator[month][1] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            {% if data_grah_customer %}
+            <div class="shadow-none p-3 mb-5 bg-light rounded text-center">
+                <h3>Requerimientos por Cliente</h2>
+            </div>
+            <hr>
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_administrators_customers"></div>
+                </figure>
+            </div>
+            <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 150px;">Cliente</th>
+                        <th style="width: 150px;">Total</th>
+                        <th style="width: 150px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers_administrator %}
+                    <tr id="tr_{{ customer[0] }}">
+                        <td>
+                            {{ customer[0] }}
+                        </td>
+                        <td>
+                            {{ customer[1] }}
+                        </td>
+                        <td>
+                            <a
+                                role="button"
+                                class="btn btn-sm btn-primary"
+                                href="/tickets/administrators?year={{ current_year }}&administrator={{ current_administrator }}&month={{ current_month_administrator }}&customer={{ customer[0] }}">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="shadow-none p-3 mb-5 bg-light rounded text-center">
+                <h3>Requerimientos por Servicio</h2>
+            </div>
+            <hr>
+            {% endif %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_administrators"></div>
+                </figure>
+            </div>
+            {% if services_table %}
+            <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th>Servicio</th>
+                        <th style="width: 50px;">Total</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services_table %}
+                    <tr id="tr_{{ service }}">
+                        <td>
+                            {{ service }}
+                        </td>
+                        <td>
+                            {{ services_table[service][0] }}
+                        </td>
+                        <td>
+                            {{ services_table[service][1] }}
+                        </td>
+                        <td>
+                            <a
+                                role="button"
+                                class="btn btn-sm btn-primary"
+                                href="/tickets/administrators?year={{ current_year }}&administrator={{ current_administrator }}&month={{ current_month_administrator }}&service={{ service }}">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menuTicketsAdministrators").addClass("active");
+        $("#menuTicketsAdministrators{{ current_year }}").addClass("active");
+        $("#btnMonthYear{{ current_months_year }}").addClass("active");
+        $("#btnAdministrator{{ current_administrator }}").addClass("active");
+        $("#btnMonthAdministrator{{ current_month_administrator }}").addClass("active");
+        $("#btnAdministratorCustomer{{ current_administrator_customer }}").addClass("active");
+    });
+</script>
+
+<script type="text/javascript">
+    Highcharts.chart('container_administrators', {
+        chart: {
+            width: 1200,
+            height: 500,
+            type: 'column'
+        },
+        {% if current_months_year %}
+        title: {
+            text: '-->{{ total_tickets }}<-- Requerimientos realizados durante el año "{{ current_year }} en el mes de "{{ current_months_year_name }}"',
+            align: 'center'
+        },
+        {% elif current_administrator %}
+        title: {
+            text: '-->{{ total_tickets }}<-- Requerimientos del administrador "{{ administrator_name }}" realizados durante el año "{{ current_year }}"',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: '-->{{ total_tickets }}<-- Requerimientos realizados durante el año "{{ current_year }}"',
+            align: 'center'
+        },
+        {% endif %}
+        xAxis: {
+            categories: {{ data_grah_x | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de requerimientos'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.0f}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah_y | safe }}
+    });
+</script>
+{% if data_grah_customer %}
+<script type="text/javascript">
+    Highcharts.chart('container_administrators_customers', {
+        chart: {
+            width: 1200,
+            height: 500,
+            type: 'column'
+        },
+        title: {
+            text: '-->{{ total_tickets }}<-- Requerimientos del administrador "{{ administrator_name }}" realizados durante el año "{{ current_year }}"',
+            align: 'center'
+        },
+        xAxis: {
+            categories: {{ customers_administrator_active_name | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de requerimientos'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.0f}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah_customer | safe }}
+    });
+</script>
+{% endif %}
+{% endblock %}
