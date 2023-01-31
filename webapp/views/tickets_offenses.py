@@ -5,8 +5,6 @@ from flask import current_app
 from flask import redirect
 from flask import url_for
 
-from webapp.analyzer import totalization_tickets
-
 import os
 import json
 import statistics

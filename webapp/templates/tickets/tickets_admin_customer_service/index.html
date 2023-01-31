@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include "tickets/tickets_admin_customer_service/menu.html" %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row p-4">
+            <div class="col">
+                {% for user_active in users_active %}
+                <a id="btnUser{{ user_active }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets_admin/service?year={{ current_year }}&user={{ user_active }}">
+                    {{ users_active[user_active] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% if months %}
+        <div class="row p-2">
+            <div class="col">
+                {% for month in months %}
+                <a id="btnMonth{{ month }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets_admin/service?year={{ current_year }}&user={{ current_user }}&month={{ month }}">
+                    {{ months[month] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% if current_customers %}
+        <div class="row p-2">
+            <div class="col">
+                {% for customer in current_customers %}
+                <a id="btnCustomer{{ customer }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets_admin/service?year={{ current_year }}&user={{ current_user }}&month={{ current_month }}&customer={{ customer }}">
+                    {{ customer }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% if services_temp %}
+    {% for service_temp in services_temp %}
+    {{ service_temp }}
+    {% endfor %}
+    {% endif %}
+    <!-- <div class="card-body">
+        <div class="table-responsive">
+            {% if current_user and not current_month %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_1"></div>
+                </figure>
+            </div>
+            {% elif current_user and current_month  %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_2"></div>
+                </figure>
+            </div>
+            {% endif %}
+        </div>
+    </div> -->
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menuTicketsAdminService").addClass("active");
+        $("#menuTicketsAdminService{{ current_year }}").addClass("active");
+        $("#btnUser{{ current_user }}").addClass("active");
+        $("#btnMonth{{ current_month }}").addClass("active");
+        $("#btnCustomer{{ current_customer }}").addClass("active");
+    });
+</script>
+
+<script type="text/javascript">
+{% if current_user and not current_month %}
+Highcharts.chart('container_1', {
+    title: {
+        text: '-->{{ total_requeriments }}<-- Requerimientos realizados por el usuario "{{ current_user_name }}" durante el año "{{ current_year }}"',
+        align: 'center'
+    },
+    chart: {
+        width: 1100,
+        height: 300,
+    },
+    yAxis: {
+        title: {
+            text: 'Número de requerimientos'
+        }
+    },
+    xAxis: {
+        accessibility: {
+            rangeDescription: 'Range: 1 to {{ len_months_grah }}'
+        }
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    plotOptions: {
+        series: {
+            label: {
+                connectorAllowed: false
+            },
+            pointStart: 1
+        }
+    },
+    series: {{ data_grah |safe }},
+    responsive: {
+        rules: [{
+            condition: {
+                maxWidth: 500
+            },
+            chartOptions: {
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                }
+            }
+        }]
+    }
+});
+{% endif %}
+</script>
+
+<script type="text/javascript">
+{% if current_user and current_month  %}
+Highcharts.chart('container_2', {
+    chart: {
+        width: 1200,
+        height: 260,
+        type: 'column'
+    },
+    title: {
+        text: '-->{{ total_requeriments }}<-- Requerimientos realizados por "{{ current_user_name }}" durante el mes de "{{ months[month_grah] | safe }}"',
+        align: 'center'
+    },
+    xAxis: {
+        categories: {{ days | safe }},
+        crosshair: true
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: 'Número de requerimientos'
+        }
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+        '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+        pointPadding: 0.2,
+        borderWidth: 0
+        }
+    },
+    series: {{ data_grah | safe }}
+});
+{% endif %}
+</script>
+{% endblock %}

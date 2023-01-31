@@ -61,7 +61,7 @@ class Ticket(db.Base):
 	ticket_history: TicketHistory = relationship("TicketHistory", back_populates="ticket", lazy=True)
 	
 	@property
-	def last_history(self):
+	def last_history(self: SelfTicket) -> TicketHistory:
 		""""Obtener el último registro del historial de un ticket
 		
 		Returns
@@ -123,6 +123,61 @@ class Ticket(db.Base):
 		return db.session.query(cls).filter(cls.id > tickets_id).all()
 	
 	@classmethod
+	def last_ticket(cls: SelfTicket) -> SelfTicket:
+		"""Obtener el ultimo ticket.
+	
+		Returns
+		-------
+		Ticket
+			Un objeto de typo Ticket
+		"""
+
+		return db.session.query(cls).order_by(desc(cls.create_time)).first()
+	
+	@classmethod
+	def last_ticket_queue(cls: SelfTicket, queue_id:int) -> SelfTicket:
+		"""Obtener el ultimo ticket.
+
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+
+		Returns
+		-------
+		Ticket
+			Un objeto de typo Ticket
+		"""
+
+		return db.session.query(cls).filter(cls.queue_id==queue_id).order_by(desc(cls.create_time)).first()
+	
+	
+	@classmethod
+	def tickets_by_queue_period(cls: SelfTicket, queue_id:int, start_period: str, end_period: str) -> List[SelfTicket]:
+		"""Obtener los ticket de un determinado periodo, con queue_id.
+		
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		start_period: str
+			Fecha inicio en formato Y-M-D
+		end_period: str
+			Fecha fin en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		return db.session.query(cls).filter(
+				cls.queue_id==queue_id,
+				cls.create_time>=f"{start_period}",
+				cls.create_time<f"{end_period}").all()
+
+
+	@classmethod
 	def tickets_by_date(cls: SelfTicket, date: str) -> List[SelfTicket]:
 		"""Obtener los ticket de una determinada fecha.
 		
@@ -162,6 +217,127 @@ class Ticket(db.Base):
 				cls.customer_id == customer_id,
 				cls.create_time>=f"{date} 00:00:00",
 				cls.create_time<=f"{date} 23:59:59").all()
+	
+	@classmethod
+	def tickets_by_customer_date_queue(cls: SelfTicket, queue_id: int, customer_id: str, date: str) -> List[SelfTicket]:
+		"""Obtener los tickets diarios generados por un cliente.
+			Dado un ID de cola
+		
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+			ID del customer.
+		date: str
+			Fecha del día en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		return db.session.query(cls).filter(
+				cls.queue_id == queue_id,
+				cls.customer_id == customer_id,
+				cls.create_time >= f"{date} 00:00:00",
+				cls.create_time <= f"{date} 23:59:59").all()
+	
+	@classmethod
+	def tickets_by_customer_service_date_queue(cls: SelfTicket, queue_id: int, customer_id: str, service_id:int, last_id:int, date: str) -> List[SelfTicket]:
+		"""Obtener los tickets diarios generados por un cliente.
+			Dado un ID de inicio y eñ id de la cola
+		
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+			ID del customer.
+		service_id: str
+			ID del service.
+		las_id: int
+			ID desde el cual se quiere buscar
+		date: str
+			Fecha del día en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		return db.session.query(cls).filter(
+				cls.id>last_id,
+				cls.service_id==service_id,
+				cls.queue_id==queue_id,
+				cls.customer_id==customer_id,
+				cls.create_time>=f"{date} 00:00:00",
+				cls.create_time<=f"{date} 23:59:59").all()
+	
+	@classmethod
+	def tickets_by_queue_user_date(cls: SelfTicket, queue_id: int, user_id: int, last_id:int, date: str) -> List[SelfTicket]:
+		"""Obtener los ticket de una cola en determinada fecha.
+		
+		Parameters
+		----------
+		user_id: int
+			ID del usuario.
+		queue_id: int
+			ID de la cola.
+		las_id: int
+			ID desde el cual se quiere buscar.
+		date: str
+			Fecha en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		return db.session.query(cls).filter(
+				cls.id>last_id,
+				cls.user_id == user_id,
+				cls.queue_id == queue_id,
+                cls.create_time>=f"{date} 00:00:00",
+                cls.create_time<f"{date} 23:59:59").all()
+	
+	@classmethod
+	def tickets_by_queue_user_date_customer_service(cls: SelfTicket, queue_id: int, user_id: int, customer_id: str, service_id:int, last_id:int, date: str) -> List[SelfTicket]:
+		"""Obtener los ticket de una cola en determinada fecha.
+		
+		Parameters
+		----------
+		user_id: int
+			ID del usuario.
+		queue_id: int
+			ID de la cola.
+		customer_id: str
+			ID del customer.
+		service_id: str
+			ID del service.
+		las_id: int
+			ID desde el cual se quiere buscar.
+		date: str
+			Fecha en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		return db.session.query(cls).filter(
+				cls.id>last_id,
+				cls.service_id==service_id,
+				cls.user_id == user_id,
+				cls.queue_id == queue_id,
+				cls.customer_id == customer_id,
+                cls.create_time>=f"{date} 00:00:00",
+                cls.create_time<f"{date} 23:59:59").all()
+	
 	
 	@classmethod
 	def tickets_by_customer(cls: SelfTicket, customer_id: str) -> List[SelfTicket]:
@@ -269,34 +445,7 @@ class Ticket(db.Base):
                 cls.create_time>=f"{start_date} 00:00:00",
                 cls.create_time<f"{end_date} 23:00:00").all()
 		
-	@classmethod
-	def tickets_by_queue_user_date(cls: SelfTicket, queue_id: int, user_id: int, start_date: str, end_date: str=None) -> List[SelfTicket]:
-		"""Obtener los ticket de una cola en determinada fecha.
-		
-		Parameters
-		----------
-		user_id: int
-			ID del usuario.
-		queue_id: int
-			ID de la cola.
-		start_date: str
-			Fecha de inicio en formato Y-M-D
-		end_date: str
-			Fecha de fin en formato Y-M-D
-		
-		Returns
-		-------
-		list[Ticket]
-			Una lista de objetos Ticket
-		"""
-		if not end_date:
-			end_date = datetime.today().strftime("%Y-%m-%d")
-
-		return db.session.query(cls).filter(
-				cls.user_id == user_id,
-				cls.queue_id == queue_id,
-                cls.create_time>=f"{start_date} 00:00:00",
-                cls.create_time<f"{end_date} 23:00:00").all()
+	
 		
 	@classmethod
 	def tickets_by_user_date(cls: SelfTicket, user_id: int, start_date: str, end_date: str=None) -> List[SelfTicket]:
