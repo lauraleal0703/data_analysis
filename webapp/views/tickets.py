@@ -11,12 +11,12 @@ from pprint import pprint
 
 tickets = Blueprint("tickets", __name__, url_prefix="/tickets")
 
-
 @tickets.get("/customers")
 def customers():
-    list_year = list(range(2019, datetime.today().year+1))
-    list_year.reverse()
-    data = data_tickets.tickets_queue_customers()
+    def_name = "customers"
+    # list_year = list(range(2019, datetime.today().year+1))
+    # list_year.reverse()
+    list_year = ["2022", "2021", "2020", "2019"]
     customers_actives = data_tickets.customers_actives()
     calendar_spanish = data_tickets.calendar_spanish()
     services_actives = data_tickets.services_actives()
@@ -30,7 +30,10 @@ def customers():
         service = request.args.get("service", type=str)
     
         if not year:
-            year = "2023"
+            year = "2022"
+        
+        # data = data_tickets.tickets_queue(year, def_name)
+        data = data_tickets.get_json_tem(year, def_name)
 
         total_tickets_customer = {}
         total_tickets = 0
@@ -154,7 +157,6 @@ def customers():
                     services_customer_active.append("Undefined")
                     data_grah_temp.append(service_sum[1])
                     services_table["Undefined"] = ("Undefined",service_sum[1])
-            
             data_grah = [{"name": f"Tickets de {customer_name}", "data": data_grah_temp}]
             
             if month and not service:
@@ -186,8 +188,6 @@ def customers():
                 service_name = services_actives[int(service)]
             else:
                 service_name = "Undefined"
-            
-            print(service_name)
 
             if month and service:
                 return render_template(
@@ -220,9 +220,10 @@ def customers():
 
 @tickets.get("/administrators")
 def administrators():
-    list_year = list(range(2019, datetime.today().year+1))
-    list_year.reverse()
-    data = data_tickets.tickets_queue_users()
+    def_name = "administrators"
+    # list_year = list(range(2019, datetime.today().year+1))
+    # list_year.reverse()
+    list_year = ["2022", "2021", "2020", "2019"]
     users = data_tickets.users_actives()
     active_administrators = users
     calendar_spanish = data_tickets.calendar_spanish()
@@ -238,8 +239,9 @@ def administrators():
         customer = request.args.get("customer", type=str)
     
         if not year:
-            year = "2023"
-
+            year = "2022"
+        data = data_tickets.get_json_tem(year, def_name)
+        
         total_tickets_administrator = {}
         total_tickets = 0
         months_year = []
@@ -357,9 +359,13 @@ def administrators():
             
             customers_administrator = sorted(customers_administrator.items(), key=lambda x:x[1], reverse=True)
             data_grah_temp = []
+
             customers_administrator_active_name = []
             for customer_sum in customers_administrator:
-                customers_administrator_active_name.append(customers_actives[customer_sum[0]])
+                if customer_sum[0] != "Adaptive Security":
+                    customers_administrator_active_name.append(customers_actives[customer_sum[0]])
+                else:
+                    customers_administrator_active_name.append("Adaptive Security")
                 data_grah_temp.append(customer_sum[1])
 
             data_grah_customer = [{"name": f"Tickets de {administrator_name}", "data": data_grah_temp}]
@@ -420,7 +426,7 @@ def administrators():
             
                 return render_template(
                     "tickets/tickets_administrators/index_table.html",
-                    page={"title": f'Tickets del Servicio "{service_name}" del Cliente "{administrator_name}" en el Mes de "{month_name}"'},
+                    page={"title": f'Tickets del Servicio "{service_name}" del Administrador "{administrator_name}" en el Mes de "{month_name}"'},
                     list_year=list_year,
                     current_year=year,
                     months_year=months_year,
@@ -433,6 +439,7 @@ def administrators():
                 )
             
             if month and not service and customer:
+                customer_name=customers_actives[customer]
                 ticket_customer_table = {}
                 for ticket_customer in data[year][month][administrator]:
                     customer_id = data[year][month][administrator][ticket_customer]["customer_id"]
@@ -443,7 +450,7 @@ def administrators():
 
                 return render_template(
                     "tickets/tickets_administrators/index_table.html",
-                    page={"title": f'Tickets del Cliente "{customer_id}" en el Mes de "{month_name}"'},
+                    page={"title": f'Tickets del Cliente "{customer_name}" en el Mes de "{month_name}"'},
                     list_year=list_year,
                     current_year=year,
                     months_year=months_year,
@@ -467,3 +474,29 @@ def administrators():
         data_grah_y=data_grah      
     )
 
+
+@tickets.get("/offenses")
+def offenses():
+    list_year = list(range(2019, datetime.today().year+1))
+    list_year.reverse()
+    customers_actives = data_tickets.customers_actives()
+    calendar_spanish = data_tickets.calendar_spanish()
+    services_actives = data_tickets.services_actives()
+    users = data_tickets.users_actives()
+
+    if request.method == "GET":
+        year = request.args.get("year", type=str)
+        month_year = request.args.get("month_year", type=str)
+        customer = request.args.get("customer", type=str)
+        month = request.args.get("month", type=str)
+        service = request.args.get("service", type=str)
+    
+        if not year:
+            year = "2023"
+    
+    return render_template(
+        "tickets/tickets_offenses/index.html",
+        page={"title": "Data Adaptive Security"},
+        list_year=list_year,
+        current_year=year   
+    )

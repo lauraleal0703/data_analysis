@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "tickets/tickets_customers/menu.html" %}
+{% include "tickets/tickets_offenses/menu.html" %}
 
 <div class="card">
     <div class="card-header">
@@ -10,7 +10,7 @@
     <div class="card-body">
         <div class="table-responsive">
             {% if services_table %}
-            <table id="tablaTicketsCustomer" class="table table-bordered display text-center" style="width:100%">
+            <table id="tablaTicketsOffenses" class="table table-bordered display text-center" style="width:100%">
             <!-- <table class="table table-bordered table-hover display text-center align-middle" style="width:100%"> -->
                 <thead class="bg-light">
                     <tr>
@@ -47,7 +47,7 @@
                             {{ ticket_service_table[ticket].title }}
                         </td>
                         <td>
-                            {{ users[ticket_service_table[ticket].user_id] }}
+                            {{ users[ticket_service_table[ticket].admin] }}
                         </td>
                         <td>
                             {{ ticket_service_table[ticket].resolution_time }}
@@ -72,9 +72,9 @@
         <div class="row p-4">
             <div class="col">
                 {% for service_table in services_table %}
-                <a id="btnCustomerService{{ service_table }}"
+                <a id="btnOffenseService{{ service_table }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/tickets/customers?year={{ current_year }}&customer={{ current_customer }}&month={{ current_month_customer }}&service={{ service_table }}">
+                    href="/tickets/offenses?year={{ current_year }}&customer={{ current_customer }}&month={{ current_month_customer }}&service={{ service_table }}">
                     {{ services_table[service_table][0] }}={{ services_table[service_table][1] }}
                 </a>
                 {% endfor %}
@@ -83,7 +83,7 @@
         <a
             role="button"
             class="btn btn-sm btn-secondary"
-            href="/tickets/customers?year={{ current_year }}&customer={{ current_customer }}&month={{ current_month_customer }}">
+            href="/tickets/offenses?year={{ current_year }}&customer={{ current_customer }}&month={{ current_month_customer }}">
             Volver
         </a>
     </div>
@@ -91,24 +91,24 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#menuTicketsCustomers").addClass("active");
-        $("#menuTicketsCustomers{{ current_year }}").addClass("active");
-        $("#btnCustomerService{{ current_service }}").addClass("active");
+        $("#menuTicketsOffenses").addClass("active");
+        $("#menuTicketsOffenses{{ current_year }}").addClass("active");
+        $("#btnOffenseService{{ current_service }}").addClass("active");
         
-        $("#tablaTicketsCustomer thead tr:eq(1) th").each(function() {
+        $("#tablaTicketsOffenses thead tr:eq(1) th").each(function() {
             let title = $(this).text();
             if (title != "") {
                 $(this).html("<input type='text' class='form-control form-control-sm text-center column-search' />");
             }
         });
         
-        var table = $("#tablaTicketsCustomer").DataTable({
+        var table = $("#tablaTicketsOffenses").DataTable({
             orderCellsTop: true,
             ordering: true,
             order: [],
         });
 
-        $("#tablaTicketsCustomer thead").on("keyup", ".column-search", function () {
+        $("#tablaTicketsOffenses thead").on("keyup", ".column-search", function () {
             table
             .column( $(this).parent().index() )
             .search( this.value )

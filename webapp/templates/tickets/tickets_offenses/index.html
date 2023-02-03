@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include "tickets/tickets_offenses/menu.html" %}
+
+<div class="card">
+    <div class="card-header">
+        {% if months_year %}
+        <div class="row p-4">
+            <div class="col">
+                {% for month in months_year %}
+                <a id="btnMonthYear{{ month }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/offenses?year={{ current_year }}&month_year={{ month }}">
+                    {{ months_year[month][0] }}={{ months_year[month][1] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <div class="row p-4">
+            <div class="col">
+                {% for offense in offenses %}
+                <a id="btnOffense{{ offense }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/offenses?year={{ current_year }}&offense={{ offense }}">
+                    {{ offense }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% if months_offense %}
+        <div class="row p-4">
+            <div class="col">
+                {% for month in months_offense %}
+                <a id="btnMonthOffense{{ month }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/offenses?year={{ current_year }}&offense={{ current_offense }}&month={{ month }}">
+                    {{ months_offense[month][0] }}={{ months_offense[month][1] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_offenses"></div>
+                </figure>
+            </div>
+            {% if services_table %}
+            <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th>Servicio</th>
+                        <th style="width: 50px;">Total</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services_table %}
+                    <tr id="tr_{{ service }}">
+                        <td>
+                            {{ service }}
+                        </td>
+                        <td>
+                            {{ services_table[service][0] }}
+                        </td>
+                        <td>
+                            {{ services_table[service][1] }}
+                        </td>
+                        <td>
+                            <a
+                                role="button"
+                                class="btn btn-sm btn-primary"
+                                href="/tickets/offenses?year={{ current_year }}&offense={{ current_offense }}&month={{ current_month_offense }}&service={{ service }}">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menuTicketsOffenses").addClass("active");
+        $("#menuTicketsOffenses{{ current_year }}").addClass("active");
+        $("#btnMonthYear{{ current_months_year }}").addClass("active");
+        $("#btnOffense{{ current_offense }}").addClass("active");
+        $("#btnMonthOffense{{ current_month_offense }}").addClass("active");
+    });
+</script>
+
+<script type="text/javascript">
+    Highcharts.chart('container_offenses', {
+        chart: {
+            width: 1200,
+            height: 500,
+            type: 'column'
+        },
+        {% if current_months_year %}
+        title: {
+            text: '-->{{ total_tickets }}<-- Requerimientos realizados durante el año "{{ current_year }} en el mes de "{{ current_months_year_name }}"',
+            align: 'center'
+        },
+        {% elif current_offense %}
+        title: {
+            text: '-->{{ total_tickets }}<-- Requerimientos del cliente "{{ offense_name }}" realizados durante el año "{{ current_year }}"',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: '-->{{ total_tickets }}<-- Requerimientos realizados durante el año "{{ current_year }}"',
+            align: 'center'
+        },
+        {% endif %}
+        xAxis: {
+            categories: {{ data_grah_x | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de requerimientos'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.0f}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah_y | safe }}
+    });
+</script>
+{% endblock %}
