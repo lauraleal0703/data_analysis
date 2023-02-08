@@ -197,9 +197,11 @@ def init_cleaning_functions():
     def_name = "init_cleaning_functions"
     funs_def= [
         calendar_spanish,
+        customers_actives,
         customers_by_period]
     funs_name = [
         "calendar_spanish",
+        "customers_actives",
         "customers_by_period"]
 
     for pos, fun_def in  enumerate(funs_def):
@@ -272,6 +274,7 @@ def tickets_customer(customer_id: str, year: str, queue_id: int=6):
             list_months_temp[0], 
             list_months_temp[-1]
         )
+        print("last_ticket_id_temp", last_ticket_id_temp, list_months_temp[0], list_months_temp[-1])
     except:
         last_ticket_id_temp=last_ticket_id
     
@@ -307,7 +310,7 @@ def tickets_customer(customer_id: str, year: str, queue_id: int=6):
                     )
                 except:
                     tickets_by_period = []
-                
+
                 total_month += len(tickets_by_period)
                 total_day += len(tickets_by_period)
                 
@@ -331,23 +334,23 @@ def tickets_customer(customer_id: str, year: str, queue_id: int=6):
                     active_temp[month][day] = {}
 
                 for ticket in tickets_by_period:
-                    if ticket.id not in active_temp[month][day]:
-                        last_ticket_id_temp = ticket.id
-                        resolution_time = ticket.last_history.change_time - ticket.create_time
-                        active_temp[month][day][ticket.id] = {
-                            "tn": ticket.tn,
-                            "title": ticket.title,
-                            "user_id": ticket.user_id,
-                            "customer_id": ticket.customer_id,
-                            "service_id": ticket.service_id,
-                            "state": ticket.ticket_state.name,
-                            "type": ticket.type.name if ticket.type else "Undefined",
-                            "ticket_priority": ticket.ticket_priority.name,
-                            "sla": ticket.sla.solution_time if ticket.sla else "Undefined",
-                            "create_time": str(ticket.create_time),
-                            "change_time": str(ticket.change_time),
-                            "resolution_time": str(resolution_time)
-                        }
+                    last_ticket_id_temp = ticket.id
+                    print("last_ticket_id_temp", last_ticket_id_temp)
+                    resolution_time = ticket.last_history.change_time - ticket.create_time
+                    active_temp[month][day][ticket.id] = {
+                        "tn": ticket.tn,
+                        "title": ticket.title,
+                        "user_id": ticket.user_id,
+                        "customer_id": ticket.customer_id,
+                        "service_id": ticket.service_id,
+                        "state": ticket.ticket_state.name,
+                        "type": ticket.type.name if ticket.type else "Undefined",
+                        "ticket_priority": ticket.ticket_priority.name,
+                        "sla": ticket.sla.solution_time if ticket.sla else "Undefined",
+                        "create_time": str(ticket.create_time),
+                        "change_time": str(ticket.change_time),
+                        "resolution_time": str(resolution_time)
+                    }
                 
                 if "total_day" not in active_temp[month][day]:
                     active_temp[month][day]["total_day"] = total_day
@@ -360,12 +363,11 @@ def tickets_customer(customer_id: str, year: str, queue_id: int=6):
                 else:
                     active_temp[month]["total_month"] += total_month
 
-    
+    print("last_ticket_id_temp", last_ticket_id_temp)
     _active = {
         "active": active_temp,
         "last_ticket_id": last_ticket_id_temp,
-        "last_period": list_months_temp[-2]
-
+        "last_period": list_months_temp[-2],
     }
     
     with open(path_active, "w") as f:
@@ -382,12 +384,13 @@ def get_data_folder_temp_portal_clientes():
     
     customers = customers_by_period()
     
-    for customer in customers:
-        years = customers[customer]["years_actives"]
-        years.reverse()
-        print(years)
-        for year in years:
-            tickets_customer(customer, str(year))
+    # for customer in customers:
+    customer = "Adaptive Security"
+    years = customers[customer]["years_actives"]
+    years.reverse()
+    years = ["2022"]
+    for year in years:
+        tickets_customer(customer, str(year))
     
     return f"{def_name} Data actualizada en la carpeta temp_portal_clientes"
 

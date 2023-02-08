@@ -33,6 +33,45 @@ def get_update_date(path_temp: Path) -> str:
     
     return active_temp
 
+def get_calendar_spanish(path_temp: Path) -> str:
+    """Obtener el calendario
+
+    Parameters
+    ---------
+    
+    Return
+    ------
+    Dict
+    """
+    path_active = Path(f"{path_temp}/calendar_spanish.json")
+    active_temp = ""
+    if path_active.exists():
+        with path_active.open("r") as f:
+            json_active = json.load(f)
+            active_temp = json_active["active"]
+    
+    return active_temp
+
+
+def get_customers_actives(path_temp: Path) -> str:
+    """Obtener los clientes y sus nombres
+
+    Parameters
+    ---------
+    
+    Return
+    ------
+    Dict
+    """
+    path_active = Path(f"{path_temp}/customers_actives.json")
+    active_temp = ""
+    if path_active.exists():
+        with path_active.open("r") as f:
+            json_active = json.load(f)
+            active_temp = json_active["active"]
+    
+    return active_temp
+
 
 def get_customers_period(path_temp: Path) -> list:
     """Obtener los customers
@@ -154,7 +193,7 @@ def get_customer_months_year(
         f"{path_customer}/tickets_{customer_id}_by_queue_{queue_id}_{year}.json"
     )
     
-    dict_month = {}
+    dict_months = {}
     if path_active.exists():
         with path_active.open("r") as f:
             json_active = json.load(f)
@@ -162,9 +201,9 @@ def get_customer_months_year(
     
             months = list(active_temp.keys())
             months.reverse()
-            dict_month = {month: calendar[month] for month in months if month in calendar}
+            dict_months = {month: calendar[month] for month in months if month in calendar}
         
-    return dict_month
+    return dict_months
 
 
 def get_tickets_customer_months_year(
@@ -217,14 +256,14 @@ def get_tickets_customer_months_year(
             "total_tickets": total_tickets}
 
 
-
-def get_customer_months_year(
+def get_customer_days_month_year(
         path_temp: Path, 
         customer_id: str, 
-        year: str, 
+        year: str,
+        month: str,  
         queue_id: int=6) -> dict:
-    """Obtener los meses ativos del customer
-     en el año indicado. 
+    """Obtener los dias del mes activo del
+    customer en el año indicado. 
 
     Parameters
     ---------
@@ -232,18 +271,15 @@ def get_customer_months_year(
         ID del customer
     year: str
         Año de análisis
+    month: str
+        Mes de análisis
     queue_id: int
         En este caso estamos en la cola 6, administradores
     
     Return
     ------
-    list[meses]
+    list[days]
     """
-    path_active = Path(f"{path_temp}/calendar_spanish.json")
-    with path_active.open("r") as f:
-        json_active = json.load(f)
-        calendar = json_active["active"]
-
     path_customer = Path(
         f"{path_temp}/{customer_id}"
     )
@@ -252,16 +288,65 @@ def get_customer_months_year(
         f"{path_customer}/tickets_{customer_id}_by_queue_{queue_id}_{year}.json"
     )
     
-    dict_month = {}
+    days_month = []
     if path_active.exists():
         with path_active.open("r") as f:
             json_active = json.load(f)
-            active_temp = json_active["active"]
+            active_temp = json_active["active"][month]
     
-            months = list(active_temp.keys())
-            months.reverse()
-            dict_month = {month: calendar[month] for month in months if month in calendar}
+            days_month = list(active_temp.keys())[0:-1]
         
-    return dict_month
+    return days_month
 
-# print(get_tickets_customer_months_year(path_temp, "AAN", "2023"))
+
+def get_tickets_customer_days_month_year(
+        path_temp: Path, 
+        customer_id: str,
+        year: str,
+        month: str, 
+        queue_id: int=6) -> list:
+    """Obtener los dias activos de un customer
+    en el mes de un año definido y los tickets gestionados por AS
+    Da los datos directos para la gráfica.
+
+    Parameters
+    ---------
+    customer_id: str
+        ID del customer
+    year: str
+        Año de análisis
+    month: str
+        Mes de análisis
+    queue_id: int
+        En este caso estamos en la cola 6, administradores
+    
+    Return
+    ------
+    dict{data_x: ...
+        data_y: ...}
+    """
+
+    days = get_customer_days_month_year(path_temp, customer_id, year, month)
+    data_grah_temp = []
+    data_x = []
+    days_actives = {}
+    for day in days:
+        path_active = Path(
+            f"{path_temp}/{customer_id}/tickets_{customer_id}_by_queue_{queue_id}_{year}.json"
+        )
+        if path_active.exists():
+            with path_active.open("r") as f:
+                json_active = json.load(f)
+                active_temp = json_active["active"][month][day]["total_day"]
+            
+                data_grah_temp.append(active_temp)
+                data_x.append(day)
+    
+    total_tickets = sum(data_grah_temp)
+    data_grah = [{"name": "Tickets", "data": data_grah_temp}]
+
+    return {"data_x": data_x, 
+            "data_y": data_grah, 
+            "total_tickets": total_tickets}
+
+# print(get_tickets_customer_days_month_year(path_temp, "AAN", "2023", "1"))

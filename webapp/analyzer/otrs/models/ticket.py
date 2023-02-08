@@ -163,6 +163,7 @@ class Ticket(db.Base):
 			cls.ticket_state_id!=9,
 			cls.customer_id.not_ilike("%@%"),
 			cls.queue_id==queue_id,
+			cls.title.not_ilike("%[RRD]%"),
 			cls.create_time>=f"{start_period}",
 			cls.create_time<f"{end_period}"
 			).order_by(desc(cls.create_time)).first()
@@ -455,7 +456,7 @@ class Ticket(db.Base):
 			cls.ticket_state_id!=9,
 			cls.customer_id==customer_id,
 			cls.queue_id==queue_id,
-			cls.create_time>=f"{start_period}",
+			cls.create_time>=f"{start_period} 00:00:00",
 			cls.create_time<f"{end_period}"
 			).order_by(desc(cls.create_time)).first()
 

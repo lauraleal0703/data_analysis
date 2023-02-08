@@ -59,14 +59,19 @@
             height: 500,
             type: 'column'
         },
-        {% if year_actives and not months_actives %}
+        {% if year_actives and not months_actives and not current_month%}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} requerimientos durante la permanencia en Adaptive Security.',
+            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }}.',
             align: 'center'
         },
-        {% elif months_actives %}
+        {% elif months_actives and not current_month %}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} requerimientos durante el año {{ current_year }}.',
+            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }} durante el año {{ current_year }}.',
+            align: 'center'
+        },
+        {% elif current_month %}
+        title: {
+            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }} durante el mes de {{ month_name }} el año {{ current_year }}.',
             align: 'center'
         },
         {% endif %}
