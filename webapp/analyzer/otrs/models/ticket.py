@@ -6,6 +6,8 @@ from sqlalchemy import String
 from sqlalchemy import DateTime
 from sqlalchemy import ForeignKey
 from sqlalchemy import desc
+from sqlalchemy import asc
+from sqlalchemy import and_
 from sqlalchemy.orm import relationship
 
 from typing import TypeVar, List
@@ -31,9 +33,9 @@ class Ticket(db.Base):
 	title = Column(String, nullable=True)
 	queue_id = Column(Integer, ForeignKey("queue.id"), nullable=False)
 	ticket_lock_id = Column(Integer, nullable=False)
-	_type_id = Column("type_id",Integer, ForeignKey("ticket_type.id"), nullable=True)
+	type_id = Column(Integer, ForeignKey("ticket_type.id"), nullable=True)
 	_service_id = Column("service_id", Integer, ForeignKey("service.id"), nullable=True)
-	_sla_id = Column("sla_id", Integer, ForeignKey("sla.id"), nullable=True)
+	sla_id = Column(Integer, ForeignKey("sla.id"), nullable=True)
 	user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 	responsible_user_id = Column(Integer, nullable=False)
 	ticket_priority_id = Column(Integer, ForeignKey("ticket_priority.id"), nullable=False)
@@ -69,20 +71,6 @@ class Ticket(db.Base):
 		return self._service_id
 
 	@property
-	def sla_id(self: SelfTicket)  -> Union[int, str]:
-		"""Redefinir la variable en caso de que sea NULL"""
-		if not self._sla_id:
-			return "Undefined"
-		return self._sla_id
-	
-	@property
-	def type_id(self: SelfTicket)  -> Union[int, str]:
-		"""Redefinir la variable en caso de que sea NULL"""
-		if not self._type_id:
-			return "Undefined"
-		return self._type_id
-
-	@property
 	def last_history(self: SelfTicket) -> TicketHistory:
 		""""Obtener el último registro del historial de un ticket
 		
@@ -94,7 +82,7 @@ class Ticket(db.Base):
 		return db.session.query(TicketHistory).join(Ticket).filter(
 			TicketHistory.ticket_id == self.id
 		).order_by(desc(TicketHistory.change_time)).first()
-
+	
 
 	@classmethod
 	def get(cls: SelfTicket, ticket_id: int) -> SelfTicket:
@@ -172,6 +160,7 @@ class Ticket(db.Base):
 		"""
 
 		ticket: SelfTicket = db.session.query(cls).filter(
+			cls.ticket_state_id!=9,
 			cls.customer_id.not_ilike("%@%"),
 			cls.queue_id==queue_id,
 			cls.create_time>=f"{start_period}",
@@ -210,6 +199,7 @@ class Ticket(db.Base):
 		"""
 
 		return db.session.query(cls).filter(
+				cls.ticket_state_id!=9,
 				cls.id>last_ticket_id,
 				cls.customer_id.not_ilike("%@%"),
 				cls.title.not_ilike("%[RRD]%"),
@@ -223,6 +213,11 @@ class Ticket(db.Base):
 			start_period: str, 
 			end_period: str) -> int:
 		"""Obtener el ultimo id del ticket que tenga en el titulo "Ofensa Nº"
+		que sea:
+		*del usuario Auto Ofensa user_id = 35
+		que no sea:
+		*de la cola queue_id=8 "eliminar"
+		*del estado merged ticket_state_id=9
 
 		arameters
 		----------
@@ -238,6 +233,9 @@ class Ticket(db.Base):
 		"""
 
 		ticket: SelfTicket = db.session.query(cls).filter(
+			cls.user_id==35,
+			cls.ticket_state_id!=9,
+			cls.queue_id!=8,
 			cls.title.ilike("%Ofensa Nº%"),
 			cls.create_time>=f"{start_period}",
 			cls.create_time<f"{end_period}").order_by(desc(cls.create_time)).first()
@@ -251,7 +249,13 @@ class Ticket(db.Base):
 			start_period: str, 
 			end_period: str) -> List[SelfTicket]:
 		"""Obtener los tickets automaticos de un determinado periodo, 
-		desde un determinado id, con la palabra "Ofense  Nº" en el titulo.
+		desde un determinado id, con la palabra "Ofense  Nº" en el titulo
+		que sea:
+		*del usuario Auto Ofensa user_id = 35
+		que no sea:
+		*de la cola queue_id=8 "eliminar"
+		*del estado merged ticket_state_id=9
+
 		
 		Parameters
 		----------
@@ -269,7 +273,86 @@ class Ticket(db.Base):
 		"""
 
 		return db.session.query(cls).filter(
+				cls.user_id==35,
+				cls.ticket_state_id!=9,
 				cls.id>last_ticket_id,
+				cls.queue_id!=8,
+				cls.title.ilike("%Ofensa Nº%"),
+				cls.create_time>=f"{start_period}",
+				cls.create_time<f"{end_period}").all()
+
+	@classmethod
+	def last_ticket_id_offense_automatic_intervention_manual(cls: SelfTicket, 
+			start_period: str, 
+			end_period: str) -> int:
+		"""Obtener el ultimo id del ticket que tenga en el titulo "Ofensa Nº"
+		que sea:
+		*creado por la Auto Ofensa user_id=35
+		que no sea:
+		*del usuario Auto Ofensa user_id = 35
+		*de la cola queue_id=8 "eliminar"
+		*del estado merged ticket_state_id=9
+
+		arameters
+		----------
+		start_period: str
+			Fecha inicio en formato Y-M-D
+		end_period: str
+			Fecha fin en formato Y-M-D
+
+		Returns
+		-------
+		ID del ultimo ticket
+			Un entero
+		"""
+
+		ticket: SelfTicket = db.session.query(cls).filter(
+			cls.user_id!=35,
+			cls.responsible_user_id==35,
+			cls.ticket_state_id!=9,
+			cls.queue_id!=8,
+			cls.title.ilike("%Ofensa Nº%"),
+			cls.create_time>=f"{start_period}",
+			cls.create_time<f"{end_period}").order_by(desc(cls.create_time)).first()
+		
+		return ticket.id if ticket else 0
+	
+
+	@classmethod
+	def tickets_offenses_automatic_intervention_manual_by_period(cls: SelfTicket, 
+			last_ticket_id: int,
+			start_period: str, 
+			end_period: str) -> List[SelfTicket]:
+		"""Obtener los tickets automaticos de un determinado periodo, 
+		desde un determinado id, con la palabra "Ofense  Nº" en el titulo
+		que sea:
+		*creado por la Auto Ofensa user_id=35
+		que no sea:
+		*del usuario Auto Ofensa user_id = 35
+		*de la cola queue_id=8 "eliminar"
+		*del estado merged ticket_state_id=9
+		
+		Parameters
+		----------
+		last_ticket_id: int:
+			ID del ultimo ticket analizado
+		start_period: str
+			Fecha inicio en formato Y-M-D
+		end_period: str
+			Fecha fin en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		return db.session.query(cls).filter(
+				cls.user_id!=35,
+				cls.responsible_user_id==35,
+				cls.ticket_state_id!=9,
+				cls.id>last_ticket_id,
+				cls.queue_id!=8,
 				cls.title.ilike("%Ofensa Nº%"),
 				cls.create_time>=f"{start_period}",
 				cls.create_time<f"{end_period}").all()
@@ -279,7 +362,10 @@ class Ticket(db.Base):
 	def last_ticket_id_offense_handwork(cls: SelfTicket, 
 			start_period: str, 
 			end_period: str) -> int:
-		"""Obtener el ultimo id del ticket que tenga en el titulo "Ofensa" pero no "Ofense Nº"
+		"""Obtener el ultimo id del ticket que tenga en el titulo "Ofensa" 
+		pero que no sea 
+		* "Ofense Nº"
+		*del estado merged ticket_state_id=9
 		
 		Parameters
 		----------
@@ -294,6 +380,7 @@ class Ticket(db.Base):
 			Un objeto de typo Ticket
 		"""
 		ticket: SelfTicket = db.session.query(cls).filter(
+			cls.ticket_state_id!=9,
 			cls.title.ilike("%Ofensa%"),
 			cls.title.not_ilike("%Ofensa Nº%"),
 			cls.create_time>=f"{start_period}",
@@ -306,7 +393,10 @@ class Ticket(db.Base):
 			last_ticket_id: int,
 			start_period: str, 
 			end_period: str) -> List[SelfTicket]:
-		"""Obtener los tickets manuales de un determinado periodo, con la palabra "Ofensa" pero no "Ofense Nº" en el titulo.
+		"""Obtener los tickets manuales de un determinado periodo, con la palabra "Ofensa"
+		pero que no sea 
+		* "Ofense Nº"
+		*del estado merged ticket_state_id=9
 		
 		Parameters
 		----------
@@ -324,8 +414,409 @@ class Ticket(db.Base):
 		"""
 
 		return db.session.query(cls).filter(
+			cls.ticket_state_id!=9,
 			cls.id>last_ticket_id,
 			cls.title.ilike("%Ofensa%"),
 			cls.title.not_ilike("%Ofensa Nº%"),
 			cls.create_time>=f"{start_period}",
 			cls.create_time<f"{end_period}").all()
+	
+
+	#########################################################
+	########### Vista Potal de Clientes #####################
+	#########################################################
+	
+	@classmethod
+	def last_ticket_id_customer_queue_period(cls: SelfTicket, 
+			queue_id: int,
+			customer_id: str, 
+			start_period: str,
+			end_period: str) -> int:
+		"""Obtener el ultimo id del ticket de un cliente.
+
+		Parameters
+		----------
+		customer_id: str,
+			ID del cliente
+		queue_id: int
+			ID de la cola
+		start_period: str
+			Fecha inicio en formato Y-M-D
+		end_period: str
+			Fecha fin en formato Y-M-D
+
+		Returns
+		-------
+		ID del ultimo ticket
+			Un entero
+		"""
+
+		ticket: SelfTicket = db.session.query(cls).filter(
+			cls.ticket_state_id!=9,
+			cls.customer_id==customer_id,
+			cls.queue_id==queue_id,
+			cls.create_time>=f"{start_period}",
+			cls.create_time<f"{end_period}"
+			).order_by(desc(cls.create_time)).first()
+
+		return ticket.id if ticket else 0
+	
+	@classmethod
+	def first_ticket_id_customer_(cls: SelfTicket, 
+			queue_id: int,
+			customer_id: str) -> int:
+		"""Obtener el primer ticket de un cliente.
+		*Con filtro de queue_id=6, solo administrativos.
+		*ticket_state_id!=9 significa que que eliminan lo ticktes 
+		con estado "merged".
+
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+        	ID del cliente
+
+		Returns
+		-------
+		El ID del primer ticket
+			Un int
+		"""
+
+		ticket: SelfTicket = db.session.query(cls).filter(
+			cls.ticket_state_id!=9,
+			cls.customer_id==customer_id,
+			cls.queue_id==queue_id,
+			).order_by(asc(cls.create_time)
+	    ).first()
+
+		return ticket.id if ticket else 0
+	
+	
+	@classmethod
+	def last_ticket_id_customer_(cls: SelfTicket, 
+			queue_id: int,
+			customer_id: str) -> int:
+		"""Obtener el ultimo ticket de un periodo
+		con lo filtros de cola y cliente.
+		* ticket_state_id!=9 significa que que eliminan lo ticktes 
+		con merged.
+
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+        	ID del cliente
+
+		Returns
+		-------
+		El ID del ultimo ticket
+			Un int
+		"""
+
+		ticket: SelfTicket = db.session.query(cls).filter(
+			cls.ticket_state_id!=9,
+			cls.customer_id==customer_id,
+			cls.queue_id==queue_id,
+			).order_by(desc(cls.create_time)
+	    ).first()
+
+		return ticket.id if ticket else 0
+	
+	@staticmethod
+	def get_by_id_customer_filtered(
+		last_ticket_id: int,
+		queue_id: int,
+		customer_id: str, 
+		start_period: str, 
+		end_period: str) -> list:
+		"""Obtener los tickets menores a la fecha 2023-2-7
+		mayores a un id.
+		"""
+
+		start_period_ = datetime.strptime(start_period, "%Y-%m-%d")
+		end_period_ = datetime.strptime(end_period, "%Y-%m-%d")
+		limit_date_ = datetime.strptime("2023-2-7", "%Y-%m-%d")
+
+		if start_period_ > limit_date_:
+			return []
+
+		if end_period_ > limit_date_:
+			end_period = "2023-2-7"
+		
+	
+		return db.session.query(Ticket).filter(
+			Ticket.id>last_ticket_id,
+			Ticket.ticket_state_id!=9,
+			Ticket.customer_id==customer_id,
+			Ticket.title.not_ilike("%[RRD]%"),
+			Ticket.queue_id==queue_id,
+			Ticket.create_time>=f"{start_period} 00:00:00",
+			Ticket.create_time<=f"{end_period} 23:59:59"
+		).all()
+	
+
+	@staticmethod
+	def get_by_id_customer_(
+		last_ticket_id: int,
+		queue_id: int,
+		customer_id: str, 
+		start_period: str, 
+		end_period: str) -> list:
+		"""Obtener los tickets mayores a la fecha 2023-2-7
+		mayores a un id.
+		"""
+
+		start_period_ = datetime.strptime(start_period, "%Y-%m-%d")
+		end_period_ = datetime.strptime(end_period, "%Y-%m-%d")
+		start_time_ = datetime.strptime("2023-2-7", "%Y-%m-%d")
+
+		if end_period_ < start_time_:
+			return []
+
+		if start_period_ < start_time_:
+			start_period = "2023-2-7"
+	
+		return db.session.query(Ticket).filter(
+			Ticket.id>last_ticket_id,
+			Ticket.ticket_state_id!=9,
+			Ticket.customer_id==customer_id,
+			Ticket.queue_id==queue_id,
+			Ticket.create_time>=f"{start_period} 00:00:00",
+			Ticket.create_time<=f"{end_period} 23:59:59"
+		).all()
+
+
+	@classmethod
+	def tickets_by_id_customer(cls: SelfTicket,
+			last_ticket_id: int,
+			queue_id: int,
+			customer_id: str, 
+			start_period: str, 
+			end_period: str) -> List[SelfTicket]:
+		"""Obtener los tickets de los requerimientos pedidos
+		por un determiando cliente en un determinado periodo
+		y con id mayor al definido.
+		* ticket_state_id!=9 significa que que eliminan lo ticktes 
+		con merged.
+		*El 7/02/2023 se creo el servicio para los tickets RRD
+		por lo tanto los tickets que en el titulo tuvieran ese asunto
+		antes de la fecha debian ser eliminados, dado que estaban 
+		asociados solo a Adaptive Securitys
+
+		Parameters
+		----------
+		last_ticket_id: int
+			ID del que se quiere partir
+		queue_id: int
+			ID de la cola
+		customer_id: str
+        	ID del cliente
+		start_period: str
+			Fecha inicio en formato Y-M-D
+		end_period: str
+			Fecha fin en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		tickets = []
+
+		tickets.extend(
+			cls.get_by_id_customer_filtered(
+				last_ticket_id=last_ticket_id,
+				queue_id=queue_id,
+				customer_id=customer_id,
+				start_period=start_period,
+				end_period=end_period
+			)
+		)
+		
+		tickets.extend(
+			cls.get_by_id_customer_(
+				last_ticket_id=last_ticket_id,
+				queue_id=queue_id,
+				customer_id=customer_id,
+				start_period=start_period,
+				end_period=end_period
+			)
+		)
+
+		return tickets
+
+
+	#########################################################
+	########### Query para Potal de Clientes ################
+	#########################################################
+	
+	@classmethod
+	def first_ticket_customer_(cls: SelfTicket, 
+			queue_id: int,
+			customer_id: str) -> SelfTicket:
+		"""Obtener el primer ticket de un cliente.
+		*Con filtro de queue_id=6, solo administrativos.
+		*ticket_state_id!=9 significa que que eliminan lo ticktes 
+		con estado "merged".
+
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+        	ID del cliente
+
+		Returns
+		-------
+		El primer ticket
+			Un objeto ticket
+		"""
+
+		return db.session.query(cls).filter(
+			cls.ticket_state_id!=9,
+			cls.customer_id==customer_id,
+			cls.queue_id==queue_id,
+			).order_by(asc(cls.create_time)
+	    ).first()
+	
+	@classmethod
+	def last_ticket_customer_(cls: SelfTicket, 
+			queue_id: int,
+			customer_id: str) -> SelfTicket:
+		"""Obtener el ultimo ticket de un periodo
+		con lo filtros de cola y cliente.
+		* ticket_state_id!=9 significa que que eliminan lo ticktes 
+		con merged.
+
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+        	ID del cliente
+
+		Returns
+		-------
+		El ultimo ticket
+			Un objeto ticket
+		"""
+
+		return db.session.query(cls).filter(
+			cls.ticket_state_id!=9,
+			cls.customer_id==customer_id,
+			cls.queue_id==queue_id,
+			).order_by(desc(cls.create_time)
+	    ).first()
+	
+	@staticmethod
+	def get_by_customer_filtered(
+		queue_id: int,
+		customer_id: str, 
+		start_period: str, 
+		end_period: str) -> list:
+		"""Obtener los tickets menores a la fecha 2023-2-7
+		"""
+
+		start_period_ = datetime.strptime(start_period, "%Y-%m-%d")
+		end_period_ = datetime.strptime(end_period, "%Y-%m-%d")
+		limit_date_ = datetime.strptime("2023-1-27", "%Y-%m-%d")
+
+		if start_period_ > limit_date_:
+			return []
+
+		if end_period_ > limit_date_:
+			end_period = "2023-1-27"
+	
+		return db.session.query(Ticket).filter(
+			Ticket.ticket_state_id!=9,
+			Ticket.customer_id==customer_id,
+			Ticket.title.not_ilike("%[RRD]%"),
+			Ticket.queue_id==queue_id,
+			Ticket.create_time>=f"{start_period} 00:00:00",
+			Ticket.create_time<=f"{end_period} 23:59:59"
+		).all()
+	
+	@staticmethod
+	def get_by_customer_(
+		queue_id: int,
+		customer_id: str, 
+		start_period: str, 
+		end_period: str) -> list:
+		"""Obtener los tickets mayores a la fecha 2023-2-7
+		"""
+
+		start_period_ = datetime.strptime(start_period, "%Y-%m-%d")
+		end_period_ = datetime.strptime(end_period, "%Y-%m-%d")
+		start_time_ = datetime.strptime("2023-1-27", "%Y-%m-%d")
+
+		if end_period_ < start_time_:
+			return []
+
+		if start_period_ < start_time_:
+			start_period = "2023-1-27"
+	
+		return db.session.query(Ticket).filter(
+			Ticket.ticket_state_id!=9,
+			Ticket.customer_id==customer_id,
+			Ticket.queue_id==queue_id,
+			Ticket.create_time>=f"{start_period} 00:00:00",
+			Ticket.create_time<=f"{end_period} 23:59:59"
+		).all()
+
+
+	@classmethod
+	def tickets_by_customer(cls: SelfTicket,
+			queue_id: int,
+			customer_id: str, 
+			start_period: str, 
+			end_period: str) -> List[SelfTicket]:
+		"""Obtener los tickets de los requerimientos pedidos
+		por un determiando cliente en un determinado periodo.
+		* ticket_state_id!=9 significa que que eliminan lo ticktes 
+		con merged.
+		*El 7/02/2023 se creo el servicio para los tickets RRD
+		por lo tanto los tickets que en el titulo tuvieran ese asunto
+		antes de la fecha debian ser eliminados, dado que estaban 
+		asociados solo a Adaptive Securitys
+
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+        	ID del cliente
+		start_period: str
+			Fecha inicio en formato Y-M-D
+		end_period: str
+			Fecha fin en formato Y-M-D
+		
+		Returns
+		-------
+		list[Ticket]
+			Una lista de objetos Ticket
+		"""
+
+		tickets = []
+
+		tickets.extend(
+			cls.get_by_customer_filtered(
+				queue_id=queue_id,
+				customer_id=customer_id,
+				start_period=start_period,
+				end_period=end_period
+			)
+		)
+
+		tickets.extend(
+			cls.get_by_customer_(
+				queue_id=queue_id,
+				customer_id=customer_id,
+				start_period=start_period,
+				end_period=end_period
+			)
+		)
+
+		return tickets

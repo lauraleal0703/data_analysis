@@ -1,12 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "tickets/tickets_administrators/menu.html" %}
+{% include "tickets/index/menu.html" %}
 
 <div class="card">
     <div class="card-header">
+        {% if list_year %}
+        <div class="row p-1">
+            <div class="col">
+                {% for year in list_year %}
+                <a id="menuTicketsAdministrators{{ year }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/administrators?year={{ year }}">
+                    {{ year }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
         {% if months_year %}
-        <div class="row p-4">
+        <div class="row p-1">
             <div class="col">
                 {% for month in months_year %}
                 <a id="btnMonthYear{{ month }}"
@@ -18,7 +31,7 @@
             </div>
         </div>
         {% endif %}
-        <div class="row p-4">
+        <div class="row p-1">
             <div class="col">
                 {% for administrator in administrators %}
                 <a id="btnAdministrator{{ administrator }}"
@@ -30,7 +43,7 @@
             </div>
         </div>
         {% if months_administrator %}
-        <div class="row p-4">
+        <div class="row p-1">
             <div class="col">
                 {% for month in months_administrator %}
                 <a id="btnMonthAdministrator{{ month }}"
@@ -64,19 +77,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for customer in customers_administrator %}
-                    <tr id="tr_{{ customer[0] }}">
+                    {% for customer in customers_administrator_table %}
+                    <tr id="tr_{{ customer }}">
                         <td>
-                            {{ customer[0] }}
+                            {{ customers_administrator_table[customer][0] }}
                         </td>
                         <td>
-                            {{ customer[1] }}
+                            {{ customers_administrator_table[customer][1] }}
                         </td>
                         <td>
                             <a
                                 role="button"
                                 class="btn btn-sm btn-primary"
-                                href="/tickets/administrators?year={{ current_year }}&administrator={{ current_administrator }}&month={{ current_month_administrator }}&customer={{ customer[0] }}">
+                                href="/tickets/administrators?year={{ current_year }}&administrator={{ current_administrator }}&month={{ current_month_administrator }}&customer={{ customer }}">
                                 Ver
                             </a>
                         </td>
@@ -135,7 +148,8 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#menuTicketsAdministrators").addClass("active");
+        $("#menuTickets").addClass("active");
+        $("#menuTickets{{ current_type_ticket }}").addClass("active");
         $("#menuTicketsAdministrators{{ current_year }}").addClass("active");
         $("#btnMonthYear{{ current_months_year }}").addClass("active");
         $("#btnAdministrator{{ current_administrator }}").addClass("active");

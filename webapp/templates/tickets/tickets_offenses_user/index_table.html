@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include "tickets/tickets_offenses/menu.html" %}
+
+<div class="card">
+    <div class="card-header">
+        {% if list_year_offense %}
+        <div class="row p-1">
+            <div class="col">
+                {% for year in list_year_offense %}
+                <a id="btnOffenseYear{{ year }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/offenses/user?type_={{ current_offense }}&year={{ year }}">
+                    {{ year }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif%}
+        {{ page.title }}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            {% if ticket_service_table %}
+            <table id="tablaTicketsAdministrator" class="table table-bordered display text-center" style="width:100%">
+            <!-- <table class="table table-bordered table-hover display text-center align-middle" style="width:100%"> -->
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 50px;">TN</th>
+                        <th>Titulo</th>
+                        <th style="width: 150px;">Cliente</th>
+                        <th style="width: 50px;">Tiempo de Respuesta</th>
+                        <th style="width: 50px;">Tiempo de Resolución</th>
+                        <th style="width: 50px;">Estado</th>
+                        <th style="width: 50px;">Tipo</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 50px;">TN</th>
+                        <th>Titulo</th>
+                        <th style="width: 150px;">Cliente</th>
+                        <th style="width: 50px;">Tiempo de Respuesta</th>
+                        <th style="width: 50px;">Tiempo de Resolución</th>
+                        <th style="width: 50px;">Estado</th>
+                        <th style="width: 50px;">Tipo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in ticket_service_table %}
+                    <tr id="tr_{{ ticket }}">
+                        <td>
+                            {{ ticket }}
+                        </td>
+                        <td>
+                            {{ ticket_service_table[ticket].tn }}
+                        </td>
+                        <td>
+                            {{ ticket_service_table[ticket].title }}
+                        </td>
+                        <td>
+                            {{ ticket_service_table[ticket].customer_id }}
+                        </td>
+                        <td>
+                            {{ ticket_service_table[ticket].response_time }}
+                        </td>
+                        <td>
+                            {{ ticket_service_table[ticket].resolution_time }}
+                        </td>
+                        <td>
+                            {{ ticket_service_table[ticket].state }}
+                        </td>
+                        <td>
+                            {{ ticket_service_table[ticket].type }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            {% if ticket_customer_table %}
+            <table id="tablaTicketsAdministrator" class="table table-bordered display text-center" style="width:100%">
+            <!-- <table class="table table-bordered table-hover display text-center align-middle" style="width:100%"> -->
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 50px;">TN</th>
+                        <th style="width: 200px;">Titulo</th>
+                        <th style="width: 200px;">Servicio</th>
+                        <th style="width: 50px;">Tiempo de Respuesta</th>
+                        <th style="width: 50px;">Tiempo de Resolución</th>
+                        <th style="width: 50px;">Estado</th>
+                        <th style="width: 50px;">Tipo</th>
+                        <th style="width: 50px;">Prioridad</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 50px;">TN</th>
+                        <th style="width: 200px;">Titulo</th>
+                        <th style="width: 200px;">Servicio</th>
+                        <th style="width: 50px;">Tiempo de Respuesta</th>
+                        <th style="width: 50px;">Tiempo de Resolución</th>
+                        <th style="width: 50px;">Estado</th>
+                        <th style="width: 50px;">Tipo</th>
+                        <th style="width: 50px;">Prioridad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in ticket_customer_table %}
+                    <tr id="tr_{{ ticket }}">
+                        <td>
+                            {{ ticket }}
+                        </td>
+                        <td>
+                            {{ ticket_customer_table[ticket].tn }}
+                        </td>
+                        <td>
+                            {{ ticket_customer_table[ticket].title }}
+                        </td>
+                        <td>
+                            {% if ticket_customer_table[ticket].service_id != "Undefined" %}
+                            {{ services_actives[ticket_customer_table[ticket].service_id|string] }}
+                            {% else %}
+                            {{ ticket_customer_table[ticket].service_id }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ ticket_customer_table[ticket].response_time }}
+                        </td>
+                        <td>
+                            {{ ticket_customer_table[ticket].resolution_time }}
+                        </td>
+                        <td>
+                            {{ ticket_customer_table[ticket].state }}
+                        </td>
+                        <td>
+                            {{ ticket_customer_table[ticket].type }}
+                        </td>
+                        <td>{{ ticket_customer_table[ticket].ticket_priority }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-footer">
+        {% if services_table %}
+        <div class="row p-1">
+            <div class="col">
+                {% for service_table in services_table %}
+                <a id="btnAdministratorService{{ service_table }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/offenses/user?type_={{ current_offense }}&year={{ current_year }}&administrator={{ current_administrator }}&month={{ current_month_administrator }}&service={{ service_table }}">
+                    {{ services_table[service_table][0] }}={{ services_table[service_table][1] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% if customers_administrator_table %}
+        <div class="row p-1">
+            <div class="col">
+                {% for customer in customers_administrator_table %}
+                <a id="btnAdministratorCustomer{{ customer }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/offenses/user?type_={{ current_offense }}&year={{ current_year }}&administrator={{ current_administrator }}&month={{ current_month_administrator }}&customer={{ customer }}">
+                    {{ customers_administrator_table[customer][0] }}={{ customers_administrator_table[customer][1] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <a
+            role="button"
+            class="btn btn-sm btn-secondary"
+            href="/tickets/offenses/user?type_={{ current_offense }}&year={{ current_year }}&administrator={{ current_administrator }}&month={{ current_month_administrator }}">
+            Volver
+        </a>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menuTicketsOffenses").addClass("active");
+        $("#btnOffenseYear{{ current_year }}").addClass("active");
+        $("#menuTicketsOffenses{{ current_offense }}").addClass("active");
+        $("#btnAdministratorService{{ current_service }}").addClass("active");
+        $("[id='btnAdministratorCustomer{{ current_customer }}']").addClass("active");
+        
+        $("#tablaTicketsAdministrator thead tr:eq(1) th").each(function() {
+            let title = $(this).text();
+            if (title != "") {
+                $(this).html("<input type='text' class='form-control form-control-sm text-center column-search' />");
+            }
+        });
+        
+        var table = $("#tablaTicketsAdministrator").DataTable({
+            orderCellsTop: true,
+            ordering: true,
+            order: [],
+        });
+
+        $("#tablaTicketsAdministrator thead").on("keyup", ".column-search", function () {
+            table
+            .column( $(this).parent().index() )
+            .search( this.value )
+            .draw();
+        });
+    });
+</script>
+{% endblock %}

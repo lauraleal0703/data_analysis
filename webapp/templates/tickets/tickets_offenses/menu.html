@@ -5,12 +5,12 @@
 				<i class="fas fa-bars"></i>
 			</a>
 		</li>
-		{% for year in list_year %}
-		<li id="menuTicketsCustomers{{ year }}" class="nav-item">
-			<a href="/tickets/offenses?year={{ year }}">
+		{% for offense_active in offenses_active %}
+		<li id="menuTicketsOffenses{{ offense_active }}" class="nav-item">
+			<a href="/tickets/offenses?type={{ offense_active }}">
 				<div class="row">
 					<div class="col">
-						<span>{{ year }}</span>
+						<span>{{ offenses_active[offense_active] }}</span>
 					</div>
 				</div>
 			</a>

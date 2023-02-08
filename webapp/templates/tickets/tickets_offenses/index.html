@@ -2,41 +2,53 @@
 
 {% block content %}
 {% include "tickets/tickets_offenses/menu.html" %}
-
 <div class="card">
     <div class="card-header">
+        {% if list_year_offense %}
+        <div class="row p-1">
+            <div class="col">
+                {% for year in list_year_offense %}
+                <a id="btnOffenseYear{{ year }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/offenses?type={{ current_offense }}&year={{ year }}">
+                    {{ year }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif%}
         {% if months_year %}
-        <div class="row p-4">
+        <div class="row p-1">
             <div class="col">
                 {% for month in months_year %}
                 <a id="btnMonthYear{{ month }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/tickets/offenses?year={{ current_year }}&month_year={{ month }}">
+                    href="/tickets/offenses?type={{ current_offense }}&year={{ current_year }}&month_year={{ month }}">
                     {{ months_year[month][0] }}={{ months_year[month][1] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        <div class="row p-4">
+        <div class="row p-1">
             <div class="col">
-                {% for offense in offenses %}
-                <a id="btnOffense{{ offense }}"
+                {% for customer in customers %}
+                <a id="btnCustomer{{ customer }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/tickets/offenses?year={{ current_year }}&offense={{ offense }}">
-                    {{ offense }}
+                    href="/tickets/offenses?type={{ current_offense }}&year={{ current_year }}&customer={{ customer }}">
+                    {{ customer }}
                 </a>
                 {% endfor %}
             </div>
         </div>
-        {% if months_offense %}
-        <div class="row p-4">
+        {% if months_customer %}
+        <div class="row p-1">
             <div class="col">
-                {% for month in months_offense %}
-                <a id="btnMonthOffense{{ month }}"
+                {% for month in months_customer %}
+                <a id="btnMonthCustomer{{ month }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/tickets/offenses?year={{ current_year }}&offense={{ current_offense }}&month={{ month }}">
-                    {{ months_offense[month][0] }}={{ months_offense[month][1] }}
+                    href="/tickets/offenses?type={{ current_offense }}&year={{ current_year }}&customer={{ current_customer }}&month={{ month }}">
+                    {{ months_customer[month][0] }}={{ months_customer[month][1] }}
                 </a>
                 {% endfor %}
             </div>
@@ -47,7 +59,7 @@
         <div class="table-responsive">
             <div>
                 <figure class="highcharts-figure">
-                    <div id="container_offenses"></div>
+                    <div id="container_customers"></div>
                 </figure>
             </div>
             {% if services_table %}
@@ -76,7 +88,7 @@
                             <a
                                 role="button"
                                 class="btn btn-sm btn-primary"
-                                href="/tickets/offenses?year={{ current_year }}&offense={{ current_offense }}&month={{ current_month_offense }}&service={{ service }}">
+                                href="/tickets/offenses?type={{ current_offense }}&year={{ current_year }}&customer={{ current_customer }}&month={{ current_month_customer }}&service={{ service }}">
                                 Ver
                             </a>
                         </td>
@@ -92,33 +104,40 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $("#menuTicketsOffenses").addClass("active");
-        $("#menuTicketsOffenses{{ current_year }}").addClass("active");
-        $("#btnMonthYear{{ current_months_year }}").addClass("active");
-        $("#btnOffense{{ current_offense }}").addClass("active");
-        $("#btnMonthOffense{{ current_month_offense }}").addClass("active");
+        $("#menuTicketsOffenses{{ current_offense }}").addClass("active");
+        $("#btnOffenseYear{{ current_year }}").addClass("active");
+        $("#btnMonthYear{{ current_month_year }}").addClass("active");
+        $("[id='btnCustomer{{ current_customer }}']").addClass("active");
+        $("#btnMonthCustomer{{ current_month_customer }}").addClass("active");
     });
 </script>
 
+</script>
 <script type="text/javascript">
-    Highcharts.chart('container_offenses', {
+    Highcharts.chart('container_customers', {
         chart: {
             width: 1200,
             height: 500,
             type: 'column'
         },
-        {% if current_months_year %}
+        {% if current_month_year_name %}
         title: {
-            text: '-->{{ total_tickets }}<-- Requerimientos realizados durante el año "{{ current_year }} en el mes de "{{ current_months_year_name }}"',
+            text: '-->{{ total_tickets }}<-- Ofensas durante el año "{{ current_year }} en el mes de "{{ current_month_year_name }}"',
             align: 'center'
         },
-        {% elif current_offense %}
+        {% elif current_customer and not current_month_customer_name%}
         title: {
-            text: '-->{{ total_tickets }}<-- Requerimientos del cliente "{{ offense_name }}" realizados durante el año "{{ current_year }}"',
+            text: '-->{{ total_tickets }}<-- Ofensas del cliente "{{ customer_name }}" durante el año "{{ current_year }}"',
+            align: 'center'
+        },
+        {% elif current_month_customer_name %}
+        title: {
+            text: '-->{{ total_tickets }}<-- Ofensas del cliente "{{ customer_name }}" durante el mes "{{ current_month_customer_name }}"',
             align: 'center'
         },
         {% else %}
         title: {
-            text: '-->{{ total_tickets }}<-- Requerimientos realizados durante el año "{{ current_year }}"',
+            text: '-->{{ total_tickets }}<-- Ofensas durante el año "{{ current_year }}"',
             align: 'center'
         },
         {% endif %}

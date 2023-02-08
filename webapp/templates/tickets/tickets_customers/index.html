@@ -1,12 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "tickets/tickets_customers/menu.html" %}
+{% include "tickets/index/menu.html" %}
 
 <div class="card">
     <div class="card-header">
+        {% if update_date %}
+        <div class="alert alert-success" role="alert">
+            Última actualización de los datos  {{ update_date }}.
+        </div>
+        {% endif %}
+        {% if list_year %}
+        <div class="row p-1">
+            <div class="col">
+                {% for year in list_year %}
+                <a id="menuTicketsCustomers{{ year }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/customers?year={{ year }}">
+                    {{ year }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
         {% if months_year %}
-        <div class="row p-4">
+        <div class="row p-1">
             <div class="col">
                 {% for month in months_year %}
                 <a id="btnMonthYear{{ month }}"
@@ -18,7 +36,7 @@
             </div>
         </div>
         {% endif %}
-        <div class="row p-4">
+        <div class="row p-1">
             <div class="col">
                 {% for customer in customers %}
                 <a id="btnCustomer{{ customer }}"
@@ -30,7 +48,7 @@
             </div>
         </div>
         {% if months_customer %}
-        <div class="row p-4">
+        <div class="row p-1">
             <div class="col">
                 {% for month in months_customer %}
                 <a id="btnMonthCustomer{{ month }}"
@@ -91,10 +109,11 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#menuTicketsCustomers").addClass("active");
+        $("#menuTickets").addClass("active");
+        $("#menuTickets{{ current_type_ticket }}").addClass("active");
         $("#menuTicketsCustomers{{ current_year }}").addClass("active");
         $("#btnMonthYear{{ current_months_year }}").addClass("active");
-        $("#btnCustomer{{ current_customer }}").addClass("active");
+        $("[id='btnCustomer{{ current_customer }}']").addClass("active");
         $("#btnMonthCustomer{{ current_month_customer }}").addClass("active");
     });
 </script>

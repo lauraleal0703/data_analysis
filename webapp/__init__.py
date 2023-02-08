@@ -3,18 +3,17 @@ from flask import redirect
 from flask import url_for
 
 from webapp.views.tickets import tickets
-from webapp.views.api_v1 import api_v1
+from webapp.views.portal_clientes import portal_clientes
 
 app = Flask(__name__)
 
 @app.get("/")
 def index():
-    return redirect(url_for("tickets.customers"))
+    return redirect(url_for("tickets.index"))
     
 def create_app(enviroment):
     app.config.from_object(enviroment)
-
     app.register_blueprint(tickets)
-    app.register_blueprint(api_v1)
+    app.register_blueprint(portal_clientes)
 
     return app

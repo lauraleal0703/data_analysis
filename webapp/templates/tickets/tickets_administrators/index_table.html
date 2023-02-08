@@ -1,10 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "tickets/tickets_administrators/menu.html" %}
+{% include "tickets/index/menu.html" %}
 
 <div class="card">
     <div class="card-header">
+        {% if list_year %}
+        <div class="row p-1">
+            <div class="col">
+                {% for year in list_year %}
+                <a id="menuTicketsAdministrators{{ year }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/administrators?year={{ year }}">
+                    {{ year }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
         {{ page.title }}
     </div>
     <div class="card-body">
@@ -22,6 +35,7 @@
                         <th style="width: 50px;">SLA (Def)</th>
                         <th style="width: 50px;">Estado</th>
                         <th style="width: 50px;">Tipo</th>
+                        <th style="width: 50px;">Prioridad</th>
                     </tr>
                     <tr>
                         <th style="width: 50px;">ID</th>
@@ -32,6 +46,7 @@
                         <th style="width: 50px;">SLA (Def)</th>
                         <th style="width: 50px;">Estado</th>
                         <th style="width: 50px;">Tipo</th>
+                        <th style="width: 50px;">Prioridad</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,10 +65,16 @@
                             {{ ticket_service_table[ticket].customer_id }}
                         </td>
                         <td>
+                            {% if ticket_service_table[ticket].type == "Accion Preventiva" %}
+                            {% else %}
                             {{ ticket_service_table[ticket].resolution_time }}
+                            {% endif %}
                         </td>
                         <td>
+                            {% if ticket_service_table[ticket].type == "Accion Preventiva" %}
+                            {% else %}
                             {{ ticket_service_table[ticket].sla }}
+                            {% endif %}
                         </td>
                         <td>
                             {{ ticket_service_table[ticket].state }}
@@ -61,6 +82,7 @@
                         <td>
                             {{ ticket_service_table[ticket].type }}
                         </td>
+                        <td> {{ ticket_service_table[ticket].ticket_priority }} </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -105,16 +127,22 @@
                         </td>
                         <td>
                             {% if ticket_customer_table[ticket].service_id != "Undefined" %}
-                            {{ services_actives[ticket_customer_table[ticket].service_id] }}
+                            {{ services_actives[ticket_customer_table[ticket].service_id|string] }}
                             {% else %}
                             {{ ticket_customer_table[ticket].service_id }}
                             {% endif %}
                         </td>
                         <td>
+                            {% if ticket_customer_table[ticket].type == "Accion Preventiva" %}
+                            {% else %}
                             {{ ticket_customer_table[ticket].resolution_time }}
+                            {% endif %}
                         </td>
                         <td>
+                            {% if ticket_customer_table[ticket].type == "Accion Preventiva" %}
+                            {% else %}
                             {{ ticket_customer_table[ticket].sla }}
+                            {% endif %}
                         </td>
                         <td>
                             {{ ticket_customer_table[ticket].state }}
@@ -130,7 +158,8 @@
         </div>
     </div>
     <div class="card-footer">
-        <div class="row p-4">
+        {% if services_table %}
+        <div class="row p-1">
             <div class="col">
                 {% for service_table in services_table %}
                 <a id="btnAdministratorService{{ service_table }}"
@@ -141,6 +170,20 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
+        {% if customers_administrator_table %}
+        <div class="row p-1">
+            <div class="col">
+                {% for customer in customers_administrator_table %}
+                <a id="btnAdministratorCustomer{{ customer }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/tickets/administrators?year={{ current_year }}&administrator={{ current_administrator }}&month={{ current_month_administrator }}&customer={{ customer }}">
+                    {{ customers_administrator_table[customer][0] }}={{ customers_administrator_table[customer][1] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
         <a
             role="button"
             class="btn btn-sm btn-secondary"
@@ -152,9 +195,11 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#menuTicketsAdministrators").addClass("active");
+        $("#menuTickets").addClass("active");
+        $("#menuTickets{{ current_type_ticket }}").addClass("active");
         $("#menuTicketsAdministrators{{ current_year }}").addClass("active");
         $("#btnAdministratorService{{ current_service }}").addClass("active");
+        $("[id='btnAdministratorCustomer{{ current_customer }}']").addClass("active");
         
         $("#tablaTicketsAdministrator thead tr:eq(1) th").each(function() {
             let title = $(this).text();
