@@ -663,6 +663,16 @@ class Ticket(db.Base):
 		*ticket_state_id!=9 significa que que eliminan lo ticktes 
 		con estado "merged".
 
+		QUERY EN SQL
+
+		USE otrs;
+		SELECT *
+		FROM ticket AS t
+		WHERE t.ticket_state_id !=9 
+		AND t.queue_id = queue_id ->6
+		AND t.customer_id = customer_id
+		ORDER BY t.create_time ASC LIMIT 1
+
 		Parameters
 		----------
 		queue_id: int
@@ -682,35 +692,7 @@ class Ticket(db.Base):
 			cls.queue_id==queue_id,
 			).order_by(asc(cls.create_time)
 	    ).first()
-	
-	@classmethod
-	def last_ticket_customer_(cls: SelfTicket, 
-			queue_id: int,
-			customer_id: str) -> SelfTicket:
-		"""Obtener el ultimo ticket de un periodo
-		con lo filtros de cola y cliente.
-		* ticket_state_id!=9 significa que que eliminan lo ticktes 
-		con merged.
 
-		Parameters
-		----------
-		queue_id: int
-			ID de la cola
-		customer_id: str
-        	ID del cliente
-
-		Returns
-		-------
-		El ultimo ticket
-			Un objeto ticket
-		"""
-
-		return db.session.query(cls).filter(
-			cls.ticket_state_id!=9,
-			cls.customer_id==customer_id,
-			cls.queue_id==queue_id,
-			).order_by(desc(cls.create_time)
-	    ).first()
 	
 	@staticmethod
 	def get_by_customer_filtered(
@@ -719,17 +701,29 @@ class Ticket(db.Base):
 		start_period: str, 
 		end_period: str) -> list:
 		"""Obtener los tickets menores a la fecha 2023-2-7
+		
+		QUERY EN SQL
+
+		USE otrs;
+		SELECT *
+		FROM ticket AS t
+		WHERE t.ticket_state_id !=9 
+		AND t.queue_id = queue_id
+		AND t.customer_id = customer_id
+		AND t.create_time >= start_period
+		AND t.create_time <= end_period
+		AND t.title NOT LIKE "%[RRD]%
 		"""
 
 		start_period_ = datetime.strptime(start_period, "%Y-%m-%d")
 		end_period_ = datetime.strptime(end_period, "%Y-%m-%d")
-		limit_date_ = datetime.strptime("2023-1-27", "%Y-%m-%d")
+		limit_date_ = datetime.strptime("2023-2-7", "%Y-%m-%d")
 
 		if start_period_ > limit_date_:
 			return []
 
 		if end_period_ > limit_date_:
-			end_period = "2023-1-27"
+			end_period = "2023-2-7"
 	
 		return db.session.query(Ticket).filter(
 			Ticket.ticket_state_id!=9,
@@ -740,6 +734,7 @@ class Ticket(db.Base):
 			Ticket.create_time<=f"{end_period} 23:59:59"
 		).all()
 	
+
 	@staticmethod
 	def get_by_customer_(
 		queue_id: int,
@@ -747,17 +742,28 @@ class Ticket(db.Base):
 		start_period: str, 
 		end_period: str) -> list:
 		"""Obtener los tickets mayores a la fecha 2023-2-7
+		
+		QUERY EN SQL
+
+		USE otrs;
+		SELECT *
+		FROM ticket AS t
+		WHERE t.ticket_state_id !=9 
+		AND t.queue_id = queue_id
+		AND t.customer_id = customer_id
+		AND t.create_time >= start_period
+		AND t.create_time <= end_period
 		"""
 
 		start_period_ = datetime.strptime(start_period, "%Y-%m-%d")
 		end_period_ = datetime.strptime(end_period, "%Y-%m-%d")
-		start_time_ = datetime.strptime("2023-1-27", "%Y-%m-%d")
+		start_time_ = datetime.strptime("2023-2-7", "%Y-%m-%d")
 
 		if end_period_ < start_time_:
 			return []
 
 		if start_period_ < start_time_:
-			start_period = "2023-1-27"
+			start_period = "2023-2-7"
 	
 		return db.session.query(Ticket).filter(
 			Ticket.ticket_state_id!=9,
@@ -783,10 +789,14 @@ class Ticket(db.Base):
 		antes de la fecha debian ser eliminados, dado que estaban 
 		asociados solo a Adaptive Securitys
 
+		QUERY EN SQL
+
+		Es la unión de las dos anteriores.
+
 		Parameters
 		----------
 		queue_id: int
-			ID de la cola
+			ID de la cola "6" admin
 		customer_id: str
         	ID del cliente
 		start_period: str

@@ -126,6 +126,7 @@ def get_tickets_customer_years(
     """Obtener los años activos de un customer
     y los tickets gestionados por AS
     Da los datos directos para la gráfica.
+    https://www.highcharts.com/demo/column-basic
 
     Parameters
     ---------
@@ -214,7 +215,7 @@ def get_tickets_customer_months_year(
     """Obtener los meses activos de un customer
     en un año definido y los tickets gestionados por AS
     Da los datos directos para la gráfica.
-
+    https://www.highcharts.com/demo/column-basic
     Parameters
     ---------
     customer_id: str

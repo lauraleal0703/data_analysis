@@ -24,7 +24,6 @@
         <div class="table-responsive">
             {% if ticket_service_table %}
             <table id="tablaTicketsAdministrator" class="table table-bordered display text-center" style="width:100%">
-            <!-- <table class="table table-bordered table-hover display text-center align-middle" style="width:100%"> -->
                 <thead class="bg-light">
                     <tr>
                         <th style="width: 50px;">ID</th>
@@ -212,6 +211,10 @@
             orderCellsTop: true,
             ordering: true,
             order: [],
+            dom: 'Bfrtip',
+            buttons: [
+                'csv', 'excel', 'pdf'
+            ]
         });
 
         $("#tablaTicketsAdministrator thead").on("keyup", ".column-search", function () {

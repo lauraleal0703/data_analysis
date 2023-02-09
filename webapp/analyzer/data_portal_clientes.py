@@ -357,7 +357,7 @@ def tickets_customer(customer_id: str, year: str, queue_id: int=6):
                 else:
                     active_temp[month][day]["total_day"] += total_day
             
-            if month and month in active_temp[month]:
+            if month and month in active_temp:
                 if "total_month" not in active_temp[month]:
                     active_temp[month]["total_month"] = total_month
                 else:
@@ -384,20 +384,18 @@ def get_data_folder_temp_portal_clientes():
     
     customers = customers_by_period()
     
-    # for customer in customers:
-    customer = "Adaptive Security"
-    years = customers[customer]["years_actives"]
-    years.reverse()
-    years = ["2022"]
-    for year in years:
-        tickets_customer(customer, str(year))
+    for customer in customers:
+        years = customers[customer]["years_actives"]
+        years.reverse()
+        for year in years:
+            tickets_customer(customer, str(year))
     
     return f"{def_name} Data actualizada en la carpeta temp_portal_clientes"
 
 
 def update_data():
-    # init_cleaning_functions()
-    get_data_folder_temp_portal_clientes()
+    init_cleaning_functions()
+    # get_data_folder_temp_portal_clientes()
     print("Data de la carpeta temp_portal_clientes actualizada")
 
-# update_data()
+update_data()
