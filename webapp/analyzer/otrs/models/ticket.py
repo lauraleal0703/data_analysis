@@ -202,7 +202,12 @@ class Ticket(db.Base):
 		"""
 
 		ticket: SelfTicket = db.session.query(cls).filter(
-			cls.ticket_state_id!=9,
+			cls.type_id != 68,
+			cls.ticket_state_id != 5,
+			cls.ticket_state_id != 9,
+			cls.ticket_state_id != 15,
+			cls.user_id != 1,
+			cls.user_id != 35,
 			cls.queue_id==queue_id,
 			cls.create_time>=f"{start_period}",
 			cls.create_time<f"{end_period}"
@@ -247,6 +252,12 @@ class Ticket(db.Base):
 		return db.session.query(Ticket).filter(
 			Ticket.id>last_ticket_id,
 			Ticket.ticket_state_id!=9,
+			Ticket.type_id != 68,
+			Ticket.ticket_state_id != 5,
+			Ticket.ticket_state_id != 9,
+			Ticket.ticket_state_id != 15,
+			Ticket.user_id != 1,
+			Ticket.user_id != 35,
 			Ticket.title.not_ilike("%[RRD]%"),
 			Ticket.queue_id==queue_id,
 			Ticket.create_time>=f"{start_period} 00:00:00",
@@ -288,7 +299,12 @@ class Ticket(db.Base):
 	
 		return db.session.query(Ticket).filter(
 			Ticket.id>last_ticket_id,
-			Ticket.ticket_state_id!=9,
+			Ticket.type_id != 68,
+			Ticket.ticket_state_id != 5,
+			Ticket.ticket_state_id != 9,
+			Ticket.ticket_state_id != 15,
+			Ticket.user_id != 1,
+			Ticket.user_id != 35,
 			Ticket.queue_id==queue_id,
 			Ticket.create_time>=f"{start_period} 00:00:00",
 			Ticket.create_time<=f"{end_period} 23:59:59"
@@ -379,8 +395,12 @@ class Ticket(db.Base):
 		"""
 
 		ticket: SelfTicket = db.session.query(cls).filter(
-			cls.user_id==35,
+			cls.user_id == 35,
+			cls.user_id != 1,
+			cls.type_id != 68,
 			cls.ticket_state_id!=9,
+			cls.ticket_state_id != 5,
+			cls.ticket_state_id != 15,
 			cls.queue_id!=8,
 			cls.title.ilike("%Ofensa Nº%"),
 			cls.create_time>=f"{start_period}",
@@ -419,10 +439,15 @@ class Ticket(db.Base):
 		"""
 
 		return db.session.query(cls).filter(
-				cls.user_id==35,
+				cls.user_id == 35,
+				cls.user_id != 1,
+				cls.type_id != 68,
 				cls.ticket_state_id!=9,
+				cls.ticket_state_id != 5,
+				cls.ticket_state_id != 15,
+				cls.queue_id != 8,
+				cls.sla_id == 7,
 				cls.id>last_ticket_id,
-				cls.queue_id!=8,
 				cls.title.ilike("%Ofensa Nº%"),
 				cls.create_time>=f"{start_period}",
 				cls.create_time<f"{end_period}").all()
@@ -453,9 +478,13 @@ class Ticket(db.Base):
 		"""
 
 		ticket: SelfTicket = db.session.query(cls).filter(
-			cls.user_id!=35,
-			cls.responsible_user_id==35,
-			cls.ticket_state_id!=9,
+			cls.user_id != 35,
+			cls.responsible_user_id == 35,
+			cls.user_id != 1,
+			cls.type_id != 68,
+			cls.ticket_state_id != 9,
+			cls.ticket_state_id != 5,
+			cls.ticket_state_id != 15,
 			cls.queue_id!=8,
 			cls.title.ilike("%Ofensa Nº%"),
 			cls.create_time>=f"{start_period}",
@@ -494,11 +523,13 @@ class Ticket(db.Base):
 		"""
 
 		return db.session.query(cls).filter(
-				cls.user_id!=35,
-				cls.responsible_user_id==35,
+				cls.user_id != 35,
+				cls.responsible_user_id == 35,
 				cls.ticket_state_id!=9,
+				cls.ticket_state_id != 5,
+				cls.ticket_state_id != 15,
+				cls.queue_id != 8,
 				cls.id>last_ticket_id,
-				cls.queue_id!=8,
 				cls.title.ilike("%Ofensa Nº%"),
 				cls.create_time>=f"{start_period}",
 				cls.create_time<f"{end_period}").all()
@@ -526,7 +557,10 @@ class Ticket(db.Base):
 			Un objeto de typo Ticket
 		"""
 		ticket: SelfTicket = db.session.query(cls).filter(
-			cls.ticket_state_id!=9,
+			cls.ticket_state_id != 9,
+			cls.ticket_state_id != 5,
+			cls.ticket_state_id != 15,
+			cls.queue_id != 8,
 			cls.title.ilike("%Ofensa%"),
 			cls.title.not_ilike("%Ofensa Nº%"),
 			cls.create_time>=f"{start_period}",
@@ -560,7 +594,10 @@ class Ticket(db.Base):
 		"""
 
 		return db.session.query(cls).filter(
-			cls.ticket_state_id!=9,
+			cls.ticket_state_id != 9,
+			cls.ticket_state_id != 5,
+			cls.ticket_state_id != 15,
+			cls.queue_id != 8,
 			cls.id>last_ticket_id,
 			cls.title.ilike("%Ofensa%"),
 			cls.title.not_ilike("%Ofensa Nº%"),
@@ -598,7 +635,9 @@ class Ticket(db.Base):
 		"""
 
 		ticket: SelfTicket = db.session.query(cls).filter(
-			cls.ticket_state_id!=9,
+			cls.ticket_state_id != 9,
+			cls.ticket_state_id != 5,
+			cls.ticket_state_id != 15,
 			cls.customer_id==customer_id,
 			cls.queue_id==queue_id,
 			cls.create_time>=f"{start_period} 00:00:00",
@@ -630,7 +669,9 @@ class Ticket(db.Base):
 		"""
 
 		ticket: SelfTicket = db.session.query(cls).filter(
-			cls.ticket_state_id!=9,
+			cls.ticket_state_id != 9,
+			cls.ticket_state_id != 5,
+			cls.ticket_state_id != 15,
 			cls.customer_id==customer_id,
 			cls.queue_id==queue_id,
 			).order_by(asc(cls.create_time)
@@ -662,7 +703,9 @@ class Ticket(db.Base):
 		"""
 
 		ticket: SelfTicket = db.session.query(cls).filter(
-			cls.ticket_state_id!=9,
+			cls.ticket_state_id != 9,
+			cls.ticket_state_id != 5,
+			cls.ticket_state_id != 15,
 			cls.customer_id==customer_id,
 			cls.queue_id==queue_id,
 			).order_by(desc(cls.create_time)
@@ -694,7 +737,9 @@ class Ticket(db.Base):
 	
 		return db.session.query(Ticket).filter(
 			Ticket.id>last_ticket_id,
-			Ticket.ticket_state_id!=9,
+			Ticket.ticket_state_id != 9,
+			Ticket.ticket_state_id != 5,
+			Ticket.ticket_state_id != 15,
 			Ticket.customer_id==customer_id,
 			Ticket.title.not_ilike("%[RRD]%"),
 			Ticket.queue_id==queue_id,
@@ -726,7 +771,9 @@ class Ticket(db.Base):
 	
 		return db.session.query(Ticket).filter(
 			Ticket.id>last_ticket_id,
-			Ticket.ticket_state_id!=9,
+			Ticket.ticket_state_id != 9,
+			Ticket.ticket_state_id != 5,
+			Ticket.ticket_state_id != 15,
 			Ticket.customer_id==customer_id,
 			Ticket.queue_id==queue_id,
 			Ticket.create_time>=f"{start_period} 00:00:00",
@@ -827,7 +874,9 @@ class Ticket(db.Base):
 		"""
 
 		return db.session.query(cls).filter(
-			cls.ticket_state_id!=9,
+			cls.ticket_state_id != 9,
+			cls.ticket_state_id != 5,
+			cls.ticket_state_id != 15,
 			cls.customer_id==customer_id,
 			cls.queue_id==queue_id,
 			).order_by(desc(cls.create_time)

@@ -559,4 +559,4 @@ def update_data():
 
     print("Data de la carpeta temp actualizada")
 
-update_data()
+# update_data()
