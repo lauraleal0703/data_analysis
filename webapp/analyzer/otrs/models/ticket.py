@@ -10,7 +10,9 @@ from sqlalchemy import asc
 from sqlalchemy import and_
 from sqlalchemy.orm import relationship
 
-from typing import TypeVar, List
+from typing import TypeVar
+from typing import List
+from typing import Optional
 from typing import Union
 
 from . import db
@@ -63,16 +65,19 @@ class Ticket(db.Base):
 	ticket_state: TicketState = relationship("TicketState", lazy=True)
 	ticket_history: TicketHistory = relationship("TicketHistory", back_populates="ticket", lazy=True)
 	
+
 	@property
 	def service_id(self: SelfTicket) -> Union[int, str]:
 		"""Redefinir la variable en caso de que sea NULL"""
 		if not self._service_id:
 			return "Undefined"
 		return self._service_id
+	
 
 	@property
 	def last_history(self: SelfTicket) -> TicketHistory:
 		""""Obtener el último registro del historial de un ticket
+		con estado = 27 "StateUpdate"
 		
 		Returns
 		-------
@@ -80,60 +85,97 @@ class Ticket(db.Base):
 			Un objeto del tipo TicketHistory
 		"""
 		return db.session.query(TicketHistory).join(Ticket).filter(
-			TicketHistory.ticket_id == self.id
-		).order_by(desc(TicketHistory.change_time)).first()
-	
+			TicketHistory.ticket_id == self.id,
+			TicketHistory.history_type_id == 27
+		).order_by(desc(TicketHistory.create_time)).first()
 
-	@classmethod
-	def get(cls: SelfTicket, ticket_id: int) -> SelfTicket:
-		"""Obtener un ticket por su ID
-		
-		Parameters
-		----------
-		ticket_id: int
-			ID del ticket
+
+	@property
+	def historys(self: SelfTicket) -> List[TicketHistory]:
+		""""Obtener el todos los registro del historial de un ticket
+		con estado = 27 "StateUpdate"
 		
 		Returns
 		-------
-		Ticket
-			Un objeto del tipo Ticket
+		TicketHistory
+			Un objeto del tipo TicketHistory
 		"""
-		return db.session.query(cls).get(ticket_id)
+		return db.session.query(TicketHistory).join(Ticket).filter(
+			TicketHistory.ticket_id == self.id,
+			TicketHistory.history_type_id == 27
+		).order_by(asc(TicketHistory.create_time)).all()
 	
-
-	@classmethod
-	def get_by_tn(cls: SelfTicket, tn: str) -> SelfTicket:
-		"""Obtener un ticket por su tn.
-		
-		Parameters
-		----------
-		tn: str
-			Número del ticket
-		
-		Returns
-		-------
-		Ticket
-			Un objeto del tipo ticket
-		"""
-		return db.session.query(cls).filter_by(tn=tn).first()
 	
-
 	@classmethod
-	def tickets_from_id(cls: SelfTicket, tickets_id: int) -> List[SelfTicket]:
-		"""Obtener los tickets desde un id determinado.
-		
-		Parameters
-		----------
-		tickets_id: int
-			ID del ultimo ticket
-		
-		Returns
-		-------
-		list[Ticket]
-			Una lista de objetos Ticket
+	def ticktets_filtered_with(cls: SelfTicket,
+		last_ticket_id: Optional[int] = None,
+		user_id: Optional[int] = None,
+		customer_id: Optional[str] = None,
+		queue_id: Optional[int] = None,
+		day: Optional[str] = None,
+		last_id: bool = False,
+		first_id: bool = False
+	) -> Union[List[SelfTicket], SelfTicket]:
+		"""Obtener los tickests diarios dado los filtros
+		*2023-2-7 día en que los [RRD] son asignados
+		*type_id = 68 es Accion preventiva
+		*ticket_state_id=5 es removed
+		*ticket_state_id=9 es merged
+		*ticket_state_id=15 es cancelado
+		*user_id = 1 root 35 Auto Ofensa
 		"""
 
-		return db.session.query(cls).filter(cls.id > tickets_id).all()
+		
+		query = db.session.query(cls).filter(
+			cls.type_id != 68,
+			cls.ticket_state_id != 5,
+			cls.ticket_state_id != 9,
+			cls.ticket_state_id != 15,
+			cls.user_id != 1,
+			cls.user_id != 35
+		)
+
+		if last_ticket_id:
+			query = query.filter(cls.id>last_ticket_id)
+		
+		if user_id:
+			query = query.filter(cls.user_id == user_id)
+		
+		if customer_id:
+			query = query.filter(cls.customer_id == customer_id)
+		
+		if queue_id:
+			query = query.filter(cls.queue_id == queue_id)
+		
+		if day:
+			query = query.filter(
+				cls.create_time>=f"{day} 00:00:00",
+				cls.create_time<=f"{day} 23:59:59"
+			)
+			day_ = datetime.strptime(day, "%Y-%m-%d")
+			limit_date = datetime.strptime("2023-2-7", "%Y-%m-%d")
+			
+			if day_ <= limit_date:
+				query = query.filter(cls.title.not_ilike("%[RRD]%"))
+		
+		if last_id:
+			ticket: SelfTicket = query.order_by(desc(cls.create_time)).first()
+			
+			return ticket
+		
+		if first_id:
+			ticket: SelfTicket = query.order_by(asc(cls.create_time)).first()
+			
+			return ticket
+		
+		tickets: List[SelfTicket] = query.all()
+
+		return tickets
+	
+	
+	#######################################
+	#########Querys antiguas###########
+	#################################
 	
 
 	@classmethod
@@ -161,33 +203,123 @@ class Ticket(db.Base):
 
 		ticket: SelfTicket = db.session.query(cls).filter(
 			cls.ticket_state_id!=9,
-			cls.customer_id.not_ilike("%@%"),
 			cls.queue_id==queue_id,
-			cls.title.not_ilike("%[RRD]%"),
 			cls.create_time>=f"{start_period}",
 			cls.create_time<f"{end_period}"
 			).order_by(desc(cls.create_time)).first()
 
 		return ticket.id if ticket else 0
 	
+
+	@staticmethod
+	def get_by_queue_period_filtered(
+		last_ticket_id: int,
+		queue_id: int,
+		start_period: str, 
+		end_period: str) -> list:
+		"""Obtener los tickets menores a la fecha 2023-2-7
+		
+		QUERY EN SQL
+
+		Si quiere son el len sustituir
+		SELECT COUNT(t.id)
+		
+		USE otrs;
+		SELECT *
+		FROM ticket AS t
+		WHERE t.ticket_state_id !=9 
+		AND t.queue_id = queue_id
+		AND t.create_time >= start_period
+		AND t.create_time <= end_period
+		AND t.title NOT LIKE "%[RRD]%
+		"""
+
+		start_period_ = datetime.strptime(start_period, "%Y-%m-%d")
+		end_period_ = datetime.strptime(end_period, "%Y-%m-%d")
+		limit_date_ = datetime.strptime("2023-2-7", "%Y-%m-%d")
+
+		if start_period_ > limit_date_:
+			return []
+
+		if end_period_ > limit_date_:
+			end_period = "2023-2-7"
 	
+		return db.session.query(Ticket).filter(
+			Ticket.id>last_ticket_id,
+			Ticket.ticket_state_id!=9,
+			Ticket.title.not_ilike("%[RRD]%"),
+			Ticket.queue_id==queue_id,
+			Ticket.create_time>=f"{start_period} 00:00:00",
+			Ticket.create_time<=f"{end_period} 23:59:59"
+		).all()
+	
+
+	@staticmethod
+	def get_by_queue_period_(
+		last_ticket_id: int,
+		queue_id: int,
+		start_period: str, 
+		end_period: str) -> list:
+		"""Obtener los tickets mayores a la fecha 2023-2-7
+		
+		QUERY EN SQL
+
+		Si quiere son el len sustituir
+		SELECT COUNT(t.id) 
+
+		USE otrs;
+		SELECT *
+		FROM ticket AS t
+		WHERE t.ticket_state_id !=9 
+		AND t.queue_id = queue_id
+		AND t.create_time >= start_period
+		AND t.create_time <= end_period
+		"""
+
+		start_period_ = datetime.strptime(start_period, "%Y-%m-%d")
+		end_period_ = datetime.strptime(end_period, "%Y-%m-%d")
+		start_time_ = datetime.strptime("2023-2-7", "%Y-%m-%d")
+
+		if end_period_ < start_time_:
+			return []
+
+		if start_period_ < start_time_:
+			start_period = "2023-2-7"
+	
+		return db.session.query(Ticket).filter(
+			Ticket.id>last_ticket_id,
+			Ticket.ticket_state_id!=9,
+			Ticket.queue_id==queue_id,
+			Ticket.create_time>=f"{start_period} 00:00:00",
+			Ticket.create_time<=f"{end_period} 23:59:59"
+		).all()
+
+
 	@classmethod
-	def tickets_by_queue_period(cls: SelfTicket, 
+	def tickets_by_queue_period(cls: SelfTicket,
 			last_ticket_id: int,
-			queue_id: int, 
+			queue_id: int,
 			start_period: str, 
 			end_period: str) -> List[SelfTicket]:
-		"""Obtener los ticket de un determinado periodo, 
-		a partir de un id, con queue_id
-		que no tienen customer con nombres "%@%" y en el titulo no tienen
-		la frase "[RRD]".
-		
+		"""Obtener los tickets de los requerimientos pedidos
+		en un determinado periodo.
+		* ticket_state_id!=9 significa que que eliminan lo ticktes 
+		con merged.
+		*El 7/02/2023 se creo el servicio para los tickets RRD
+		por lo tanto los tickets que en el titulo tuvieran ese asunto
+		antes de la fecha debian ser eliminados, dado que estaban 
+		asociados solo a Adaptive Securitys
+
+		QUERY EN SQL
+
+		Es la unión de las dos anteriores
+
 		Parameters
 		----------
-		last_ticket_id: int:
-			ID del ultimo ticket analizado
 		queue_id: int
-			ID de la cola
+			ID de la cola "6" admin
+		customer_id: str
+        	ID del cliente
 		start_period: str
 			Fecha inicio en formato Y-M-D
 		end_period: str
@@ -199,14 +331,27 @@ class Ticket(db.Base):
 			Una lista de objetos Ticket
 		"""
 
-		return db.session.query(cls).filter(
-				cls.ticket_state_id!=9,
-				cls.id>last_ticket_id,
-				cls.customer_id.not_ilike("%@%"),
-				cls.title.not_ilike("%[RRD]%"),
-				cls.queue_id==queue_id,
-				cls.create_time>=f"{start_period}",
-				cls.create_time<f"{end_period}").all()
+		tickets = []
+
+		tickets.extend(
+			cls.get_by_queue_period_filtered(
+				last_ticket_id=last_ticket_id,
+				queue_id=queue_id,
+				start_period=start_period,
+				end_period=end_period
+			)
+		)
+
+		tickets.extend(
+			cls.get_by_queue_period_(
+				last_ticket_id=last_ticket_id,
+				queue_id=queue_id,
+				start_period=start_period,
+				end_period=end_period
+			)
+		)
+
+		return tickets
 	
 
 	@classmethod
@@ -243,7 +388,7 @@ class Ticket(db.Base):
 		
 		return ticket.id if ticket else 0
 	
-
+	
 	@classmethod
 	def tickets_offenses_automatic_by_period(cls: SelfTicket, 
 			last_ticket_id: int,
@@ -648,6 +793,45 @@ class Ticket(db.Base):
 		)
 
 		return tickets
+	
+	@classmethod
+	def last_ticket_customer_(cls: SelfTicket, 
+			queue_id: int,
+			customer_id: str) -> SelfTicket:
+		"""Obtener el primer ticket de un cliente.
+		*Con filtro de queue_id=6, solo administrativos.
+		*ticket_state_id!=9 significa que que eliminan lo ticktes 
+		con estado "merged".
+
+		QUERY EN SQL
+
+		USE otrs;
+		SELECT *
+		FROM ticket AS t
+		WHERE t.ticket_state_id !=9 
+		AND t.queue_id = queue_id ->6
+		AND t.customer_id = customer_id
+		ORDER BY t.create_time DESC LIMIT 1
+
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+        	ID del cliente
+
+		Returns
+		-------
+		El primer ticket
+			Un objeto ticket
+		"""
+
+		return db.session.query(cls).filter(
+			cls.ticket_state_id!=9,
+			cls.customer_id==customer_id,
+			cls.queue_id==queue_id,
+			).order_by(desc(cls.create_time)
+	    ).first()
 
 
 	#########################################################
@@ -704,6 +888,9 @@ class Ticket(db.Base):
 		
 		QUERY EN SQL
 
+		Si quiere son el len sustituir
+		SELECT COUNT(t.id)
+		
 		USE otrs;
 		SELECT *
 		FROM ticket AS t
@@ -744,6 +931,9 @@ class Ticket(db.Base):
 		"""Obtener los tickets mayores a la fecha 2023-2-7
 		
 		QUERY EN SQL
+
+		Si quiere son el len sustituir
+		SELECT COUNT(t.id) 
 
 		USE otrs;
 		SELECT *
@@ -791,7 +981,7 @@ class Ticket(db.Base):
 
 		QUERY EN SQL
 
-		Es la unión de las dos anteriores.
+		Es la unión de las dos anteriores
 
 		Parameters
 		----------

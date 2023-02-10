@@ -19,7 +19,7 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
 path_analyzer = Path(__file__).parent
-path_temp = Path(f"{path_analyzer}/temp_portal_clientes")
+path_temp = Path(f"{path_analyzer}/temp_data_portal_clientes")
 if not path_temp.exists():
     path_temp.mkdir()
 
@@ -144,6 +144,7 @@ def customers_actives() -> dict:
 def customers_by_period(queue_id: int=6, customer_id: str=None) -> dict:
     """Obtener un diciconario con id de los clientes
     y las fechas en las que han estado activos en AS
+    durante los ultimos 3 meses
     
     Parameters
     ----------
@@ -259,22 +260,22 @@ def tickets_customer(customer_id: str, year: str, queue_id: int=6):
             json_active = json.load(f)
             last_ticket_id = json_active["last_ticket_id"]
             start_date = json_active["last_period"]
-            month_temp = datetime.strptime(start_date, "%Y-%m-%d")
-            list_months_temp = list_months_year(month_temp.year)
+            init_customer = datetime.strptime(start_date, "%Y-%m-%d")
+            list_months_temp = list_months_year(init_customer.year)
             active_temp = json_active["active"]
     else:
         last_ticket_id = 45
         list_months_temp = list_months_year(year)
         active_temp = {}
+        init_customer = datetime.strptime(customer_temp["start"], "%Y-%m-%d")
     
     try:
         last_ticket_id_temp = Ticket.last_ticket_id_customer_queue_period(
             queue_id,
             customer_id, 
-            list_months_temp[0], 
+            list_months_temp[-2], 
             list_months_temp[-1]
         )
-        print("last_ticket_id_temp", last_ticket_id_temp, list_months_temp[0], list_months_temp[-1])
     except:
         last_ticket_id_temp=last_ticket_id
     
@@ -282,7 +283,8 @@ def tickets_customer(customer_id: str, year: str, queue_id: int=6):
         def_name, 
         last_ticket_id, 
         last_ticket_id_temp, 
-        list_months_temp
+        list_months_temp[-2], 
+        list_months_temp[-1]
     )
     
     if int(last_ticket_id) >= last_ticket_id_temp:
@@ -297,7 +299,6 @@ def tickets_customer(customer_id: str, year: str, queue_id: int=6):
             for pos, date_temp in enumerate(list_date_temp):
                 total_day = 0
                 date_temp_format = datetime.strptime(date_temp, "%Y-%m-%d")
-                init_customer = datetime.strptime(customer_temp["start"], "%Y-%m-%d")
                 if date_temp_format < init_customer:
                     continue
                 try:
@@ -335,7 +336,6 @@ def tickets_customer(customer_id: str, year: str, queue_id: int=6):
 
                 for ticket in tickets_by_period:
                     last_ticket_id_temp = ticket.id
-                    print("last_ticket_id_temp", last_ticket_id_temp)
                     resolution_time = ticket.last_history.change_time - ticket.create_time
                     active_temp[month][day][ticket.id] = {
                         "tn": ticket.tn,
@@ -363,7 +363,6 @@ def tickets_customer(customer_id: str, year: str, queue_id: int=6):
                 else:
                     active_temp[month]["total_month"] += total_month
 
-    print("last_ticket_id_temp", last_ticket_id_temp)
     _active = {
         "active": active_temp,
         "last_ticket_id": last_ticket_id_temp,
@@ -387,6 +386,7 @@ def get_data_folder_temp_portal_clientes():
     for customer in customers:
         years = customers[customer]["years_actives"]
         years.reverse()
+        years = [years[0]]
         for year in years:
             tickets_customer(customer, str(year))
     
@@ -395,7 +395,7 @@ def get_data_folder_temp_portal_clientes():
 
 def update_data():
     init_cleaning_functions()
-    # get_data_folder_temp_portal_clientes()
+    get_data_folder_temp_portal_clientes()
     print("Data de la carpeta temp_portal_clientes actualizada")
 
-update_data()
+# update_data()

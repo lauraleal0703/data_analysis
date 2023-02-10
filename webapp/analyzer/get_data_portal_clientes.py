@@ -6,7 +6,7 @@ from typing import Union
 
 
 path_analyzer = Path(__file__).parent
-path_temp = Path(f"{path_analyzer}/temp_portal_clientes")
+path_temp = Path(f"{path_analyzer}/temp_data_portal_clientes")
 
 
 #####################################################

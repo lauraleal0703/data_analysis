@@ -7,10 +7,6 @@ from flask import url_for
 from webapp.analyzer import get_data_tickets
 from webapp.analyzer.get_data_tickets import path_temp
 
-import numpy  as np
-from datetime import datetime
-from pprint import pprint
-
 
 tickets = Blueprint("tickets", __name__, url_prefix="/tickets")
 

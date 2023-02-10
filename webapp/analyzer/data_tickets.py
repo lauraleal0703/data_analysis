@@ -130,7 +130,11 @@ def customers_actives():
     """
     customers = CustomerCompany.all()
     
-    return {customer.customer_id: customer.name for customer in customers if customer.customer_id != "EJEMPLO"}
+    return {
+        customer.customer_id: customer.name for customer in customers 
+        if customer.customer_id != "EJEMPLO" 
+        and customer.customer_id != "BFAL"
+    }
 
 def init_tools():
     def_name = "init_tools"
@@ -237,15 +241,14 @@ def tickets_queue(year: str, type_: str, queue_id: int=6):
             start_period = period
             end_period =  list_months_temp[pos+1]
 
-            try:
-                tickets_by_period = Ticket.tickets_by_queue_period(
-                    last_ticket_id,
-                    queue_id, 
-                    start_period,
-                    end_period
-                )
-            except:
-                tickets_by_period = []
+            tickets_by_period = Ticket.tickets_by_queue_period(
+                last_ticket_id,
+                queue_id, 
+                start_period,
+                end_period
+            )
+            
+            print(f"tickets_by_period {len(tickets_by_period)}")
 
             if not tickets_by_period:
                 continue
@@ -273,7 +276,10 @@ def tickets_queue(year: str, type_: str, queue_id: int=6):
                     active_temp[month][type_temp] = {}
                 if ticket.id not in active_temp[month][type_temp]:
                     last_ticket_id_temp = ticket.id
-                    resolution_time = ticket.last_history.change_time - ticket.create_time
+                    if ticket.last_history:
+                        resolution_time = ticket.last_history.change_time - ticket.create_time
+                    else:
+                        resolution_time = ""
                     active_temp[month][type_temp][ticket.id] = {
                         "tn": ticket.tn,
                         "title": ticket.title,
@@ -490,7 +496,10 @@ def tickets_offenses(year: str, type_: str):
                     active_temp[month][type_temp] = {}
                 if ticket.id not in active_temp[month][type_temp]:
                     last_ticket_id_temp = ticket.id
-                    resolution_time = ticket.last_history.change_time - ticket.create_time
+                    if ticket.last_history:
+                        resolution_time = ticket.last_history.change_time - ticket.create_time
+                    else:
+                        resolution_time = ""
                     active_temp[month][type_temp][ticket.id] = {
                         "tn": ticket.tn,
                         "title": ticket.title,
