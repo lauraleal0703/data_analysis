@@ -105,7 +105,56 @@ class Ticket(db.Base):
 			TicketHistory.history_type_id == 27
 		).order_by(asc(TicketHistory.create_time)).all()
 	
+
+	@staticmethod
+	def get_tickets_without_RRD(
+		start_period: str, 
+		end_period: str) -> list:
+		"""Quitar los tickets con RRD
+		menores a la fecha 2023-2-7
+		"""
+
+		start_period_ = datetime.strptime(start_period, "%Y-%m-%d")
+		end_period_ = datetime.strptime(end_period, "%Y-%m-%d")
+		limit_date_ = datetime.strptime("2023-2-7", "%Y-%m-%d")
+
+		if start_period_ > limit_date_:
+			return []
+
+		if end_period_ > limit_date_:
+			end_period = "2023-2-7"
 	
+		return db.session.query(Ticket).filter(
+			Ticket.title.not_ilike("%[RRD]%"),
+			Ticket.create_time>=f"{start_period} 00:00:00",
+			Ticket.create_time<=f"{end_period} 23:59:59"
+		).all()
+	
+
+	@staticmethod
+	def get_tickets_with_RRD(
+		start_period: str, 
+		end_period: str) -> list:
+		"""Obtener los tickets con RRD
+		mayores a la fecha 2023-2-7
+		"""
+
+		start_period_ = datetime.strptime(start_period, "%Y-%m-%d")
+		end_period_ = datetime.strptime(end_period, "%Y-%m-%d")
+		start_time_ = datetime.strptime("2023-2-7", "%Y-%m-%d")
+
+		if end_period_ < start_time_:
+			return []
+
+		if start_period_ < start_time_:
+			start_period = "2023-2-7"
+	
+		return db.session.query(Ticket).filter(
+			Ticket.create_time >= f"{start_period} 00:00:00",
+			Ticket.create_time <= f"{end_period} 23:59:59"
+		).all()
+
+
 	@classmethod
 	def ticktets_filtered_with(cls: SelfTicket,
 		last_ticket_id: Optional[int] = None,
@@ -116,27 +165,23 @@ class Ticket(db.Base):
 		last_id: bool = False,
 		first_id: bool = False
 	) -> Union[List[SelfTicket], SelfTicket]:
-		"""Obtener los tickests diarios dado los filtros
+		"""Obtener los tickests DIARIOS dado los filtros
 		*2023-2-7 día en que los [RRD] son asignados
 		*type_id = 68 es Accion preventiva
-		*ticket_state_id=5 es removed
-		*ticket_state_id=9 es merged
-		*ticket_state_id=15 es cancelado
-		*user_id = 1 root 35 Auto Ofensa
+		*ticket_state_id = 5 es removed
+		*ticket_state_id = 9 es merged
+		*ticket_state_id = 15 es cancelado
 		"""
 
-		
 		query = db.session.query(cls).filter(
 			cls.type_id != 68,
 			cls.ticket_state_id != 5,
 			cls.ticket_state_id != 9,
-			cls.ticket_state_id != 15,
-			cls.user_id != 1,
-			cls.user_id != 35
+			cls.ticket_state_id != 15
 		)
 
 		if last_ticket_id:
-			query = query.filter(cls.id>last_ticket_id)
+			query = query.filter(cls.id > last_ticket_id)
 		
 		if user_id:
 			query = query.filter(cls.user_id == user_id)
@@ -206,8 +251,6 @@ class Ticket(db.Base):
 			cls.ticket_state_id != 5,
 			cls.ticket_state_id != 9,
 			cls.ticket_state_id != 15,
-			cls.user_id != 1,
-			cls.user_id != 35,
 			cls.queue_id==queue_id,
 			cls.create_time>=f"{start_period}",
 			cls.create_time<f"{end_period}"
@@ -251,13 +294,10 @@ class Ticket(db.Base):
 	
 		return db.session.query(Ticket).filter(
 			Ticket.id>last_ticket_id,
-			Ticket.ticket_state_id!=9,
 			Ticket.type_id != 68,
 			Ticket.ticket_state_id != 5,
 			Ticket.ticket_state_id != 9,
 			Ticket.ticket_state_id != 15,
-			Ticket.user_id != 1,
-			Ticket.user_id != 35,
 			Ticket.title.not_ilike("%[RRD]%"),
 			Ticket.queue_id==queue_id,
 			Ticket.create_time>=f"{start_period} 00:00:00",
@@ -298,16 +338,14 @@ class Ticket(db.Base):
 			start_period = "2023-2-7"
 	
 		return db.session.query(Ticket).filter(
-			Ticket.id>last_ticket_id,
+			Ticket.id > last_ticket_id,
 			Ticket.type_id != 68,
 			Ticket.ticket_state_id != 5,
 			Ticket.ticket_state_id != 9,
 			Ticket.ticket_state_id != 15,
-			Ticket.user_id != 1,
-			Ticket.user_id != 35,
-			Ticket.queue_id==queue_id,
-			Ticket.create_time>=f"{start_period} 00:00:00",
-			Ticket.create_time<=f"{end_period} 23:59:59"
+			Ticket.queue_id == queue_id,
+			Ticket.create_time >= f"{start_period} 00:00:00",
+			Ticket.create_time <= f"{end_period} 23:59:59"
 		).all()
 
 
@@ -351,19 +389,19 @@ class Ticket(db.Base):
 
 		tickets.extend(
 			cls.get_by_queue_period_filtered(
-				last_ticket_id=last_ticket_id,
-				queue_id=queue_id,
-				start_period=start_period,
-				end_period=end_period
+				last_ticket_id = last_ticket_id,
+				queue_id = queue_id,
+				start_period = start_period,
+				end_period = end_period
 			)
 		)
 
 		tickets.extend(
 			cls.get_by_queue_period_(
-				last_ticket_id=last_ticket_id,
-				queue_id=queue_id,
-				start_period=start_period,
-				end_period=end_period
+				last_ticket_id = last_ticket_id,
+				queue_id = queue_id,
+				start_period = start_period,
+				end_period = end_period
 			)
 		)
 
@@ -396,12 +434,11 @@ class Ticket(db.Base):
 
 		ticket: SelfTicket = db.session.query(cls).filter(
 			cls.user_id == 35,
-			cls.user_id != 1,
 			cls.type_id != 68,
 			cls.ticket_state_id!=9,
 			cls.ticket_state_id != 5,
 			cls.ticket_state_id != 15,
-			cls.queue_id!=8,
+			cls.queue_id != 8,
 			cls.title.ilike("%Ofensa Nº%"),
 			cls.create_time>=f"{start_period}",
 			cls.create_time<f"{end_period}").order_by(desc(cls.create_time)).first()
@@ -440,7 +477,6 @@ class Ticket(db.Base):
 
 		return db.session.query(cls).filter(
 				cls.user_id == 35,
-				cls.user_id != 1,
 				cls.type_id != 68,
 				cls.ticket_state_id!=9,
 				cls.ticket_state_id != 5,
@@ -480,7 +516,6 @@ class Ticket(db.Base):
 		ticket: SelfTicket = db.session.query(cls).filter(
 			cls.user_id != 35,
 			cls.responsible_user_id == 35,
-			cls.user_id != 1,
 			cls.type_id != 68,
 			cls.ticket_state_id != 9,
 			cls.ticket_state_id != 5,
@@ -568,6 +603,7 @@ class Ticket(db.Base):
 		
 		return ticket.id if ticket else 0
 	
+
 	@classmethod
 	def tickets_offenses_handwork_by_period(cls: SelfTicket, 
 			last_ticket_id: int,
@@ -638,10 +674,10 @@ class Ticket(db.Base):
 			cls.ticket_state_id != 9,
 			cls.ticket_state_id != 5,
 			cls.ticket_state_id != 15,
-			cls.customer_id==customer_id,
-			cls.queue_id==queue_id,
-			cls.create_time>=f"{start_period} 00:00:00",
-			cls.create_time<f"{end_period}"
+			cls.customer_id == customer_id,
+			cls.queue_id == queue_id,
+			cls.create_time >= f"{start_period} 00:00:00",
+			cls.create_time < f"{end_period}"
 			).order_by(desc(cls.create_time)).first()
 
 		return ticket.id if ticket else 0
@@ -672,8 +708,8 @@ class Ticket(db.Base):
 			cls.ticket_state_id != 9,
 			cls.ticket_state_id != 5,
 			cls.ticket_state_id != 15,
-			cls.customer_id==customer_id,
-			cls.queue_id==queue_id,
+			cls.customer_id == customer_id,
+			cls.queue_id == queue_id,
 			).order_by(asc(cls.create_time)
 	    ).first()
 
@@ -706,8 +742,8 @@ class Ticket(db.Base):
 			cls.ticket_state_id != 9,
 			cls.ticket_state_id != 5,
 			cls.ticket_state_id != 15,
-			cls.customer_id==customer_id,
-			cls.queue_id==queue_id,
+			cls.customer_id == customer_id,
+			cls.queue_id == queue_id,
 			).order_by(desc(cls.create_time)
 	    ).first()
 
@@ -740,11 +776,11 @@ class Ticket(db.Base):
 			Ticket.ticket_state_id != 9,
 			Ticket.ticket_state_id != 5,
 			Ticket.ticket_state_id != 15,
-			Ticket.customer_id==customer_id,
+			Ticket.customer_id == customer_id,
 			Ticket.title.not_ilike("%[RRD]%"),
-			Ticket.queue_id==queue_id,
-			Ticket.create_time>=f"{start_period} 00:00:00",
-			Ticket.create_time<=f"{end_period} 23:59:59"
+			Ticket.queue_id == queue_id,
+			Ticket.create_time >= f"{start_period} 00:00:00",
+			Ticket.create_time <= f"{end_period} 23:59:59"
 		).all()
 	
 

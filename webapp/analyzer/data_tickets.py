@@ -554,9 +554,9 @@ def get_data_folder_temp_tickets_offenses():
 
 def update_data():
     init_tools()
-    get_data_folder_temp_tickets_customer_administrators_queue() 
-    get_data_folder_temp_tickets_offenses()
+    # get_data_folder_temp_tickets_customer_administrators_queue() 
+    # get_data_folder_temp_tickets_offenses()
 
     print("Data de la carpeta temp actualizada")
 
-# update_data()
+update_data()
