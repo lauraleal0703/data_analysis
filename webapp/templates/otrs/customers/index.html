@@ -236,7 +236,7 @@
             height: 500,
             type: 'column'
         },
-        {% if year_actives and not months_actives and not current_month%}
+        {% if total_tickets %}
         title: {
             text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }}.',
             align: 'center'
