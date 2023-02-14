@@ -16,17 +16,19 @@
                 {% endfor %}
             </div>
         </div>
+        {% if data_total %}
         <div class="row p-1">
             <div class="col">
-                {% for dato in data_total %}
-                <a id="btnCustomerYear{{ dato }}"
+                {% for year_table in data_total %}
+                <a id="btnCustomerYearTable{{ year_table }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ dato }}">
-                    {{ dato }}={{ data_total[dato] }}
+                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ year_table }}">
+                    {{ year_table }}={{ data_total[year_table] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -57,7 +59,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for ticket in data_tickets %}
+                    {% set tickets = data_tickets %}
+                    {% for ticket in tickets %}
                     <tr id="tr_{{ ticket }}">
                         <td>
                             {{ ticket.id }}
@@ -128,7 +131,9 @@
         $("#menuOTRS").addClass("active");
         $("#menuQueue{{ current_queue }}").addClass("active");
         $("[id='menuCustomer{{ current_customer }}']").addClass("active");
-        $("#btnCustomerYear{{ current_year_table }}").addClass("active");
+        $("#btnCustomerYearTable{{ current_year_table }}").addClass("active");
+        $("#btnCustomerService{{ current_service }}").addClass("active");
+        
         
         $("#tablaTicketsCustomer thead tr:eq(1) th").each(function() {
             let title = $(this).text();

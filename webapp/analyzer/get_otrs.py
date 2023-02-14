@@ -13,9 +13,8 @@ except:
     from otrs.models.user import User
     from qradar import qradar
 
-import json
+
 from pprint import pprint
-from pathlib import Path
 from datetime import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
@@ -103,8 +102,9 @@ def customers_by_period(
         Un diccionario de clientes
     """
     customers_actives_temp  = {}
+    customers_temp = customers_actives()
+    
     if not customer_id:
-        customers_temp = customers_actives()
         for customer in customers_temp:
             start_ticket = Ticket.first_ticket_customer(queue_id, customer)
             if start_ticket:
@@ -124,11 +124,12 @@ def customers_by_period(
                             break
                         year_init = next_year 
                 customers_actives_temp[customer] = {
+                    "name": customers_temp[customer],
                     "start": datetime.strftime(start_day, "%Y-%m-%d"),
                     "end": datetime.strftime(end_day, "%Y-%m-%d"),
                     "years_actives":  sorted(list_year_temp)
                 }
-        
+
         print(def_name, datetime.today())
         return customers_actives_temp
     
@@ -147,6 +148,7 @@ def customers_by_period(
                     break
                 year_init = next_year 
         customers_actives_temp = {
+            "name": customers_temp[customer_id],
             "start": datetime.strftime(start_day, "%Y-%m-%d"),
             "end": datetime.strftime(end_day, "%Y-%m-%d"),
             "years_actives":  sorted(list_year_temp)
@@ -154,6 +156,37 @@ def customers_by_period(
    
     print(def_name, datetime.today())
     return customers_actives_temp
+
+def users_administrators():
+    """ A hoy 08/02/2023 los usuaios administradores son:
+    Jose Nicolas user_id = 12
+    Pedro Cerpa C. user_id = 34
+    Andres Rojas user_id = 47
+    Miguel Almendra user_id = 52
+    Solange Aravena user_id = 53
+    Miguel Gonzalez user_id = 59
+    Diego Orellana user_id = 63
+    Todos los tickets con cola=6, deben estar asociado a uno de ellos
+    """
+    admin = [12, 34, 47, 52, 53, 59, 63]
+
+    return admin
+
+
+def users_analysts():
+    """ A hoy 08/02/2023 los usuaios administradores son:
+    Francisco Sepulveda user_id = 29
+    Jonathan Finschi user_id =45
+    Cristopher Ulloa user_id = 54
+    Sugy Nam user_id = 56
+    Mauricio Retamales user_id = 64
+    Nicolas Garrido user_id = 65
+    
+    Todos los tickets con cola=9, deben estar asociado a uno de ellos
+    """
+    analysts = [29, 45, 54, 56, 64, 65]
+    
+    return analysts
 
 
 def get_tickets_customer_years(
@@ -176,17 +209,25 @@ def get_tickets_customer_years(
     ------
     dict{}
     """
+    if queue_id == 6:
+        users =  users_administrators()
+    if queue_id == 9:
+        users = users_analysts
 
-    years = customers_by_period(
+    customer = customers_by_period(
         queue_id = queue_id,
         customer_id=customer_id
-    )["years_actives"]
+    )
+    years = customer["years_actives"]
+    customer_name = customer["name"]
+
     data_grah_temp = []
     data_x = []
     years.reverse()
     data_total = {}
     data_tickets = {}
     data_service = {}
+    data_user = {}
     for year in years:
         data_x.append(year)
         data_temp = Ticket.ticktets_filtered_with(
@@ -201,12 +242,46 @@ def get_tickets_customer_years(
         data_tickets[year] = data_temp
 
         data_service[year] = {}
+        data_user[year] = {}
 
         for ticket in data_temp:
-            if ticket.service_id not in data_service[year]:
-                data_service[year][ticket.service_id] = [ticket]
+            if ticket.user_id not in users:
+                if "user_not" not in data_user[year]:
+                    data_user[year]["user_not"] = {}
+                if ticket.user_id not in data_user[year]["user_not"]:
+                    data_user[year]["user_not"][ticket.user_id] = {
+                        "user": {
+                            "name": ticket.user.full_name
+                        },
+                        "tickets": [ticket]
+                    }
+                    
+                else:
+                    data_user[year]["user_not"][ticket.user_id]["tickets"].append(ticket)
+            
             else:
-                data_service[year][ticket.service_id].append(ticket)
+                if ticket.user_id not in data_user[year]:
+                    data_user[year][ticket.user_id] = {
+                        "user": {
+                            "name": ticket.user.full_name
+                        },
+                        "tickets": [ticket]
+                    }
+                else:
+                    data_user[year][ticket.user_id]["tickets"].append(ticket)
+
+
+            if ticket.service_id not in data_service[year]:
+                data_service[year][ticket.service_id] = {
+                    "service": {
+                        "name": ticket.service.name if ticket.service else "Undefined"
+                    },
+                    "tickets": [ticket]
+                }
+            else:
+                data_service[year][ticket.service_id]["tickets"].append(ticket)
+    
+    # pprint(data_user)
 
 
     total_tickets = sum(data_grah_temp)
@@ -215,14 +290,17 @@ def get_tickets_customer_years(
     print(def_name, datetime.today())
     db.session.commit()
     return {
+        "customer_name": customer_name,
         "data_total": data_total,
         "data_tickets": data_tickets,
         "data_service": data_service, 
         "data_x": data_x, 
         "data_y": data_grah, 
-        "total_tickets": total_tickets
+        "total_tickets": total_tickets,
+        "data_user": data_user
     }
 
+# get_tickets_customer_years("AAN", 6)
 
 '''
 def get_customer_months_year(

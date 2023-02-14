@@ -18,7 +18,7 @@
             </div>
         </div>
         {% endif %}
-        <!-- {% if year_actives %}
+        {% if year_actives %}
         <div class="row p-1">
             <div class="col">
                 {% for year in year_actives %}
@@ -30,7 +30,7 @@
                 {% endfor %}
             </div>
         </div>
-        {% endif %} -->
+        {% endif %}
         {% if months_actives %}
         <div class="row p-1">
             <div class="col">
@@ -52,39 +52,125 @@
                     <div id="container_tickets_customers"></div>
                 </figure>
             </div>
-            {% if data_service %}
-            <div class="shadow-none p-3 mb-5 bg-light rounded text-center">
-                <h3>Requerimientos por Servicio</h2>
+            {% if data_user %}
+            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+                <h3 class="text-muted">Requerimientos Resueltos por los usuarios:</h3>
             </div>
-            {% for dato in data_service %}
-            {{ dato }}
+
+            {% for year_user in data_user %}
+            <h5 class="text-muted">Año {{ year_user }} </h5>
+
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
                     <tr>
-                        <th style="width: 50px;">Servicio</th>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 50px;">Usuario</th>
                         <th style="width: 50px;">Total</th>
                         <th style="width: 50px;"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for service in data_service[dato] %}
+                    {% for user in data_user[year_user] %}
+                    {% if user != "user_not" %}
                     <tr>
                         <td>
-                            {% if services[service] %}
-                            {{ services[service]  }}
-                            {% else %}
-                            {{ service }}
-                            {% endif %}
+                            {{ user }}
                         </td>
                         <td>
-                            {{ data_service[dato][service] | length  }}
+                            {{ data_user[year_user][user]["user"]["name"] }}
+                        </td>
+                        <td>
+                            {{ data_user[year_user][user]["tickets"] | length  }}
                         </td>
                         
                         <td>
                             <a
                                 role="button"
                                 class="btn btn-sm btn-primary"
-                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ dato }}&service={{ service }}">
+                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ year_user }}&user={{ user }}">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if data_user[year_user]["user_not"] %}
+            <h5>Usuarios NO asignados a la cola</h5>
+            <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 50px;">Usuario</th>
+                        <th style="width: 50px;">Total</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set data_user = data_user[year_user]["user_not"] %}
+                    {% for user in data_user %}
+                    <tr>
+                        <td>
+                            {{ user }}
+                        </td>
+                        <td>
+                            {{ data_user[user]["user"]["name"] }}
+                        </td>
+                        <td>
+                            {{ data_user[user]["tickets"] | length  }}
+                        </td>
+                        
+                        <td>
+                            <a
+                                role="button"
+                                class="btn btn-sm btn-primary"
+                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ year_user }}&user_not={{ user }}">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% if data_service %}
+            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+                <h3 class="text-muted">Requerimientos por Servicio</h3>
+            </div>
+
+            {% for year_service in data_service %}
+            <h5 class="text-muted">Año {{ year_service }} </h5>
+
+            <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 50px;">Servicio</th>
+                        <th style="width: 50px;">Total</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in data_service[year_service] %}
+                    <tr>
+                        <td>
+                            {{ service }}
+                        </td>
+                        <td>
+                            {{ data_service[year_service][service]["service"]["name"] }}
+                        </td>
+                        <td>
+                            {{ data_service[year_service][service]["tickets"] | length  }}
+                        </td>
+                        
+                        <td>
+                            <a
+                                role="button"
+                                class="btn btn-sm btn-primary"
+                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ year_service }}&service={{ service }}">
                                 Ver
                             </a>
                         </td>
@@ -95,11 +181,12 @@
             {% endfor %}
             {% endif %}
             {% if data_total %}
+            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+                <h3 class="text-muted">Total de Requerimientos del cliente {{ customer_name }}</h3>
+            </div>
+
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
-                    <div class="shadow-none p-3 mb-5 bg-light rounded text-center">
-                        <h3>Total de Requerimientos del cliente {{ customer_name }}</h2>
-                    </div>
                     <tr>
                         <th style="width: 50px;">Año</th>
                         <th style="width: 50px;">Total</th>

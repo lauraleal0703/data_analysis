@@ -26,6 +26,10 @@ def index():
         year_table = request.args.get("year_table", type=int)
         year_service = request.args.get("year_service", type=int)
         service = request.args.get("service", type=str)
+        year_user = request.args.get("year_user", type=int)
+        user = request.args.get("user", type=int)
+        user_not = request.args.get("user_not", type=int)
+
         year = request.args.get("year", type=int)
         month = request.args.get("month", type=int)
 
@@ -43,43 +47,14 @@ def index():
                     customer_id = customer,
                     queue_id = queue_id
                 )
-                year_actives = get_otrs.customers_by_period(
-                    queue_id=queue_id,
-                    customer_id=customer
-                )["years_actives"]
-                year_actives.reverse()
+                year_actives = data["data_x"]
+                customer_name = data["customer_name"]
                 data_grah_y = data["data_y"]
                 total_tickets =  data["total_tickets"]
-                customer_ = CustomerCompany.get(customer)
-                services_ = Service.all()
-                services_ = {service.id: service.name for service in services_ if service}
-                customer_name = customer_.name
                 data_total = data["data_total"]
                 data_service = data["data_service"]
-
-                if year_service and service:
-                    service = int(service) if service.isdigit() else service
-                    
-                    data_tickets = data_service[year_service][service]
-                    
-                    return render_template(
-                        "otrs/customers/index_table.html",
-                        page={"title": "Data Adaptive Security"},
-                        queues=queues,
-                        current_queue=queue,
-                        customers_actives=customers_actives,
-                        current_customer=customer,
-                        customer_name=customer_name,
-                        year_actives=year_actives,
-                        data_grah_x=year_actives,
-                        data_grah_y=data_grah_y,
-                        total_tickets=total_tickets,
-                        data_total=data_total,
-                        data_service=data_service,
-                        services=services_,
-                        data_tickets=data_tickets
-                    )
-
+                data_user = data["data_user"]
+                
                 if year_table:
                     data_tickets = data["data_tickets"][year_table]
 
@@ -95,6 +70,51 @@ def index():
                         data_total=data_total,
                         data_tickets=data_tickets
                     )
+                
+                if year_service and service:
+                    service = int(service) if service.isdigit() else service
+                    data_tickets = data_service[year_service][service]["tickets"]
+                    
+                    return render_template(
+                        "otrs/customers/index_table.html",
+                        page={"title": "Data Adaptive Security"},
+                        queues=queues,
+                        current_queue=queue,
+                        customers_actives=customers_actives,
+                        current_customer=customer,
+                        customer_name=customer_name,
+                        current_year_service=year_service,
+                        data_tickets=data_tickets,
+                        current_service=service 
+                    )
+                
+                if year_user and user:
+                    data_tickets = data_user[year_user][user]["tickets"]
+                    
+                    return render_template(
+                        "otrs/customers/index_table.html",
+                        page={"title": "Data Adaptive Security"},
+                        queues=queues,
+                        current_queue=queue,
+                        customers_actives=customers_actives,
+                        current_customer=customer,
+                        data_tickets=data_tickets   
+                    )
+                
+                if year_user and user_not:
+                    data_tickets = data_user[year_user]["user_not"][user_not]["tickets"]
+                    
+                    return render_template(
+                        "otrs/customers/index_table.html",
+                        page={"title": "Data Adaptive Security"},
+                        queues=queues,
+                        current_queue=queue,
+                        customers_actives=customers_actives,
+                        current_customer=customer,
+                        data_tickets=data_tickets   
+                    )
+
+                
 
                 '''
                 if year:
@@ -166,7 +186,7 @@ def index():
                     total_tickets=total_tickets,
                     data_total=data_total,
                     data_service=data_service,
-                    services=services_
+                    data_user=data_user
                 )
     
             return render_template(
