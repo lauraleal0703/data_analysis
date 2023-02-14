@@ -16,14 +16,87 @@
                 {% endfor %}
             </div>
         </div>
-        {% if data_total %}
+         <!-- TABLA CON TOTAL POR AÑO -->
+        {% if year_actives_table %}
         <div class="row p-1">
             <div class="col">
-                {% for year_table in data_total %}
+                {% for year_table in year_actives_table %}
                 <a id="btnCustomerYearTable{{ year_table }}"
                     class="btn btn-sm btn-outline-primary"
                     href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ year_table }}">
-                    {{ year_table }}={{ data_total[year_table] }}
+                    {{ year_table }}={{ year_actives_table[year_table] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <!-- SERVICIO -->
+        {% if current_year_service %}
+        <div class="row p-1">
+            <div class="col">
+                <a id="btnCustomerYearService{{ current_year_service }}"
+                    class="btn btn-sm btn-outline-primary">
+                    Servicios del año {{ current_year_service }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        {% if data_service_total %}
+        <div class="row p-1">
+            <div class="col">
+                {% for service in data_service_total %}
+                <a id="btnCustomerYearServiceID{{ service }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ current_year_service }}&service={{ service }}">
+                    {{ data_service_total[service]["service"]["name"] }}={{ data_service_total[service]["total"] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <!-- USUARIOS -->
+        {% if current_year_user %}
+        <div class="row p-1">
+            <div class="col">
+                <a id="btnCustomerYearUser{{ current_year_user }}"
+                    class="btn btn-sm btn-outline-primary">
+                    Usuarios del año {{ current_year_user }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        {% if data_user_total %}
+        <div class="row p-1">
+            <div class="col">
+                {% for user in data_user_total %}
+                <a id="btnCustomerYearUserID{{ user }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ current_year_user }}&user={{ user }}">
+                    {{ data_user_total[user]["user"]["name"] }}={{ data_user_total[user]["total"] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <!-- USUARIOS NO ASIGANDOS -->
+        {% if current_year_user_not %}
+        <div class="row p-1">
+            <div class="col">
+                <a id="btnCustomerYearUserNot{{ current_year_user_not }}"
+                    class="btn btn-sm btn-outline-primary">
+                    Usuarios no asigados a la cola del año {{ current_year_user_not }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        {% if data_user_not_total %}
+        <div class="row p-1">
+            <div class="col">
+                {% for user in data_user_not_total %}
+                <a id="btnCustomerYearUserNotID{{ user }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ current_year_user_not }}&user_not={{ user }}">
+                    {{ data_user_not_total[user]["user"]["name"] }}={{ data_user_not_total[user]["total"] }}
                 </a>
                 {% endfor %}
             </div>
@@ -132,7 +205,13 @@
         $("#menuQueue{{ current_queue }}").addClass("active");
         $("[id='menuCustomer{{ current_customer }}']").addClass("active");
         $("#btnCustomerYearTable{{ current_year_table }}").addClass("active");
-        $("#btnCustomerService{{ current_service }}").addClass("active");
+        $("#btnCustomerYearService{{ current_year_service }}").addClass("active");
+        $("#btnCustomerYearServiceID{{ current_service }}").addClass("active");
+        $("#btnCustomerYearUser{{ current_year_user }}").addClass("active");
+        $("#btnCustomerYearUserID{{ current_user }}").addClass("active");
+        $("#btnCustomerYearUserNot{{ current_year_user_not }}").addClass("active");
+        $("#btnCustomerYearUserNotID{{ current_user_not }}").addClass("active");
+        
         
         
         $("#tablaTicketsCustomer thead tr:eq(1) th").each(function() {

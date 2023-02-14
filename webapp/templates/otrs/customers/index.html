@@ -25,13 +25,13 @@
                 <a id="menuCustomerYear{{ year }}"
                     class="btn btn-sm btn-outline-primary"
                     href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ year }}">
-                    {{ year }}
+                    {{ year }}={{ year_actives[year] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        {% if months_actives %}
+        <!-- {% if months_actives %}
         <div class="row p-1">
             <div class="col">
                 {% for month in months_actives %}
@@ -43,7 +43,7 @@
                 {% endfor %}
             </div>
         </div>
-        {% endif %}
+        {% endif %} -->
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -54,7 +54,7 @@
             </div>
             {% if data_user %}
             <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-                <h3 class="text-muted">Requerimientos Resueltos por los usuarios:</h3>
+                <h3 class="text-muted">Requerimientos Resueltos por los Usuarios:</h3>
             </div>
 
             {% for year_user in data_user %}

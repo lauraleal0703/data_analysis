@@ -226,8 +226,11 @@ def get_tickets_customer_years(
     years.reverse()
     data_total = {}
     data_tickets = {}
-    data_service = {}
+    data_user_total = {}
+    data_user_not_total = {}
     data_user = {}
+    data_service_total = {}
+    data_service = {}
     for year in years:
         data_x.append(year)
         data_temp = Ticket.ticktets_filtered_with(
@@ -241,14 +244,23 @@ def get_tickets_customer_years(
         data_total[year] = len(data_temp)
         data_tickets[year] = data_temp
 
-        data_service[year] = {}
+        data_user_total[year] = {}
+        data_user_not_total[year] = {}
         data_user[year] = {}
+        data_service_total[year] = {}
+        data_service[year] = {}
 
         for ticket in data_temp:
             if ticket.user_id not in users:
                 if "user_not" not in data_user[year]:
                     data_user[year]["user_not"] = {}
                 if ticket.user_id not in data_user[year]["user_not"]:
+                    data_user_not_total[year][ticket.user_id] =  {
+                        "user": {
+                            "name": ticket.user.full_name
+                        },
+                        "total": 1
+                    }
                     data_user[year]["user_not"][ticket.user_id] = {
                         "user": {
                             "name": ticket.user.full_name
@@ -258,9 +270,16 @@ def get_tickets_customer_years(
                     
                 else:
                     data_user[year]["user_not"][ticket.user_id]["tickets"].append(ticket)
+                    data_user_not_total[year][ticket.user_id]["total"] += 1
             
-            else:
+            else:  
                 if ticket.user_id not in data_user[year]:
+                    data_user_total[year][ticket.user_id] = {
+                        "user": {
+                            "name": ticket.user.full_name
+                        },
+                        "total": 1
+                    }
                     data_user[year][ticket.user_id] = {
                         "user": {
                             "name": ticket.user.full_name
@@ -269,9 +288,16 @@ def get_tickets_customer_years(
                     }
                 else:
                     data_user[year][ticket.user_id]["tickets"].append(ticket)
+                    data_user_total[year][ticket.user_id]["total"] += 1
 
 
             if ticket.service_id not in data_service[year]:
+                data_service_total[year][ticket.service_id] = {
+                    "service": {
+                            "name": ticket.service.name if ticket.service else "Undefined"
+                        },
+                    "total": 1
+                }
                 data_service[year][ticket.service_id] = {
                     "service": {
                         "name": ticket.service.name if ticket.service else "Undefined"
@@ -280,9 +306,9 @@ def get_tickets_customer_years(
                 }
             else:
                 data_service[year][ticket.service_id]["tickets"].append(ticket)
+                data_service_total[year][ticket.service_id]["total"] += 1
     
     # pprint(data_user)
-
 
     total_tickets = sum(data_grah_temp)
     data_grah = [{"name": "Tickets", "data": data_grah_temp}]
@@ -293,11 +319,14 @@ def get_tickets_customer_years(
         "customer_name": customer_name,
         "data_total": data_total,
         "data_tickets": data_tickets,
-        "data_service": data_service, 
+        "data_service": data_service,
+        "data_service_total": data_service_total, 
         "data_x": data_x, 
         "data_y": data_grah, 
         "total_tickets": total_tickets,
-        "data_user": data_user
+        "data_user": data_user,
+        "data_user_total": data_user_total,
+        "data_user_not_total": data_user_not_total
     }
 
 # get_tickets_customer_years("AAN", 6)

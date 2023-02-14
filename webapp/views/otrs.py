@@ -47,11 +47,11 @@ def index():
                     customer_id = customer,
                     queue_id = queue_id
                 )
-                year_actives = data["data_x"]
                 customer_name = data["customer_name"]
-                data_grah_y = data["data_y"]
-                total_tickets =  data["total_tickets"]
                 data_total = data["data_total"]
+                data_grah_x = data["data_x"]
+                data_grah_y = data["data_y"]
+                total_tickets = data["total_tickets"]
                 data_service = data["data_service"]
                 data_user = data["data_user"]
                 
@@ -63,17 +63,18 @@ def index():
                         page={"title": "Data Adaptive Security"},
                         queues=queues,
                         current_queue=queue,
+                        year_actives_table=data_total,
                         customers_actives=customers_actives,
                         current_customer=customer,
                         customer_name=customer_name,
                         current_year_table=year_table,
-                        data_total=data_total,
                         data_tickets=data_tickets
                     )
                 
                 if year_service and service:
                     service = int(service) if service.isdigit() else service
                     data_tickets = data_service[year_service][service]["tickets"]
+                    data_service_total = data["data_service_total"][year_service]
                     
                     return render_template(
                         "otrs/customers/index_table.html",
@@ -82,14 +83,15 @@ def index():
                         current_queue=queue,
                         customers_actives=customers_actives,
                         current_customer=customer,
-                        customer_name=customer_name,
                         current_year_service=year_service,
+                        data_service_total=data_service_total,
                         data_tickets=data_tickets,
                         current_service=service 
                     )
                 
                 if year_user and user:
                     data_tickets = data_user[year_user][user]["tickets"]
+                    data_user_total = data["data_user_total"][year_user]
                     
                     return render_template(
                         "otrs/customers/index_table.html",
@@ -98,11 +100,15 @@ def index():
                         current_queue=queue,
                         customers_actives=customers_actives,
                         current_customer=customer,
+                        current_year_user=year_user,
+                        current_user=user,
+                        data_user_total=data_user_total,
                         data_tickets=data_tickets   
                     )
                 
                 if year_user and user_not:
                     data_tickets = data_user[year_user]["user_not"][user_not]["tickets"]
+                    data_user_not_total = data["data_user_not_total"][year_user]
                     
                     return render_template(
                         "otrs/customers/index_table.html",
@@ -111,7 +117,10 @@ def index():
                         current_queue=queue,
                         customers_actives=customers_actives,
                         current_customer=customer,
-                        data_tickets=data_tickets   
+                        current_year_user_not=year_user,
+                        current_user_not=user_not,
+                        data_user_not_total=data_user_not_total,
+                        data_tickets=data_tickets  
                     )
 
                 
@@ -180,8 +189,7 @@ def index():
                     customers_actives=customers_actives,
                     current_customer=customer,
                     customer_name=customer_name,
-                    year_actives=year_actives,
-                    data_grah_x=year_actives,
+                    data_grah_x=data_grah_x,
                     data_grah_y=data_grah_y,
                     total_tickets=total_tickets,
                     data_total=data_total,
