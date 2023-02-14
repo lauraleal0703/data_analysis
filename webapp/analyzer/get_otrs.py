@@ -1,10 +1,12 @@
 try:
+    from .otrs.models import db
     from .otrs.models.ticket import Ticket
     from .otrs.models.customer_company import CustomerCompany
     from .otrs.models.service import Service
     from .otrs.models.user import User
     from .qradar import qradar
 except:
+    from otrs.models import db
     from otrs.models.ticket import Ticket
     from otrs.models.customer_company import CustomerCompany
     from otrs.models.service import Service
@@ -202,20 +204,16 @@ def get_tickets_customer_years(
 
         for ticket in data_temp:
             if ticket.service_id not in data_service[year]:
-                data_service[year][ticket.service_id] = {
-                    "service": {
-                        "name": ticket.service.name if ticket.service else "Undefined"
-                    },
-                    "tickets": [ticket]
-                }
+                data_service[year][ticket.service_id] = [ticket]
             else:
-                data_service[year][ticket.service_id]["tickets"].append(ticket)
+                data_service[year][ticket.service_id].append(ticket)
 
 
     total_tickets = sum(data_grah_temp)
     data_grah = [{"name": "Tickets", "data": data_grah_temp}]
     
     print(def_name, datetime.today())
+    db.session.commit()
     return {
         "data_total": data_total,
         "data_tickets": data_tickets,
