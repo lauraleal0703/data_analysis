@@ -84,7 +84,7 @@ def customers_by_period(
     print(def_name, datetime.today())
     """Obtener un diciconario con id de los clientes
     y las fechas en las que han estado activos en AS
-    durante los ultimos 3 meses
+    Se toman los activos de los ultimos 3 meses
     
     Parameters
     ----------
@@ -136,7 +136,7 @@ def customers_by_period(
     start_ticket = Ticket.first_ticket_customer(queue_id, customer_id)
     if start_ticket:
         start_day = start_ticket.create_time
-        end_ticket = Ticket.last_ticket_customer_(queue_id, customer_id)
+        end_ticket = Ticket.last_ticket_customer(queue_id, customer_id)
         end_day = end_ticket.create_time
         list_year_temp = [int(start_day.year)]
         if start_day.year < end_day.year:
@@ -219,11 +219,11 @@ def get_tickets_customer_years(
         customer_id=customer_id
     )
     years = customer["years_actives"]
+    years.reverse()
     customer_name = customer["name"]
 
     data_grah_temp = []
     data_x = []
-    years.reverse()
     data_total = {}
     data_tickets = {}
     data_user_total = {}
@@ -308,8 +308,6 @@ def get_tickets_customer_years(
                 data_service[year][ticket.service_id]["tickets"].append(ticket)
                 data_service_total[year][ticket.service_id]["total"] += 1
     
-    # pprint(data_user)
-
     total_tickets = sum(data_grah_temp)
     data_grah = [{"name": "Tickets", "data": data_grah_temp}]
     
@@ -330,200 +328,3 @@ def get_tickets_customer_years(
     }
 
 # get_tickets_customer_years("AAN", 6)
-
-'''
-def get_customer_months_year(
-        path_temp: Path, 
-        customer_id: str, 
-        year: str, 
-        queue_id: int
-    ) -> dict:
-    def_name = "get_customer_months_year"
-    print(def_name)
-    """Obtener los meses ativos del customer
-     en el año indicado. 
-
-    Parameters
-    ---------
-    customer_id: str
-        ID del customer
-    year: str
-        Año de análisis
-    queue_id: int
-        En este caso estamos en la cola 6, administradores
-    
-    Return
-    ------
-    list[meses]
-    """
-    path_active = Path(f"{path_temp}/calendar_spanish.json")
-    with path_active.open("r") as f:
-        json_active = json.load(f)
-        calendar = json_active["active"]
-
-    path_customer = Path(
-        f"{path_temp}/{customer_id}"
-    )
-
-    path_active = Path(
-        f"{path_customer}/tickets_{customer_id}_by_queue_{queue_id}_{year}.json"
-    )
-    
-    dict_months = {}
-    if path_active.exists():
-        with path_active.open("r") as f:
-            json_active = json.load(f)
-            active_temp = json_active["active"]
-    
-            months = list(active_temp.keys())
-            months.reverse()
-            dict_months = {month: calendar[month] for month in months if month in calendar}
-        
-    return dict_months
-
-
-def get_tickets_customer_months_year(
-        path_temp: Path, 
-        customer_id: str,
-        year: str,
-        queue_id: int=6) -> list:
-    """Obtener los meses activos de un customer
-    en un año definido y los tickets gestionados por AS
-    Da los datos directos para la gráfica.
-    https://www.highcharts.com/demo/column-basic
-    Parameters
-    ---------
-    customer_id: str
-        ID del customer
-    year: str
-        Año de análisis
-    queue_id: int
-        En este caso estamos en la cola 6, administradores
-    
-    Return
-    ------
-    dict{data_x: ...
-        data_y: ...}
-    """
-
-    months = get_customer_months_year(path_temp, customer_id, year)
-    data_grah_temp = []
-    data_x = []
-    months_actives = {}
-    for month in months:
-        path_active = Path(
-            f"{path_temp}/{customer_id}/tickets_{customer_id}_by_queue_{queue_id}_{year}.json"
-        )
-        if path_active.exists():
-            with path_active.open("r") as f:
-                json_active = json.load(f)
-                active_temp = json_active["active"][month]["total_month"]
-            
-                data_grah_temp.append(active_temp)
-                data_x.append(months[month])
-                months_actives[month] = months[month]
-    
-    total_tickets = sum(data_grah_temp)
-    data_grah = [{"name": "Tickets", "data": data_grah_temp}]
-
-    return {"months_actives": months_actives,
-            "data_x": data_x, 
-            "data_y": data_grah, 
-            "total_tickets": total_tickets}
-
-
-def get_customer_days_month_year(
-        path_temp: Path, 
-        customer_id: str, 
-        year: str,
-        month: str,  
-        queue_id: int=6) -> dict:
-    """Obtener los dias del mes activo del
-    customer en el año indicado. 
-
-    Parameters
-    ---------
-    customer_id: str
-        ID del customer
-    year: str
-        Año de análisis
-    month: str
-        Mes de análisis
-    queue_id: int
-        En este caso estamos en la cola 6, administradores
-    
-    Return
-    ------
-    list[days]
-    """
-    path_customer = Path(
-        f"{path_temp}/{customer_id}"
-    )
-
-    path_active = Path(
-        f"{path_customer}/tickets_{customer_id}_by_queue_{queue_id}_{year}.json"
-    )
-    
-    days_month = []
-    if path_active.exists():
-        with path_active.open("r") as f:
-            json_active = json.load(f)
-            active_temp = json_active["active"][month]
-    
-            days_month = list(active_temp.keys())[0:-1]
-        
-    return days_month
-
-
-def get_tickets_customer_days_month_year(
-        path_temp: Path, 
-        customer_id: str,
-        year: str,
-        month: str, 
-        queue_id: int=6) -> list:
-    """Obtener los dias activos de un customer
-    en el mes de un año definido y los tickets gestionados por AS
-    Da los datos directos para la gráfica.
-
-    Parameters
-    ---------
-    customer_id: str
-        ID del customer
-    year: str
-        Año de análisis
-    month: str
-        Mes de análisis
-    queue_id: int
-        En este caso estamos en la cola 6, administradores
-    
-    Return
-    ------
-    dict{data_x: ...
-        data_y: ...}
-    """
-
-    days = get_customer_days_month_year(path_temp, customer_id, year, month)
-    data_grah_temp = []
-    data_x = []
-    days_actives = {}
-    for day in days:
-        path_active = Path(
-            f"{path_temp}/{customer_id}/tickets_{customer_id}_by_queue_{queue_id}_{year}.json"
-        )
-        if path_active.exists():
-            with path_active.open("r") as f:
-                json_active = json.load(f)
-                active_temp = json_active["active"][month][day]["total_day"]
-            
-                data_grah_temp.append(active_temp)
-                data_x.append(day)
-    
-    total_tickets = sum(data_grah_temp)
-    data_grah = [{"name": "Tickets", "data": data_grah_temp}]
-
-    return {"data_x": data_x, 
-            "data_y": data_grah, 
-            "total_tickets": total_tickets}
-
-# print(get_tickets_customer_days_month_year(path_temp, "AAN", "2023", "1"))
-'''
