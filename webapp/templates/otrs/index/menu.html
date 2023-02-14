@@ -1,0 +1,20 @@
+<nav class="navbar navbar-expand" id="menubar">
+	<ul class="navbar-nav mr-auto font-weight-bold">
+		<li class="nav-item">
+			<a href="#" id="sidebarCollapse">
+				<i class="fas fa-bars"></i>
+			</a>
+		</li>
+		{% for queue in queues %}
+		<li id="menuQueue{{ queue }}" class="nav-item">
+			<a href="/otrs?queue={{ queue }}">
+				<div class="row">
+					<div class="col">
+						<span>{{ queues[queue] }}</span>
+					</div>
+				</div>
+			</a>
+		</li>
+		{% endfor %}
+	</ul>
+</nav>

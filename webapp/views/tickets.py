@@ -25,8 +25,9 @@ def index():
         update_date=update_date    
     )
 
-    
 
+ 
+'''
 @tickets.get("/customers")
 def customers():
     def_name = "customers"
@@ -1026,3 +1027,4 @@ def offenses_user():
             data_grah_x=administrators_name,
             data_grah_y=data_grah      
         )
+'''
