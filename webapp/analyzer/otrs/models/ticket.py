@@ -262,8 +262,7 @@ class Ticket(db.Base):
 		if user_id:
 			query = query.filter(cls.user_id == user_id)
 
-		tickets: List[SelfTicket] = query.all()
 
-		return tickets
+		return query.all()
 	
 	#########################################################################

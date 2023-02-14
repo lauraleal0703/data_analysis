@@ -2,15 +2,11 @@ try:
     from .otrs.models import db
     from .otrs.models.ticket import Ticket
     from .otrs.models.customer_company import CustomerCompany
-    from .otrs.models.service import Service
-    from .otrs.models.user import User
     from .qradar import qradar
 except:
     from otrs.models import db
     from otrs.models.ticket import Ticket
     from otrs.models.customer_company import CustomerCompany
-    from otrs.models.service import Service
-    from otrs.models.user import User
     from qradar import qradar
 
 
@@ -89,17 +85,19 @@ def customers_by_period(
     Parameters
     ----------
     queue_id: int
-        La cola de los tickets
-        *queue_id=6 son los tickets administrativos
+        ID de la cola
+    customer_id: int
+        ID del cliente
     
     Return
     ------
-    {id: 
+    {customer_id: 
+        "name": str,
         "start": "%Y-%m-%d", 
         "end": "%Y-%m-%d"
         "years_actives": [year]}
         
-        Un diccionario de clientes
+        Un diccionario de clientes/cliente
     """
     customers_actives_temp  = {}
     customers_temp = customers_actives()
@@ -166,6 +164,7 @@ def users_administrators():
     Solange Aravena user_id = 53
     Miguel Gonzalez user_id = 59
     Diego Orellana user_id = 63
+
     Todos los tickets con cola=6, deben estar asociado a uno de ellos
     """
     admin = [12, 34, 47, 52, 53, 59, 63]
@@ -192,22 +191,25 @@ def users_analysts():
 def get_tickets_customer_years(
         customer_id: str,
         queue_id: int
-    ) -> list:
+    ) -> dict:
     def_name = "get_tickets_customer_years"
     print(def_name, datetime.today())
-    """Obtener los años activos de un customer
-    y los tickets gestionados por AS
+    """Obtener los datos de los años activos de un customer_id
+    en una cola dada.
+    
     Da los datos directos para la gráfica.
     https://www.highcharts.com/demo/column-basic
 
     Parameters
-    ---------
-    customer_id: str
-        ID del customer
+    ----------
+    queue_id: int
+        ID de la cola
+    customer_id: int
+        ID del cliente
     
     Return
     ------
-    dict{}
+    dict
     """
     if queue_id == 6:
         users =  users_administrators()
@@ -327,4 +329,171 @@ def get_tickets_customer_years(
         "data_user_not_total": data_user_not_total
     }
 
-# get_tickets_customer_years("AAN", 6)
+
+def get_tickets_customer_months_year(
+        customer_id: str,
+        queue_id: int,
+        year: str
+    ) -> dict:
+    def_name = "get_tickets_customer_months_year"
+    print(def_name, datetime.today())
+    """Obtener los datos de los meses de un año de un customer_id
+    en una cola dada.
+    
+    Da los datos directos para la gráfica.
+    https://www.highcharts.com/demo/column-basic
+
+    Parameters
+    ----------
+    queue_id: int
+        ID de la cola
+    customer_id: int
+        ID del cliente
+    year:
+        Año de estudio
+    
+    Return
+    ------
+    dict{}
+    """
+    if queue_id == 6:
+        users =  users_administrators()
+    if queue_id == 9:
+        users = users_analysts
+
+    calendar = calendar_spanish()
+    customer = customers_by_period(
+        queue_id = queue_id,
+        customer_id=customer_id
+    )
+    customer_name = customer["name"]
+
+    data_total = {}
+    data_tickets = {}
+    data_user = {}
+    data_user_total = {}
+    data_user_not_total = {}
+    data_service = {}
+    data_service_total = {}
+    data_temp = Ticket.ticktets_filtered_with(
+        start_period = f"{year}-01-01",
+        end_period = f"{year}-12-31", 
+        customer_id = customer_id, 
+        queue_id = queue_id
+    )
+
+    for ticket in data_temp:
+        date = ticket.create_time
+        month = date.month
+        
+        if month not in data_total:
+            data_total[month] = {
+                "name": calendar[month],
+                "total": 1
+            }
+        else:
+            data_total[month]["total"] += 1
+        
+        if month not in data_tickets:
+            data_tickets[month] = {
+                "name": calendar[month],
+                "tickets": [ticket]
+            }
+        else:
+            data_tickets[month]["tickets"].append(ticket)
+        
+        if month not in data_user:
+            data_user[month] = {}
+            data_service[month] = {}
+            data_service_total[month] = {}
+
+        
+        if ticket.user_id not in users:
+            if "user_not" not in data_user[month]:
+                data_user[month]["user_not"] = {}
+            
+            if ticket.user_id not in data_user[month]["user_not"]:
+                if month not in data_user_not_total:
+                    data_user_not_total[month] = {}
+                data_user_not_total[month][ticket.user_id] =  {
+                    "user": {
+                        "name": ticket.user.full_name
+                    },
+                    "total": 1
+                }
+                data_user[month]["user_not"][ticket.user_id] = {
+                    "user": {
+                        "name": ticket.user.full_name
+                    },
+                    "tickets": [ticket]
+                }
+                
+            else:
+                data_user[month]["user_not"][ticket.user_id]["tickets"].append(ticket)
+                data_user_not_total[month][ticket.user_id]["total"] += 1
+        
+        else:  
+            if ticket.user_id not in data_user[month]:
+                if month not in data_user_total:
+                    data_user_total[month] = {}
+                data_user_total[month][ticket.user_id] = {
+                    "user": {
+                        "name": ticket.user.full_name
+                    },
+                    "total": 1
+                }
+                data_user[month][ticket.user_id] = {
+                    "user": {
+                        "name": ticket.user.full_name
+                    },
+                    "tickets": [ticket]
+                }
+            else:
+                data_user[month][ticket.user_id]["tickets"].append(ticket)
+                data_user_total[month][ticket.user_id]["total"] += 1
+        
+        if ticket.service_id not in data_service[month]:
+            data_service_total[month][ticket.service_id] = {
+                "service": {
+                        "name": ticket.service.name if ticket.service else "Undefined"
+                    },
+                "total": 1
+            }
+            data_service[month][ticket.service_id] = {
+                "service": {
+                    "name": ticket.service.name if ticket.service else "Undefined"
+                },
+                "tickets": [ticket]
+            }
+        else:
+            data_service[month][ticket.service_id]["tickets"].append(ticket)
+            data_service_total[month][ticket.service_id]["total"] += 1
+    
+    data_grah_temp = []
+    data_x = []
+    for mont_ in data_total:
+        data_x.insert(0, data_total[mont_]["name"])
+        data_grah_temp.insert(0, data_total[mont_]["total"])
+    
+    data_total_sorted = sorted(data_total.items(), key=lambda x:x[0], reverse=True)
+    total_tickets = sum(data_grah_temp)
+    data_grah = [{"name": "Tickets", "data": data_grah_temp}]
+
+    print(def_name, datetime.today())
+    db.session.commit()
+    return {
+        "customer_name": customer_name,
+        "data_total": data_total,
+        "data_total_sorted": data_total_sorted,
+        "data_tickets": data_tickets,
+        "data_service": data_service,
+        "data_service_total": data_service_total, 
+        "data_x": data_x, 
+        "data_y": data_grah, 
+        "total_tickets": total_tickets,
+        "data_user": data_user,
+        "data_user_total": data_user_total,
+        "data_user_not_total": data_user_not_total
+    }
+
+# get_tickets_customer_months_year("AAN", 6, "2023")

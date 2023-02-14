@@ -31,19 +31,19 @@
             </div>
         </div>
         {% endif %}
-        <!-- {% if months_actives %}
+        {% if months_actives %}
         <div class="row p-1">
             <div class="col">
                 {% for month in months_actives %}
-                <a id="menuCustomerMonth{{ month }}"
+                <a id="menuCustomerMonth{{ [month][0] }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ month }}">
-                    {{ months_actives[month] }}
+                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ [month][0] }}">
+                    {{ month[1]["name"] }}={{ month[1]["total"] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
-        {% endif %} -->
+        {% endif %}
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -58,8 +58,11 @@
             </div>
 
             {% for year_user in data_user %}
+            {% if current_year %}
+            <h5 class="text-muted">* Mes de {{ data_total[year_user]["name"] }} </h5>
+            {% else %}
             <h5 class="text-muted">* Año {{ year_user }} </h5>
-
+            {% endif %}
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
                     <tr>
@@ -97,7 +100,11 @@
                 </tbody>
             </table>
             {% if data_user[year_user]["user_not"] %}
+            {% if current_year %}
+            <h5>Usuarios NO asignados a la cola en el mes de {{ data_total[year_user]["name"] }} </h5>
+            {% else %}
             <h5>Usuarios NO asignados a la cola en el año {{ year_user }}</h5>
+            {% endif %}
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
                     <tr>
@@ -142,7 +149,11 @@
             </div>
 
             {% for year_service in data_service %}
+            {% if current_year %}
+            <h5 class="text-muted">* Mes de {{ data_total[year_service]["name"] }} </h5>
+            {% else %}
             <h5 class="text-muted">* Año {{ year_service }} </h5>
+            {% endif %}
 
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
@@ -188,7 +199,11 @@
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
                     <tr>
+                        {% if current_year %}
+                        <th style="width: 50px;">Mes</th>
+                        {% else %}
                         <th style="width: 50px;">Año</th>
+                        {% endif %}
                         <th style="width: 50px;">Total</th>
                         <th style="width: 50px;"></th>
                     </tr>
@@ -197,10 +212,18 @@
                     {% for dato in data_total %}
                     <tr>
                         <td>
+                            {% if current_year %}
+                            {{ data_total[dato]["name"] }}
+                            {% else %}
                             {{ dato }}
+                            {% endif %}
                         </td>
                         <td>
+                            {% if current_year %}
+                            {{ data_total[dato]["total"] }}
+                            {% else %}
                             {{ data_total[dato] }}
+                            {% endif %}
                         </td>
                         <td>
                             <a
