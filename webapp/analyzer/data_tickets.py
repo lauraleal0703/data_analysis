@@ -138,16 +138,18 @@ def customers_actives():
 
 def init_tools():
     def_name = "init_tools"
-    funs_def= [calendar_spanish,
-                     services_actives,
-                     users_actives,
-                     customers_actives
-                    ]
-    funs_name = ["calendar_spanish",
-                 "services_actives",
-                 "users_actives",
-                 "customers_actives"
-                ]
+    funs_def= [
+        calendar_spanish,
+        services_actives,
+        users_actives,
+        customers_actives
+    ]
+    funs_name = [
+        "calendar_spanish",
+        "services_actives",
+        "users_actives",
+        "customers_actives"
+    ]
 
     for pos, fun_def in  enumerate(funs_def):
         path_active = Path(
