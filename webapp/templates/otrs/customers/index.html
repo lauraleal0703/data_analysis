@@ -58,7 +58,7 @@
             </div>
 
             {% for year_user in data_user %}
-            <h5 class="text-muted">Año {{ year_user }} </h5>
+            <h5 class="text-muted">* Año {{ year_user }} </h5>
 
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
@@ -97,7 +97,7 @@
                 </tbody>
             </table>
             {% if data_user[year_user]["user_not"] %}
-            <h5>Usuarios NO asignados a la cola</h5>
+            <h5>Usuarios NO asignados a la cola en el año {{ year_user }}</h5>
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
                     <tr>
@@ -142,7 +142,7 @@
             </div>
 
             {% for year_service in data_service %}
-            <h5 class="text-muted">Año {{ year_service }} </h5>
+            <h5 class="text-muted">* Año {{ year_service }} </h5>
 
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
