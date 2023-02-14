@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include "otrs/index/menu.html" %}
+
+<div class="card">
+    <div class="card-header">
+        {% if customers_actives %}
+        <div class="row p-1">
+            <div class="col">
+                {% for customer in customers_actives %}
+                <a id="menuCustomer{{ customer }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/otrs?queue={{ current_queue }}&customer={{ customer }}">
+                    {{ customer }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <!-- {% if year_actives %}
+        <div class="row p-1">
+            <div class="col">
+                {% for year in year_actives %}
+                <a id="menuCustomerYear{{ year }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ year }}">
+                    {{ year }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %} -->
+        {% if months_actives %}
+        <div class="row p-1">
+            <div class="col">
+                {% for month in months_actives %}
+                <a id="menuCustomerMonth{{ month }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ month }}">
+                    {{ months_actives[month] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_tickets_customers"></div>
+                </figure>
+            </div>
+            {% if data_service %}
+            <div class="shadow-none p-3 mb-5 bg-light rounded text-center">
+                <h3>Requerimientos por Servicio</h2>
+            </div>
+            {% for dato in data_service %}
+            {{ dato }}
+            <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50px;">Servicio</th>
+                        <th style="width: 50px;">Total</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in data_service[dato] %}
+                    <tr>
+                        <td>
+                            {% if services[service] %}
+                            {{ services[service]  }}
+                            {% else %}
+                            {{ service }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ data_service[dato][service] | length  }}
+                        </td>
+                        
+                        <td>
+                            <a
+                                role="button"
+                                class="btn btn-sm btn-primary"
+                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ dato }}&service={{ service }}">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endfor %}
+            {% endif %}
+            {% if data_total %}
+            <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
+                <thead class="bg-light">
+                    <div class="shadow-none p-3 mb-5 bg-light rounded text-center">
+                        <h3>Total de Requerimientos del cliente {{ customer_name }}</h2>
+                    </div>
+                    <tr>
+                        <th style="width: 50px;">Año</th>
+                        <th style="width: 50px;">Total</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dato in data_total %}
+                    <tr>
+                        <td>
+                            {{ dato }}
+                        </td>
+                        <td>
+                            {{ data_total[dato] }}
+                        </td>
+                        <td>
+                            <a
+                                role="button"
+                                class="btn btn-sm btn-primary"
+                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ dato }}">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menuOTRS").addClass("active");
+        $("#menuQueue{{ current_queue }}").addClass("active");
+        $("[id='menuCustomer{{ current_customer }}']").addClass("active");
+        $("#menuCustomerYear{{ current_year }}").addClass("active");
+        $("#menuCustomerMonth{{ current_month }}").addClass("active");
+    });
+</script>
+
+<script type="text/javascript">
+    Highcharts.chart('container_tickets_customers', {
+        chart: {
+            width: 1200,
+            height: 500,
+            type: 'column'
+        },
+        {% if year_actives and not months_actives and not current_month%}
+        title: {
+            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }}.',
+            align: 'center'
+        },
+        {% elif months_actives and not current_month %}
+        title: {
+            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }} durante el año {{ current_year }}.',
+            align: 'center'
+        },
+        {% elif current_month %}
+        title: {
+            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }} durante el mes de {{ month_name }} el año {{ current_year }}.',
+            align: 'center'
+        },
+        {% endif %}
+        xAxis: {
+            categories: {{ data_grah_x | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de requerimientos'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.0f}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah_y | safe }}
+    });
+</script>
+{% endblock %}

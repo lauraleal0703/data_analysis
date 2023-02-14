@@ -106,6 +106,141 @@ class Ticket(db.Base):
 		).order_by(asc(TicketHistory.create_time)).all()
 	
 
+	####################################
+	##########13-02-2022##############
+	#################################
+	
+
+	@classmethod
+	def first_ticket_customer(cls: SelfTicket, 
+			queue_id: int,
+			customer_id: str) -> SelfTicket:
+		"""Obtener el primer ticket de un cliente.
+
+		QUERY EN SQL
+
+		USE otrs;
+		SELECT *
+		FROM ticket AS t
+		WHERE t.ticket_state_id !=9 
+		AND t.queue_id = queue_id ->6
+		AND t.customer_id = customer_id
+		ORDER BY t.create_time ASC LIMIT 1
+
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+        	ID del cliente
+
+		Returns
+		-------
+		El primer ticket
+			Un objeto ticket
+		"""
+		exceptions_type = [68]
+		exceptions_state = [5, 9, 15]
+
+		return db.session.query(cls).filter(
+			cls.type_id.notin_(exceptions_type),
+			cls.ticket_state_id.notin_(exceptions_state),
+			cls.customer_id == customer_id,
+			cls.queue_id == queue_id,
+			).order_by(asc(cls.create_time)
+	    ).first()
+	
+
+	@classmethod
+	def last_ticket_customer(cls: SelfTicket, 
+			queue_id: int,
+			customer_id: str) -> SelfTicket:
+		"""Obtener el primer ticket de un cliente.
+		*Con filtro de queue_id=6, solo administrativos.
+		*ticket_state_id!=9 significa que que eliminan lo ticktes 
+		con estado "merged".
+
+		QUERY EN SQL
+
+		USE otrs;
+		SELECT *
+		FROM ticket AS t
+		WHERE t.ticket_state_id !=9 
+		AND t.queue_id = queue_id ->6
+		AND t.customer_id = customer_id
+		ORDER BY t.create_time DESC LIMIT 1
+
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+        	ID del cliente
+
+		Returns
+		-------
+		El primer ticket
+			Un objeto ticket
+		"""
+		exceptions_type = [68]
+		exceptions_state = [5, 9, 15]
+
+		return db.session.query(cls).filter(
+			cls.type_id.notin_(exceptions_type),
+			cls.ticket_state_id.notin_(exceptions_state),
+			cls.customer_id == customer_id,
+			cls.queue_id == queue_id,
+			).order_by(desc(cls.create_time)
+	    ).first()
+
+
+	@classmethod
+	def ticktets_filtered_with(cls: SelfTicket,
+		start_period: str,
+		end_period: str,
+		queue_id: Optional[int] = None,
+		last_ticket_id: Optional[int] = None,
+		user_id: Optional[int] = None,
+		customer_id: Optional[str] = None,
+		count: bool = False
+	) -> List[SelfTicket]:
+		"""Obtener los tickests de un periodo dado los filtros
+		*type_id = 68 es Accion preventiva
+		*ticket_state_id = 5 es removed
+		*ticket_state_id = 9 es merged
+		*ticket_state_id = 15 es cancelado
+		"""
+		exceptions_type = [68]
+		exceptions_state = [5, 9, 15]
+		
+		query = db.session.query(cls).filter(
+			cls.type_id.notin_(exceptions_type),
+			cls.ticket_state_id.notin_(exceptions_state),
+			cls.create_time >= f"{start_period} 00:00:00",
+			cls.create_time <= f"{end_period} 23:59:59"
+		)
+
+		if queue_id:
+			query = query.filter(cls.queue_id == queue_id)
+
+		if last_ticket_id:
+			query = query.filter(cls.id > last_ticket_id)
+		
+		if user_id:
+			query = query.filter(cls.user_id == user_id)
+		
+		if customer_id:
+			query = query.filter(cls.customer_id == customer_id)
+		
+		if count:
+			return query.count()
+
+		tickets: List[SelfTicket] = query.all()
+
+		return tickets
+	
+	#########################################################################
+
 	@staticmethod
 	def get_tickets_without_RRD(
 		start_period: str, 
@@ -156,7 +291,7 @@ class Ticket(db.Base):
 
 
 	@classmethod
-	def ticktets_filtered_with(cls: SelfTicket,
+	def ticktets_filtered_with__(cls: SelfTicket,
 		last_ticket_id: Optional[int] = None,
 		user_id: Optional[int] = None,
 		customer_id: Optional[str] = None,

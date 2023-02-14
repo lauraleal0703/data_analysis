@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include "otrs/index/menu.html" %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row p-1">
+            <div class="col">
+                {% for customer in customers_actives %}
+                <a id="menuCustomer{{ customer }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/otrs?queue={{ current_queue }}&customer={{ customer }}">
+                    {{ customer }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row p-1">
+            <div class="col">
+                {% for dato in data_total %}
+                <a id="btnCustomerYear{{ dato }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ dato }}">
+                    {{ dato }}={{ data_total[dato] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            {% if data_tickets %}
+            <table id="tablaTicketsCustomer" class="table table-bordered display text-center" style="width:100%">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 50px;">TN</th>
+                        <th style="width: 50px;">Titulo</th>
+                        <th style="width: 50px;">Responsable</th>
+                        <th style="width: 50px;">Servicio</th>
+                        <th style="width: 50px;">SLA</th>
+                        <th style="width: 50px;">Estado</th>
+                        <th style="width: 50px;">Tipo</th>
+                        <th style="width: 50px;">Prioridad</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 50px;">TN</th>
+                        <th style="width: 50px;">Titulo</th>
+                        <th style="width: 50px;">Responsable</th>
+                        <th style="width: 50px;">Servicio</th>
+                        <th style="width: 50px;">SLA</th>
+                        <th style="width: 50px;">Estado</th>
+                        <th style="width: 50px;">Tipo</th>
+                        <th style="width: 50px;">Prioridad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in data_tickets %}
+                    <tr id="tr_{{ ticket }}">
+                        <td>
+                            {{ ticket.id }}
+                        </td>
+                        <td>
+                            {{ ticket.tn }}
+                        </td>
+                        <td>
+                            {{ ticket.title }}
+                        </td>
+                        <td>
+                            {{ ticket.user.full_name }}
+                        </td>
+                        <td>
+                            {% if ticket.service %}
+                            {{ ticket.service.name }}
+                            {% else %}
+                            {{ ticket.service_id }}
+                            {% endif %}
+
+                        </td>
+                        <td>
+                            {% if ticket.sla %}
+                            {{ ticket.sla.name }}
+                            {% else %}
+                            {{ ticket.sla_id }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ticket.ticket_state %}
+                            {{ ticket.ticket_state.name }}
+                            {% else %}
+                            {{ ticket.ticket_state_id }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ticket.type %}
+                            {{ ticket.type.name }}
+                            {% else %}
+                            {% endif %}
+                        </td>
+                        <td> 
+                            {% if ticket.ticket_priority %}
+                            {{ ticket.ticket_priority.name }}
+                            {% else %}
+                            {{ ticket.ticket_priority_id }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-footer">
+        <a
+            role="button"
+            class="btn btn-sm btn-secondary"
+            href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}">
+            Volver
+        </a>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menuOTRS").addClass("active");
+        $("#menuQueue{{ current_queue }}").addClass("active");
+        $("[id='menuCustomer{{ current_customer }}']").addClass("active");
+        $("#btnCustomerYear{{ current_year_table }}").addClass("active");
+        
+        $("#tablaTicketsCustomer thead tr:eq(1) th").each(function() {
+            let title = $(this).text();
+            if (title != "") {
+                $(this).html("<input type='text' class='form-control form-control-sm text-center column-search' />");
+            }
+        });
+        
+        var table = $("#tablaTicketsCustomer").DataTable({
+            orderCellsTop: true,
+            ordering: true,
+            order: [],
+            dom: 'Bfrtip',
+            buttons: [
+                'csv', 'excel', 'pdf'
+            ]
+        });
+
+        $("#tablaTicketsCustomer thead").on("keyup", ".column-search", function () {
+            table
+            .column( $(this).parent().index() )
+            .search( this.value )
+            .draw();
+        });
+    });
+</script>
+{% endblock %}
