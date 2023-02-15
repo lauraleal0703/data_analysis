@@ -43,8 +43,10 @@ def index():
             
             if queue == "analysts":
                 queue_id = 9
-
-            customers_actives = get_otrs.customers_by_period(queue_id=queue_id)
+            
+            data = get_otrs.get_count_tickets_customers_years(queue_id=queue_id)
+            customers_actives = data["data_x"]
+            data_grah = data["data_grah"]
             
             if customer:
                 data = get_otrs.get_tickets_customer_years(
@@ -275,7 +277,9 @@ def index():
                 page={"title": "Data Adaptive Security"},
                 queues=queues,
                 current_queue=queue,
-                customers_actives=customers_actives
+                customers_actives=customers_actives,
+                data_grah_x=customers_actives,
+                data_grah_y=data_grah
             )
         
     return render_template(

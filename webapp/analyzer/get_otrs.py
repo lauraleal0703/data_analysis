@@ -209,56 +209,62 @@ def users_infra():
     
     return infra
 
-# def get_count_tickets_customers_years(
-#         queue_id: int
-#     ) -> dict:
-#     def_name = "get_count_tickets_customers_years"
-#     print(def_name, datetime.today())
-#     """Obtener un recuento de los tickets de todos los clientes
+def get_count_tickets_customers_years(
+        queue_id: int
+    ) -> dict:
+    def_name = "get_count_tickets_customers_years"
+    print(def_name, datetime.today())
+    """Obtener un recuento de los tickets de todos los clientes
     
-#     Da los datos directos para la gráfica.
-#     https://www.highcharts.com/demo/column-basic
+    Da los datos directos para la gráfica.
+    https://www.highcharts.com/demo/column-basic
 
-#     Parameters
-#     ----------
-#     queue_id: int
-#         ID de la cola
+    Parameters
+    ----------
+    queue_id: int
+        ID de la cola
     
-#     Return
-#     ------
-#     dict
-#     """
-#     if queue_id == 6:
-#         users =  users_administrators()
-#     if queue_id == 9:
-#         users = users_analysts
+    Return
+    ------
+    dict
+    """
+    if queue_id == 6:
+        users =  users_administrators()
+    if queue_id == 9:
+        users = users_analysts
 
-#     customers = customers_by_period(
-#         queue_id = queue_id
-#     )
+    customers = customers_by_period(
+        queue_id = queue_id
+    )
 
-#     data_x = list(customers.keys()) 
-#     years = list(range(datetime.today().year, 2018, -1))
-#     for year in years:
-#         print("\n")
-#         for customer_id in customers:
-#             data_temp = Ticket.ticktets_filtered_with(
-#                 start_period = f"{year}-01-01",
-#                 end_period = f"{year}-12-31", 
-#                 customer_id = customer_id, 
-#                 queue_id = queue_id,
-#                 count=True
-#             )
-#             print(year, customer_id, data_temp)
-        
-        
-#     print(data_x)
+    data_x = list(customers.keys()) 
+    years = list(range(datetime.today().year, 2018, -1))
+    data_grah = []
+    for year in years:
+        tickets_year = []
+        for customer_id in data_x:
+            data_temp = Ticket.ticktets_filtered_with(
+                start_period = f"{year}-01-01",
+                end_period = f"{year}-12-31", 
+                customer_id = customer_id, 
+                queue_id = queue_id,
+                count=True
+            )
+            tickets_year.append(data_temp)
 
-#     print(def_name, datetime.today())
-#     db.session.commit()
-#     return {
+        data_grah_temp = {
+            "name": year,
+            "data": tickets_year
+        }
         
-#     }
+        data_grah.append(data_grah_temp)
+        
+    print(def_name, datetime.today())
+    db.session.commit()
+    return {
+        "data_x": data_x,
+        "data_grah": data_grah
+    }
 
 # get_count_tickets_customers_years(6)
 # exit()
