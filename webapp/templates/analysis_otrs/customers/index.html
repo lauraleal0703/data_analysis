@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "otrs/index/menu.html" %}
+{% include "analysis_otrs/index/menu.html" %}
 
 <div class="card">
     <div class="card-header">
@@ -12,7 +12,7 @@
                 {% for customer in customers_actives %}
                 <a id="menuCustomer{{ customer }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/otrs?queue={{ current_queue }}&customer={{ customer }}">
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer }}">
                     {{ customer }}
                 </a>
                 {% endfor %}
@@ -26,7 +26,7 @@
                 {% for year in year_actives %}
                 <a id="menuCustomerYear{{ year }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ year }}">
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ year }}">
                     {{ year }}={{ year_actives[year] }}
                 </a>
                 {% endfor %}
@@ -40,7 +40,7 @@
                 {% for month in months_actives %}
                 <a id="menuCustomerMonth{{ month[0] }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ month[0] }}">
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ month[0] }}">
                     {{ month[1]["name"] }}={{ month[1]["total"] }}
                 </a>
                 {% endfor %}
@@ -93,7 +93,7 @@
                             <a
                                 role="button"
                                 class="btn btn-sm btn-primary"
-                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ year_user }}&user={{ user }}">
+                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ year_user }}&user={{ user }}">
                                 Ver
                             </a>
                         </td>
@@ -135,7 +135,7 @@
                             <a
                                 role="button"
                                 class="btn btn-sm btn-primary"
-                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ year_user }}&user_not={{ user }}">
+                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ year_user }}&user_not={{ user }}">
                                 Ver
                             </a>
                         </td>
@@ -146,6 +146,7 @@
             {% endif %}
             {% endfor %}
             {% endif %}
+            
             {% if data_service %}
             <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
                 <h3 class="text-muted">Requerimientos por Servicio</h3>
@@ -185,14 +186,14 @@
                             <a
                                 role="button"
                                 class="btn btn-sm btn-primary"
-                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_service={{ year_service }}&service={{ service }}">
+                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_service={{ year_service }}&service={{ service }}">
                                 Ver
                             </a>
                             {% else %}
                             <a
                                 role="button"
                                 class="btn btn-sm btn-primary"
-                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ year_service }}&service={{ service }}">
+                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ year_service }}&service={{ service }}">
                                 Ver
                             </a>
                             {% endif %}
@@ -242,14 +243,14 @@
                             <a
                                 role="button"
                                 class="btn btn-sm btn-primary"
-                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_table={{ dato }}">
+                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_table={{ dato }}">
                                 Ver
                             </a>
                             {% else %}
                             <a
                                 role="button"
                                 class="btn btn-sm btn-primary"
-                                href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ dato }}">
+                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ dato }}">
                                 Ver
                             </a>
                             {% endif %}
