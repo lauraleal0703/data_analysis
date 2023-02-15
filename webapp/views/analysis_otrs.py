@@ -59,6 +59,8 @@ def index():
                 total_tickets = data["total_tickets"]
                 data_service = data["data_service"]
                 data_user = data["data_user"]
+                data_grah_service = data["data_grah_service"]
+                data_x_service = data["data_x_service"]
                 
                 if year_table:
                     data_tickets = data["data_tickets"][year_table]
@@ -142,6 +144,8 @@ def index():
                     total_tickets = data["total_tickets"]
                     data_service = data["data_service"]
                     data_user = data["data_user"]
+                    data_grah_service = data["data_grah_service"]
+                    data_x_service = data["data_x_service"]
                     
                     if month_table:
                         data_tickets = data["data_tickets"][month_table]["tickets"]
@@ -242,7 +246,9 @@ def index():
                         total_tickets=total_tickets,
                         data_total=data_total,
                         data_service=data_service,
-                        data_user=data_user
+                        data_user=data_user,
+                        data_grah_service=data_grah_service,
+                        data_x_service=data_x_service
                     )
                 
                 return render_template(
@@ -259,7 +265,9 @@ def index():
                     total_tickets=total_tickets,
                     data_total=data_total,
                     data_service=data_service,
-                    data_user=data_user
+                    data_user=data_user,
+                    data_grah_service=data_grah_service,
+                    data_x_service=data_x_service
                 )
 
             return render_template(

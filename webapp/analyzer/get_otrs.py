@@ -232,7 +232,6 @@ def get_tickets_customer_years(
     years.reverse()
     customer_name = customer["name"]
 
-    data_grah_temp = []
     data_x = []
     data_total = {}
     data_tickets = {}
@@ -241,6 +240,7 @@ def get_tickets_customer_years(
     data_user = {}
     data_service_total = {}
     data_service = {}
+    data_grah_temp = []
     for year in years:
         data_x.append(year)
         data_temp = Ticket.ticktets_filtered_with(
@@ -321,6 +321,34 @@ def get_tickets_customer_years(
     total_tickets = sum(data_grah_temp)
     data_grah = [{"name": "Tickets", "data": data_grah_temp}]
     
+    data_x_service = []
+    dict_service_temp = {}
+    for year_ in data_service:
+        data_x_service.append(year_)
+        for service_ in data_service[year_]:
+            name_ = data_service[year_][service_]["service"]["name"]
+            if name_ not in dict_service_temp:
+                dict_service_temp[service_] = name_
+    
+    
+    dict_service = {}
+    for service_temp in dict_service_temp:
+        dict_service[service_temp] = []
+        for year_temp in data_service:
+            if service_temp in data_service[year_temp]:
+                total = len(data_service[year_temp][service_temp]["tickets"])
+            else:
+                total = 0
+            dict_service[service_temp].append(total)
+
+    data_grah_service = []
+    for service_temp in dict_service:
+        dato_temp = {
+            "name": dict_service_temp[service_temp],
+            "data": dict_service[service_temp]
+        }
+        data_grah_service.append(dato_temp)
+
     print(def_name, datetime.today())
     db.session.commit()
     return {
@@ -334,9 +362,13 @@ def get_tickets_customer_years(
         "total_tickets": total_tickets,
         "data_user": data_user,
         "data_user_total": data_user_total,
-        "data_user_not_total": data_user_not_total
+        "data_user_not_total": data_user_not_total,
+        "data_grah_service": data_grah_service, 
+        "data_x_service": data_x_service
     }
 
+# get_tickets_customer_years("AAN", 6)
+# exit()
 
 def get_tickets_customer_months_year(
         customer_id: str,
@@ -487,6 +519,34 @@ def get_tickets_customer_months_year(
     total_tickets = sum(data_grah_temp)
     data_grah = [{"name": "Tickets", "data": data_grah_temp}]
 
+    data_x_service = []
+    dict_service_temp = {}
+    for month_ in data_service:
+        data_x_service.append(month_)
+        for service_ in data_service[month_]:
+            name_ = data_service[month_][service_]["service"]["name"]
+            if name_ not in dict_service_temp:
+                dict_service_temp[service_] = name_
+    
+    
+    dict_service = {}
+    for service_temp in dict_service_temp:
+        dict_service[service_temp] = []
+        for month_temp in data_service:
+            if service_temp in data_service[month_temp]:
+                total = len(data_service[month_temp][service_temp]["tickets"])
+            else:
+                total = 0
+            dict_service[service_temp].append(total)
+
+    data_grah_service = []
+    for service_temp in dict_service:
+        dato_temp = {
+            "name": dict_service_temp[service_temp],
+            "data": dict_service[service_temp]
+        }
+        data_grah_service.append(dato_temp)
+
     print(def_name, datetime.today())
     db.session.commit()
     return {
@@ -501,7 +561,9 @@ def get_tickets_customer_months_year(
         "total_tickets": total_tickets,
         "data_user": data_user,
         "data_user_total": data_user_total,
-        "data_user_not_total": data_user_not_total
+        "data_user_not_total": data_user_not_total,
+        "data_grah_service": data_grah_service, 
+        "data_x_service": data_x_service
     }
 
 # get_tickets_customer_months_year("AAN", 6, "2023")
