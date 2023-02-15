@@ -191,7 +191,7 @@ def users_analysts():
     
     Todos los tickets con cola=9, deben estar asociado a uno de ellos
     """
-    analysts = [13, 26, 29, 30 32, 38, 45, 54, 56, 60, 64, 65]
+    analysts = [13, 26, 29, 30, 32, 38, 45, 54, 56, 60, 64, 65]
     
     return analysts
 
