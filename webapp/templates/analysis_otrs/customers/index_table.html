@@ -218,6 +218,7 @@
                         <th style="width: 50px;">Estado</th>
                         <th style="width: 50px;">Tipo</th>
                         <th style="width: 50px;">Prioridad</th>
+                        <th style="width: 10px"></th>
                     </tr>
                     <tr>
                         <th style="width: 50px;">ID</th>
@@ -229,6 +230,7 @@
                         <th style="width: 50px;">Estado</th>
                         <th style="width: 50px;">Tipo</th>
                         <th style="width: 50px;">Prioridad</th>
+                        <th style="width: 10px"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -281,6 +283,13 @@
                             {% else %}
                             {{ ticket.ticket_priority_id }}
                             {% endif %}
+                        </td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary" 
+                            target="_blank"
+                            href="https://otrs.adaptivesecurity.cl/otrs/index.pl?Action=AgentTicketZoom;TicketID={{ ticket.id }}">
+                            <i class="fa fa-search"></i>
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}

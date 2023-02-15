@@ -208,9 +208,11 @@ class Ticket(db.Base):
 		end_period: str,
 		queue_id: Optional[int] = None,
 		user_id: Optional[int] = None,
-		customer_id: Optional[str] = None
-	) -> List[SelfTicket]:
-		"""Obtener los tickests de un periodo dado los filtros
+		customer_id: Optional[str] = None,
+		count: bool=False,
+	) -> Union[List[SelfTicket], int]:
+		"""Obtener los tickests (como una lista de objetos
+		o solo la cantidad) de un periodo dado los filtros
 		*type_id = 68 es Accion preventiva
 		*ticket_state_id = 5 es removed
 		*ticket_state_id = 9 es merged
@@ -240,8 +242,11 @@ class Ticket(db.Base):
 
 		Returns
 		-------
-		List
+		List 
 			Una lista de objetos de tipo ticket
+		o
+		Int
+			Cantidad de tickets
 		"""
 		exceptions_type = [68]
 		exceptions_state = [5, 9, 15]
@@ -262,6 +267,8 @@ class Ticket(db.Base):
 		if user_id:
 			query = query.filter(cls.user_id == user_id)
 
+		if count:
+			return query.count()
 
 		return query.all()
 	

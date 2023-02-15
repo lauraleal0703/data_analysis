@@ -209,10 +209,63 @@ def users_infra():
     
     return infra
 
+# def get_count_tickets_customers_years(
+#         queue_id: int
+#     ) -> dict:
+#     def_name = "get_count_tickets_customers_years"
+#     print(def_name, datetime.today())
+#     """Obtener un recuento de los tickets de todos los clientes
+    
+#     Da los datos directos para la gráfica.
+#     https://www.highcharts.com/demo/column-basic
+
+#     Parameters
+#     ----------
+#     queue_id: int
+#         ID de la cola
+    
+#     Return
+#     ------
+#     dict
+#     """
+#     if queue_id == 6:
+#         users =  users_administrators()
+#     if queue_id == 9:
+#         users = users_analysts
+
+#     customers = customers_by_period(
+#         queue_id = queue_id
+#     )
+
+#     data_x = list(customers.keys()) 
+#     years = list(range(datetime.today().year, 2018, -1))
+#     for year in years:
+#         print("\n")
+#         for customer_id in customers:
+#             data_temp = Ticket.ticktets_filtered_with(
+#                 start_period = f"{year}-01-01",
+#                 end_period = f"{year}-12-31", 
+#                 customer_id = customer_id, 
+#                 queue_id = queue_id,
+#                 count=True
+#             )
+#             print(year, customer_id, data_temp)
+        
+        
+#     print(data_x)
+
+#     print(def_name, datetime.today())
+#     db.session.commit()
+#     return {
+        
+#     }
+
+# get_count_tickets_customers_years(6)
+# exit()
 
 def get_tickets_customer_years(
-        customer_id: str,
-        queue_id: int
+        queue_id: int,
+        customer_id: str
     ) -> dict:
     def_name = "get_tickets_customer_years"
     print(def_name, datetime.today())
