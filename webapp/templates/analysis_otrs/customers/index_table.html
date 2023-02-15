@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "otrs/index/menu.html" %}
+{% include "analysis_otrs/index/menu.html" %}
 
 <div class="card">
     <div class="card-header">
@@ -10,27 +10,27 @@
                 {% for customer in customers_actives %}
                 <a id="menuCustomer{{ customer }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/otrs?queue={{ current_queue }}&customer={{ customer }}">
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer }}">
                     {{ customer }}
                 </a>
                 {% endfor %}
             </div>
         </div>
-         <!-- TABLA CON TOTAL POR AÑO -->
+        <!-- TABLA CON TOTAL POR AÑO -->
         {% if year_actives_table %}
         <div class="row p-1">
             <div class="col">
                 {% for year_table in year_actives_table %}
                 <a id="btnCustomerYearTable{{ year_table }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ year_table }}">
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ year_table }}">
                     {{ year_table }}={{ year_actives_table[year_table] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        <!-- SERVICIO -->
+        <!-- SERVICIO DEL AÑO-->
         {% if current_year_service %}
         <div class="row p-1">
             <div class="col">
@@ -47,7 +47,7 @@
                 {% for service in data_service_total %}
                 <a id="btnCustomerYearServiceID{{ service }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ current_year_service }}&service={{ service }}">
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ current_year_service }}&service={{ service }}">
                     {{ data_service_total[service]["service"]["name"] }}={{ data_service_total[service]["total"] }}
                 </a>
                 {% endfor %}
@@ -71,7 +71,7 @@
                 {% for user in data_user_total %}
                 <a id="btnCustomerYearUserID{{ user }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ current_year_user }}&user={{ user }}">
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ current_year_user }}&user={{ user }}">
                     {{ data_user_total[user]["user"]["name"] }}={{ data_user_total[user]["total"] }}
                 </a>
                 {% endfor %}
@@ -95,8 +95,108 @@
                 {% for user in data_user_not_total %}
                 <a id="btnCustomerYearUserNotID{{ user }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ current_year_user_not }}&user_not={{ user }}">
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ current_year_user_not }}&user_not={{ user }}">
                     {{ data_user_not_total[user]["user"]["name"] }}={{ data_user_not_total[user]["total"] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <!-- Los años activos que tiene el cliente -->
+        {% if year_actives %}
+        <div class="row p-1">
+            <div class="col">
+                {% for year in year_actives %}
+                <a id="menuCustomerYear{{ year }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ year }}">
+                    {{ year }}={{ year_actives[year] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <!-- Meses activos del año en la tabla -->
+        {% if months_actives_table %}
+        <div class="row p-1">
+            <div class="col">
+                {% for month_table in months_actives_table %}
+                <a id="btnCustomerMonthTable{{ month_table[0] }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_table={{ month_table[0] }}">
+                    {{ month_table[1]["name"] }}={{ month_table[1]["total"] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <!-- SERVICIO DEL MES-->
+        {% if current_month_service %}
+        <div class="row p-1">
+            <div class="col">
+                <a id="btnCustomerMonthService{{ current_month_service }}"
+                    class="btn btn-sm btn-outline-primary">
+                    Servicios del mes de {{ month_service_name[current_month_service]["name"] }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        {% if data_service_total_month %}
+        <div class="row p-1">
+            <div class="col">
+                {% for service in data_service_total_month %}
+                <a id="btnCustomerYearMonthServiceID{{ service }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_service={{ current_month_service }}&service={{ service }}">
+                    {{ data_service_total_month[service]["service"]["name"] }}={{ data_service_total_month[service]["total"] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <!-- USUARIOS MONTH-->
+        {% if current_month_user %}
+        <div class="row p-1">
+            <div class="col">
+                <a id="btnCustomerYearMonthUser{{ current_month_user }}"
+                    class="btn btn-sm btn-outline-primary">
+                    Usuarios del mes de {{ month_user_name[current_month_user]["name"] }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        {% if data_user_total_month %}
+        <div class="row p-1">
+            <div class="col">
+                {% for user in data_user_total_month %}
+                <a id="btnCustomerYearUserID{{ user }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_user={{ current_month_user }}&user={{ user }}">
+                    {{ data_user_total_month[user]["user"]["name"] }}={{ data_user_total_month[user]["total"] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <!-- USUARIOS NO ASIGANDOS MONTH -->
+        {% if current_month_user_not %}
+        <div class="row p-1">
+            <div class="col">
+                <a id="btnCustomerYearMonthUserNot{{ current_month_user_not }}"
+                    class="btn btn-sm btn-outline-primary">
+                    Usuarios del mes de {{ month_user_name[current_month_user_not]["name"] }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        {% if data_user_not_total_month %}
+        <div class="row p-1">
+            <div class="col">
+                {% for user in data_user_not_total_month %}
+                <a id="btnCustomerYearUserNotID{{ user }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_user={{ current_month_user }}&user_not={{ user }}">
+                    {{ data_user_not_total_month[user]["user"]["name"] }}={{ data_user_not_total_month[user]["total"] }}
                 </a>
                 {% endfor %}
             </div>
@@ -190,12 +290,21 @@
         </div>
     </div>
     <div class="card-footer">
+        {% if current_year %}
         <a
             role="button"
             class="btn btn-sm btn-secondary"
-            href="/otrs?queue={{ current_queue }}&customer={{ current_customer }}">
+            href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}">
             Volver
         </a>
+        {% else %}
+        <a
+            role="button"
+            class="btn btn-sm btn-secondary"
+            href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}">
+            Volver
+        </a>
+        {% endif %}
     </div>
 </div>
 
@@ -211,8 +320,12 @@
         $("#btnCustomerYearUserID{{ current_user }}").addClass("active");
         $("#btnCustomerYearUserNot{{ current_year_user_not }}").addClass("active");
         $("#btnCustomerYearUserNotID{{ current_user_not }}").addClass("active");
-        
-        
+        $("#menuCustomerYear{{ current_year }}").addClass("active");
+        $("#btnCustomerMonthTable{{ current_month_table }}").addClass("active");
+        $("#btnCustomerMonthService{{ current_month_service }}").addClass("active");
+        $("#btnCustomerYearMonthServiceID{{ current_service_month }}").addClass("active");
+        $("#btnCustomerYearMonthUser{{ current_month_user }}").addClass("active");
+        $("#btnCustomerYearMonthUserNot{{ current_month_user_not }}").addClass("active");
         
         $("#tablaTicketsCustomer thead tr:eq(1) th").each(function() {
             let title = $(this).text();
