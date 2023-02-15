@@ -12,14 +12,14 @@ from webapp.analyzer import get_otrs
 from pprint import pprint
 
 
-otrs = Blueprint("otrs", __name__, url_prefix="/otrs")
+analysis_otrs = Blueprint("analysis_otrs", __name__, url_prefix="/analysis_otrs")
 
 
-@otrs.get("/")
+@analysis_otrs.get("/")
 def index():
     queues = {
-        "administrators": "Tickets Administrador(queue_id=6)",
-        "analysts": "Tickets Analistas(queue_id=9)"
+        "administrators": "Administrador",
+        "analysts": "Analista"
     }
 
     if request.method == "GET":
@@ -34,6 +34,8 @@ def index():
         year = request.args.get("year", type=int)
         month_table = request.args.get("month_table", type=int)
         month_service = request.args.get("month_service", type=int)
+        month_user = request.args.get("month_user", type=int)
+        
 
         if queue:
             if queue == "administrators":
@@ -62,7 +64,7 @@ def index():
                     data_tickets = data["data_tickets"][year_table]
 
                     return render_template(
-                        "otrs/customers/index_table.html",
+                        "analysis_otrs/customers/index_table.html",
                         page={"title": "Data Adaptive Security"},
                         queues=queues,
                         current_queue=queue,
@@ -80,7 +82,7 @@ def index():
                     data_service_total = data["data_service_total"][year_service]
                     
                     return render_template(
-                        "otrs/customers/index_table.html",
+                        "analysis_otrs/customers/index_table.html",
                         page={"title": "Data Adaptive Security"},
                         queues=queues,
                         current_queue=queue,
@@ -97,7 +99,7 @@ def index():
                     data_user_total = data["data_user_total"][year_user]
                     
                     return render_template(
-                        "otrs/customers/index_table.html",
+                        "analysis_otrs/customers/index_table.html",
                         page={"title": "Data Adaptive Security"},
                         queues=queues,
                         current_queue=queue,
@@ -114,7 +116,7 @@ def index():
                     data_user_not_total = data["data_user_not_total"][year_user]
                     
                     return render_template(
-                        "otrs/customers/index_table.html",
+                        "analysis_otrs/customers/index_table.html",
                         page={"title": "Data Adaptive Security"},
                         queues=queues,
                         current_queue=queue,
@@ -145,7 +147,7 @@ def index():
                         data_tickets = data["data_tickets"][month_table]["tickets"]
 
                         return render_template(
-                            "otrs/customers/index_table.html",
+                            "analysis_otrs/customers/index_table.html",
                             page={"title": "Data Adaptive Security"},
                             queues=queues,
                             current_queue=queue,
@@ -161,27 +163,71 @@ def index():
                     
                     if month_service and service:
                         service = int(service) if service.isdigit() else service
-                        data_service = data_service[month_service][service]["tickets"]
-                        data_service_total = data["data_service_total"][month_service][service]["total"]
+                        data_tickets = data_service[month_service][service]["tickets"]
+                        data_service_total_month = data["data_service_total"][month_service]
 
                         return render_template(
-                            "otrs/customers/index_table.html",
+                            "analysis_otrs/customers/index_table.html",
                             page={"title": "Data Adaptive Security"},
                             queues=queues,
                             current_queue=queue,
                             year_actives=year_actives,
                             current_year=year,
-                            months_actives_table=data_total_sorted,
                             customers_actives=customers_actives,
                             current_month_service=month_service,
+                            month_service_name=data_total,
+                            current_service_month=service,
                             current_customer=customer,
                             customer_name=customer_name,
                             current_month_table=month_table,
-                            data_service_total=data_service_total
+                            data_service_total_month=data_service_total_month,
+                            data_tickets=data_tickets
+                        )
+                    
+                    if month_user and user:
+                        data_tickets = data_user[month_user][user]["tickets"]
+                        data_user_total = data["data_user_total"][month_user]
+                        
+                        return render_template(
+                            "analysis_otrs/customers/index_table.html",
+                            page={"title": "Data Adaptive Security"},
+                            queues=queues,
+                            current_queue=queue,
+                            year_actives=year_actives,
+                            current_year=year,
+                            customers_actives=customers_actives,
+                            current_customer=customer,
+                            current_month_user=month_user,
+                            current_user=user,
+                            current_month_service=month_service,
+                            month_user_name=data_total,
+                            data_user_total_month=data_user_total,
+                            data_tickets=data_tickets   
+                        )
+                    
+                    if month_user and user_not:
+                        
+                        data_tickets = data_user[month_user]["user_not"][user_not]["tickets"]
+                        data_user_not_total = data["data_user_not_total"][month_user]
+
+                        return render_template(
+                            "analysis_otrs/customers/index_table.html",
+                            page={"title": "Data Adaptive Security"},
+                            queues=queues,
+                            current_queue=queue,
+                            year_actives=year_actives,
+                            current_year=year,
+                            customers_actives=customers_actives,
+                            current_customer=customer,
+                            current_month_user_not=month_user,
+                            current_user_not=user_not,
+                            month_user_name=data_total,
+                            data_user_not_total_month=data_user_not_total,
+                            data_tickets=data_tickets  
                         )
                     
                     return render_template(
-                        "otrs/customers/index.html",
+                        "analysis_otrs/customers/index.html",
                         page={"title": "Data Adaptive Security"},
                         queues=queues,
                         current_queue=queue,
@@ -200,7 +246,7 @@ def index():
                     )
                 
                 return render_template(
-                    "otrs/customers/index.html",
+                    "analysis_otrs/customers/index.html",
                     page={"title": "Data Adaptive Security"},
                     queues=queues,
                     current_queue=queue,
@@ -217,7 +263,7 @@ def index():
                 )
 
             return render_template(
-                "otrs/customers/index.html",
+                "analysis_otrs/customers/index.html",
                 page={"title": "Data Adaptive Security"},
                 queues=queues,
                 current_queue=queue,
@@ -225,7 +271,7 @@ def index():
             )
         
     return render_template(
-        "otrs/index/index.html",
+        "analysis_otrs/index/index.html",
         page={"title": "Data Adaptive Security"},
         queues = queues
     )
