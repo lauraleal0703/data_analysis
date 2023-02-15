@@ -179,6 +179,8 @@ def users_analysts():
     José Sanhueza user_id = 13
     Camila Rojas user_id = 26
     Francisco Sepulveda user_id = 29
+    Julio Briceño F. user_id = 30
+    Emilio Venegas A. user_id = 32
     Matias Zavala user_id = 38
     Jonathan Finschi user_id = 45
     Cristopher Ulloa user_id = 54
@@ -189,7 +191,7 @@ def users_analysts():
     
     Todos los tickets con cola=9, deben estar asociado a uno de ellos
     """
-    analysts = [13, 26, 29, 38, 45, 54, 56, 60, 64, 65]
+    analysts = [13, 26, 29, 30 32, 38, 45, 54, 56, 60, 64, 65]
     
     return analysts
 
