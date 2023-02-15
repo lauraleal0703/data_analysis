@@ -157,8 +157,10 @@ def customers_by_period(
 
 def users_administrators():
     """ A hoy 08/02/2023 los usuaios administradores son:
+    Marcelo Fernandez user_id = 4
     Jose Nicolas user_id = 12
     Pedro Cerpa C. user_id = 34
+    Mauricio Abricot user_id = 42
     Andres Rojas user_id = 47
     Miguel Almendra user_id = 52
     Solange Aravena user_id = 53
@@ -167,23 +169,27 @@ def users_administrators():
 
     Todos los tickets con cola=6, deben estar asociado a uno de ellos
     """
-    admin = [12, 34, 47, 52, 53, 59, 63]
+    admin = [4, 12, 34, 42, 47, 52, 53, 59, 63]
 
     return admin
 
 
 def users_analysts():
     """ A hoy 08/02/2023 los usuaios administradores son:
+    José Sanhueza user_id = 13
+    Camila Rojas user_id = 26
     Francisco Sepulveda user_id = 29
-    Jonathan Finschi user_id =45
+    Matias Zavala user_id = 38
+    Jonathan Finschi user_id = 45
     Cristopher Ulloa user_id = 54
     Sugy Nam user_id = 56
+    Mauricio Bahamondes user_id = 60
     Mauricio Retamales user_id = 64
     Nicolas Garrido user_id = 65
     
     Todos los tickets con cola=9, deben estar asociado a uno de ellos
     """
-    analysts = [29, 45, 54, 56, 64, 65]
+    analysts = [13, 26, 29, 38, 45, 54, 56, 60, 64, 65]
     
     return analysts
 
