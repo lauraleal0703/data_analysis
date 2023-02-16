@@ -14,6 +14,7 @@ from pprint import pprint
 from datetime import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
+import typing as t
 
 
 #####################################################
@@ -277,8 +278,9 @@ def get_count_tickets_customers_years(
     print(def_name, datetime.today())
     db.session.commit()
     return {
-        "data_x": data_x,
-        "data_grah": data_grah
+        "total_tickets_customers": total_tickets_customers,
+        "data_grah_x": data_x,
+        "data_grah_y": data_grah
     }
 
 # get_count_tickets_customers_years(6)
@@ -314,9 +316,10 @@ def get_tickets_customer_years(
 
     customer = customers_by_period(
         queue_id = queue_id,
-        customer_id=customer_id
+        customer_id = customer_id
     )
-    years = customer["years_actives"]
+
+    years: list = customer["years_actives"]
     years.reverse()
     customer_name = customer["name"]
 
@@ -414,12 +417,10 @@ def get_tickets_customer_years(
     for year_ in data_service:
         data_x_service.append(year_)
         for service_ in data_service[year_]:
-            name_ = data_service[year_][service_]["service"]["name"]
-            if name_ not in dict_service_temp:
-                dict_service_temp[service_] = name_
+            if service_ not in dict_service_temp:
+                dict_service_temp[service_] = data_service[year_][service_]["service"]["name"]
     
-    
-    dict_service = {}
+    dict_service: t.Dict[t.Union[int, str], t.List] = {}
     for service_temp in dict_service_temp:
         dict_service[service_temp] = []
         for year_temp in data_service:
@@ -455,7 +456,7 @@ def get_tickets_customer_years(
         "data_x_service": data_x_service
     }
 
-# get_tickets_customer_years("AAN", 6)
+# get_tickets_customer_years(6, "AAN")
 # exit()
 
 def get_tickets_customer_months_year(
@@ -612,13 +613,19 @@ def get_tickets_customer_months_year(
     for month_ in data_service:
         data_x_service.append(month_)
         for service_ in data_service[month_]:
-            name_ = data_service[month_][service_]["service"]["name"]
-            if name_ not in dict_service_temp:
-                dict_service_temp[service_] = name_
+            if service_ not in dict_service_temp:
+                dict_service_temp[service_] = {
+                    "name": data_service[month_][service_]["service"]["name"],
+                    "total": len(data_service[month_][service_]["tickets"])
+                }
+            else:
+                dict_service_temp[service_]["total"] += len(data_service[month_][service_]["tickets"])
+
+    dict_service_temp_desc = sorted(dict_service_temp.items(), key=lambda x:x[1]["total"], reverse=True)
+    list_service_temp = list(service_id[0] for service_id in dict_service_temp_desc)
     
-    
-    dict_service = {}
-    for service_temp in dict_service_temp:
+    dict_service: t.Dict[t.Union[int, str], t.List] = {}
+    for service_temp in list_service_temp:
         dict_service[service_temp] = []
         for month_temp in data_service:
             if service_temp in data_service[month_temp]:
@@ -628,12 +635,18 @@ def get_tickets_customer_months_year(
             dict_service[service_temp].append(total)
 
     data_grah_service = []
-    for service_temp in dict_service:
+    data_x_service_total = []
+    data_grah_service_total = []
+    for service_temp in list_service_temp:
+        data_x_service_total.append(dict_service_temp[service_temp]["name"])
+        data_grah_service_total.append(dict_service_temp[service_temp]["total"])
         dato_temp = {
-            "name": dict_service_temp[service_temp],
+            "name": dict_service_temp[service_temp]["name"],
             "data": dict_service[service_temp]
         }
         data_grah_service.append(dato_temp)
+    
+    data_grah_service_total = [{"name": "Plataformas", "data": data_grah_service_total}]
 
     print(def_name, datetime.today())
     db.session.commit()
@@ -651,7 +664,9 @@ def get_tickets_customer_months_year(
         "data_user_total": data_user_total,
         "data_user_not_total": data_user_not_total,
         "data_grah_service": data_grah_service, 
-        "data_x_service": data_x_service
+        "data_x_service": data_x_service,
+        "data_x_service_total": data_x_service_total,
+        "data_grah_service_total": data_grah_service_total
     }
 
-# get_tickets_customer_months_year("AAN", 6, "2023")
+# get_tickets_customer_months_year("Experian", 6, "2023")

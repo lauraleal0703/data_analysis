@@ -10,10 +10,10 @@
         <div class="row p-1">
             <div class="col">
                 {% for customer in customers_actives %}
-                <a id="menuCustomer{{ customer }}"
+                <a id="menuCustomer{{ customer[0] }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer }}">
-                    {{ customer }}
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer[0] }}">
+                    {{ customer[0] }}={{ customer[1] }}
                 </a>
                 {% endfor %}
             </div>
@@ -111,7 +111,16 @@
             </table>
             {% endif %}
             
-            <!-- VISTA POR LOS SERVICIOS  -->
+            <!-- VISTA POR LOS SERVICIOS TOTAL -->
+            {% if data_x_service_total %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_tickets_customers_service_total"></div>
+                </figure>
+            </div>
+            {% endif %}
+
+            <!-- VISTA POR LOS SERVICIOS DETALLE -->
             {% if data_grah_service %}
             <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
                 <h4 class="text-muted">Detalle de los Requerimientos del cliente {{ customer_name }}</h4>
@@ -393,6 +402,47 @@
             }
         },
         series: {{ data_grah_service | safe }}
+    });
+</script>
+{% endif %}
+
+{% if data_x_service_total %}
+<script type="text/javascript">
+    Highcharts.chart('container_tickets_customers_service_total', {
+        chart: {
+            width: 1200,
+            height: 500,
+            type: 'column'
+        },
+        title: {
+            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }} distribuidos en las siguientes plataformas.',
+            align: 'center'
+        },
+        xAxis: {
+            categories: {{ data_x_service_total | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de requerimientos'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.0f}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah_service_total | safe }}
     });
 </script>
 {% endif %}

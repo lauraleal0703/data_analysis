@@ -8,10 +8,10 @@
         <div class="row p-1">
             <div class="col">
                 {% for customer in customers_actives %}
-                <a id="menuCustomer{{ customer }}"
+                <a id="menuCustomer{{ customer[0] }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer }}">
-                    {{ customer }}
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer[0] }}">
+                    {{ customer[0] }}= {{ customer[1] }}
                 </a>
                 {% endfor %}
             </div>

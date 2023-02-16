@@ -45,8 +45,9 @@ def index():
                 queue_id = 9
             
             data = get_otrs.get_count_tickets_customers_years(queue_id=queue_id)
-            customers_actives = data["data_x"]
-            data_grah = data["data_grah"]
+            customers_actives = data["total_tickets_customers"]
+            data_grah_x = data["data_grah_x"]
+            data_grah_y = data["data_grah_y"]
             
             if customer:
                 data = get_otrs.get_tickets_customer_years(
@@ -148,6 +149,8 @@ def index():
                     data_user = data["data_user"]
                     data_grah_service = data["data_grah_service"]
                     data_x_service = data["data_x_service"]
+                    data_x_service_total = data["data_x_service_total"]
+                    data_grah_service_total = data["data_grah_service_total"]
                     
                     if month_table:
                         data_tickets = data["data_tickets"][month_table]["tickets"]
@@ -250,7 +253,9 @@ def index():
                         data_service=data_service,
                         data_user=data_user,
                         data_grah_service=data_grah_service,
-                        data_x_service=data_x_service
+                        data_x_service=data_x_service,
+                        data_x_service_total=data_x_service_total,
+                        data_grah_service_total=data_grah_service_total
                     )
                 
                 return render_template(
@@ -278,8 +283,8 @@ def index():
                 queues=queues,
                 current_queue=queue,
                 customers_actives=customers_actives,
-                data_grah_x=customers_actives,
-                data_grah_y=data_grah
+                data_grah_x=data_grah_x,
+                data_grah_y=data_grah_y
             )
         
     return render_template(
