@@ -609,9 +609,11 @@ def get_tickets_customer_months_year(
     data_grah = [{"name": "Tickets", "data": data_grah_temp}]
 
     data_x_service = []
+    months_temp = []
     dict_service_temp = {}
     for month_ in data_service:
-        data_x_service.append(month_)
+        data_x_service.insert(0, calendar[month_])
+        months_temp.insert(0, month_)
         for service_ in data_service[month_]:
             if service_ not in dict_service_temp:
                 dict_service_temp[service_] = {
@@ -627,7 +629,7 @@ def get_tickets_customer_months_year(
     dict_service: t.Dict[t.Union[int, str], t.List] = {}
     for service_temp in list_service_temp:
         dict_service[service_temp] = []
-        for month_temp in data_service:
+        for month_temp in months_temp:
             if service_temp in data_service[month_temp]:
                 total = len(data_service[month_temp][service_temp]["tickets"])
             else:
