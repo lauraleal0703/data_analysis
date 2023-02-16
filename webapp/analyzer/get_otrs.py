@@ -20,6 +20,7 @@ from dateutil.relativedelta import relativedelta
 ##########Funciones de Obtención de datos ###########
 #####################################################
 
+
 def calendar_spanish():
     def_name = "calendar_spanish"
     print(def_name, datetime.today())
@@ -155,6 +156,7 @@ def customers_by_period(
     print(def_name, datetime.today())
     return customers_actives_temp
 
+
 def users_administrators():
     """Los usuaios administradores son:
     Marcelo Fernandez user_id = 4
@@ -196,6 +198,7 @@ def users_analysts():
     
     return analysts
 
+
 def users_infra():
     """Los usuaios administradores son:
 
@@ -208,6 +211,7 @@ def users_infra():
     infra = [2, 14]
     
     return infra
+
 
 def get_count_tickets_customers_years(
         queue_id: int
@@ -266,6 +270,7 @@ def get_count_tickets_customers_years(
         "data_grah": data_grah
     }
 
+
 # get_count_tickets_customers_years(6)
 # exit()
 
@@ -295,7 +300,7 @@ def get_tickets_customer_years(
     if queue_id == 6:
         users =  users_administrators()
     if queue_id == 9:
-        users = users_analysts
+        users = users_analysts()
 
     customer = customers_by_period(
         queue_id = queue_id,
