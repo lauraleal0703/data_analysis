@@ -283,8 +283,8 @@ def index():
     return render_template(
         "analysis_otrs/index_customers/index.html",
         page={"title": """En la pestaña superior puede seleccionar la vista de
-            los tickets generados por los clientes para ser atendidos por los 
-            Administradores o los Analistas."""
+            los tickets generados por los clientes de Adaptive Security
+            para ser atendidos por los Administradores o los Analistas."""
         },
         queues = queues
     )
@@ -322,7 +322,7 @@ def attend():
     return render_template(
         "analysis_otrs/index_users/index.html",
         page={"title": """En la pestaña superior puede seleccionar la vista de
-            los tickets atendidos por los Administradores o los Analistas."""
+            los tickets atendidos por los Administradores o los Analistas de Adaptive Security."""
         },
         queues = queues
     )
