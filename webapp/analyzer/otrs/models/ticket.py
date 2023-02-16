@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import String
@@ -110,17 +108,20 @@ class Ticket(db.Base):
 	#############QUERY#####################
 	#######################################
 	
-
 	@classmethod
-	def first_ticket_customer(cls: SelfTicket, 
-			queue_id: int,
-			customer_id: str) -> SelfTicket:
-		"""Obtener el primer ticket de un cliente.
+	def tickets_filtered_with(cls: SelfTicket,
+		queue_id: Optional[int] = None,
+		user_id: Optional[int] = None,
+		customer_id: Optional[str] = None,
+		first_ticket: bool = False,
+		last_ticket: bool = False
+	) -> SelfTicket:
+		"""Obtener todos los tickests dado los filtros
 		*type_id = 68 es Accion preventiva
 		*ticket_state_id = 5 es removed
 		*ticket_state_id = 9 es merged
 		*ticket_state_id = 15 es cancelado
-
+		
 		QUERY EN SQL
 
 		USE otrs;
@@ -130,52 +131,9 @@ class Ticket(db.Base):
 		AND t.ticket_state_id NOT IN (5, 9, 15) 
 		AND t.queue_id = queue_id
 		AND t.customer_id = customer_id
+		AND t.user_id = user_id
+
 		ORDER BY t.create_time ASC LIMIT 1
-
-		Parameters
-		----------
-		queue_id: int
-			ID de la cola
-		customer_id: str
-        	ID del cliente
-
-		Returns
-		-------
-		El primer ticket
-			Un objeto ticket
-		"""
-
-		exceptions_type = [68]
-		exceptions_state = [5, 9, 15]
-
-		return db.session.query(cls).filter(
-			cls.type_id.notin_(exceptions_type),
-			cls.ticket_state_id.notin_(exceptions_state),
-			cls.customer_id == customer_id,
-			cls.queue_id == queue_id,
-			).order_by(asc(cls.create_time)
-	    ).first()
-	
-
-	@classmethod
-	def last_ticket_customer(cls: SelfTicket, 
-			queue_id: int,
-			customer_id: str) -> SelfTicket:
-		"""Obtener el último ticket de un cliente.
-		*type_id = 68 es Accion preventiva
-		*ticket_state_id = 5 es removed
-		*ticket_state_id = 9 es merged
-		*ticket_state_id = 15 es cancelado
-
-		QUERY EN SQL
-
-		USE otrs;
-		SELECT *
-		FROM ticket AS t
-		WHERE t.type_id NOT IN (68)
-		AND t.ticket_state_id NOT IN (5, 9, 15) 
-		AND t.queue_id = queue_id
-		AND t.customer_id = customer_id
 		ORDER BY t.create_time DESC LIMIT 1
 
 		Parameters
@@ -184,33 +142,47 @@ class Ticket(db.Base):
 			ID de la cola
 		customer_id: str
         	ID del cliente
+		user_id: str
+        	ID del usuario
 
 		Returns
 		-------
-		El último ticket
-			Un objeto ticket
+		Ticket
+			Un onjeto del tipo ticket
 		"""
 		exceptions_type = [68]
 		exceptions_state = [5, 9, 15]
-
-		return db.session.query(cls).filter(
+		
+		query = db.session.query(cls).filter(
 			cls.type_id.notin_(exceptions_type),
-			cls.ticket_state_id.notin_(exceptions_state),
-			cls.customer_id == customer_id,
-			cls.queue_id == queue_id,
-			).order_by(desc(cls.create_time)
-	    ).first()
+			cls.ticket_state_id.notin_(exceptions_state)
+		)
 
+		if queue_id:
+			query = query.filter(cls.queue_id == queue_id)
+		
+		if customer_id:
+			query = query.filter(cls.customer_id == customer_id)
+		
+		if user_id:
+			query = query.filter(cls.user_id == user_id)
+
+		if first_ticket:
+			return query.order_by(asc(cls.create_time)).first()
+
+		if last_ticket:
+			return query.order_by(desc(cls.create_time)).first()
+	
 
 	@classmethod
-	def tickets_filtered_with(cls: SelfTicket,
+	def tickets_period_filtered_with(cls: SelfTicket,
 		start_period: str,
 		end_period: str,
 		queue_id: Optional[int] = None,
 		user_id: Optional[int] = None,
 		customer_id: Optional[str] = None,
-		count: bool=False,
-	) -> Union[List[SelfTicket], int]:
+		count: bool = False
+	) -> Union[int, List[SelfTicket]]:
 		"""Obtener los tickests (como una lista de objetos
 		o solo la cantidad) de un periodo dado los filtros
 		*type_id = 68 es Accion preventiva
@@ -221,6 +193,8 @@ class Ticket(db.Base):
 		QUERY EN SQL
 
 		USE otrs;
+		SELECT COUNT(t.id)
+
 		SELECT *
 		FROM ticket AS t
 		WHERE t.type_id NOT IN (68)
@@ -242,11 +216,10 @@ class Ticket(db.Base):
 
 		Returns
 		-------
+		Int
+			Cantidad de tickets COUNT(*)
 		List 
 			Una lista de objetos de tipo ticket
-		o
-		Int
-			Cantidad de tickets
 		"""
 		exceptions_type = [68]
 		exceptions_state = [5, 9, 15]
@@ -266,7 +239,7 @@ class Ticket(db.Base):
 		
 		if user_id:
 			query = query.filter(cls.user_id == user_id)
-
+		
 		if count:
 			return query.count()
 

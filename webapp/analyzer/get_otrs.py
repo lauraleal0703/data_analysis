@@ -108,12 +108,20 @@ def customers_by_period(
     
     if not customer_id:
         for customer in customers_temp:
-            start_ticket = Ticket.first_ticket_customer(queue_id, customer)
+            start_ticket = Ticket.tickets_filtered_with(
+                queue_id = queue_id, 
+                customer_id = customer,
+                first_ticket = True
+            )
             if start_ticket:
-                start_day = start_ticket.create_time
-                end_ticket = Ticket.last_ticket_customer(queue_id, customer)
-                end_day = end_ticket.create_time
-                end_day_limit = datetime.today() - relativedelta(months=3)
+                start_day: datetime = start_ticket.create_time
+                end_ticket = Ticket.tickets_filtered_with(
+                    queue_id = queue_id, 
+                    customer_id = customer,
+                    last_ticket = True
+                )
+                end_day: datetime = end_ticket.create_time
+                end_day_limit = datetime.today() - relativedelta(months=2)
                 if end_day < end_day_limit:
                     continue
                 list_year_temp = [int(start_day.year)]
@@ -135,10 +143,18 @@ def customers_by_period(
         print(def_name, datetime.today())
         return customers_actives_temp
     
-    start_ticket = Ticket.first_ticket_customer(queue_id, customer_id)
+    start_ticket = Ticket.tickets_filtered_with(
+        queue_id = queue_id, 
+        customer_id = customer_id,
+        first_ticket = True
+    )
     if start_ticket:
         start_day = start_ticket.create_time
-        end_ticket = Ticket.last_ticket_customer(queue_id, customer_id)
+        end_ticket = Ticket.tickets_filtered_with(
+            queue_id = queue_id, 
+            customer_id = customer_id,
+            last_ticket = True
+        )
         end_day = end_ticket.create_time
         list_year_temp = [int(start_day.year)]
         if start_day.year < end_day.year:
@@ -191,9 +207,25 @@ def users_administrators():
 
     Todos los tickets con cola=6, deben estar asociado a uno de ellos
     """
-    admin = [4, 12, 22, 34, 42, 47, 52, 53, 59, 63]
+    administrators = [4, 12, 22, 34, 42, 47, 52, 53, 59, 63]
 
-    return admin
+    administrators_temp = []
+    for user_id in administrators:
+        end_ticket = Ticket.tickets_filtered_with(
+            user_id = user_id,
+            last_ticket = True
+        )
+        end_day = end_ticket.create_time
+        end_day_limit = datetime.today() - relativedelta(months=2)
+        if end_day < end_day_limit:
+            continue
+        administrators_temp.append(user_id)
+
+    return {
+        "administrators_temp": administrators_temp,
+        "administrators": administrators
+    }
+
 
 
 def users_analysts():
@@ -214,8 +246,23 @@ def users_analysts():
     Todos los tickets con cola=9, deben estar asociado a uno de ellos
     """
     analysts = [13, 26, 29, 30, 32, 38, 45, 54, 56, 60, 64, 65]
+
+    analysts_temp = []
+    for user_id in analysts:
+        end_ticket = Ticket.tickets_filtered_with(
+            user_id = user_id,
+            last_ticket = True
+        )
+        end_day = end_ticket.create_time
+        end_day_limit = datetime.today() - relativedelta(months=2)
+        if end_day < end_day_limit:
+            continue
+        analysts_temp.append(user_id)
     
-    return analysts
+    return {
+        "analysts_temp": analysts_temp,
+        "analysts": analysts
+    }
 
 
 def users_infra():
@@ -263,10 +310,11 @@ def get_count_tickets_customers_years(
     years = list(range(datetime.today().year, 2018, -1))
     total_tickets_customers = {}
     dict_tickets_customers = {}
+    dict_tickets_customers: t.Dict[str, t.List] = {}
     total_tickets = 0
     for year in years:
         for customer_id in customers_temp:
-            data_temp = Ticket.tickets_filtered_with(
+            data_temp = Ticket.tickets_period_filtered_with(
                 start_period = f"{year}-01-01",
                 end_period = f"{year}-12-31", 
                 customer_id = customer_id,
@@ -282,7 +330,11 @@ def get_count_tickets_customers_years(
                 dict_tickets_customers[customer_id].append(data_temp)
                 total_tickets += data_temp
         
-    total_tickets_customers = sorted(total_tickets_customers.items(), key=lambda x:x[1], reverse=True)
+    total_tickets_customers = sorted(
+        total_tickets_customers.items(),
+        key=lambda x:x[1],
+        reverse=True
+    )
     
     ##Ordenando DESC
     data_x = []
@@ -340,8 +392,10 @@ def get_tickets_customer_years(
     """
     if queue_id == 6:
         users =  users_administrators()
+        users = users["administrators"]
     if queue_id == 9:
         users = users_analysts()
+        users = users["analysts"]
 
     customer = customers_by_period(
         queue_id = queue_id,
@@ -359,11 +413,11 @@ def get_tickets_customer_years(
     data_user_not_total = {}
     data_user = {}
     data_service_total = {}
-    data_service = {}
+    data_service: t.Dict[int, t.Dict[int, t.Dict[str, list]]] = {}
     data_grah_temp = []
     for year in years:
         data_x.append(year)
-        data_temp = Ticket.tickets_filtered_with(
+        data_temp = Ticket.tickets_period_filtered_with(
             start_period = f"{year}-01-01",
             end_period = f"{year}-12-31", 
             customer_id = customer_id, 
@@ -381,6 +435,7 @@ def get_tickets_customer_years(
         data_service[year] = {}
 
         for ticket in data_temp:
+            ticket: Ticket
             if ticket.user_id not in users:
                 if "user_not" not in data_user[year]:
                     data_user[year]["user_not"] = {}
@@ -399,7 +454,9 @@ def get_tickets_customer_years(
                     }
                     
                 else:
-                    data_user[year]["user_not"][ticket.user_id]["tickets"].append(ticket)
+                    data_user[year]["user_not"][ticket.user_id]["tickets"].append(
+                        ticket
+                    )
                     data_user_not_total[year][ticket.user_id]["total"] += 1
             
             else:  
@@ -424,13 +481,19 @@ def get_tickets_customer_years(
             if ticket.service_id not in data_service[year]:
                 data_service_total[year][ticket.service_id] = {
                     "service": {
-                            "name": ticket.service.name if ticket.service else "Undefined"
+                            "name": (
+                                ticket.service.name
+                                if ticket.service else "Undefined"
+                            )
                         },
                     "total": 1
                 }
                 data_service[year][ticket.service_id] = {
                     "service": {
-                        "name": ticket.service.name if ticket.service else "Undefined"
+                        "name": (
+                            ticket.service.name 
+                            if ticket.service else "Undefined"
+                        )
                     },
                     "tickets": [ticket]
                 }
@@ -447,7 +510,9 @@ def get_tickets_customer_years(
         data_x_service.append(year_)
         for service_ in data_service[year_]:
             if service_ not in dict_service_temp:
-                dict_service_temp[service_] = data_service[year_][service_]["service"]["name"]
+                dict_service_temp[service_] = (
+                    data_service[year_][service_]["service"]["name"]
+                )
     
     dict_service: t.Dict[t.Union[int, str], t.List] = {}
     for service_temp in dict_service_temp:
@@ -516,8 +581,10 @@ def get_tickets_customer_months_year(
     """
     if queue_id == 6:
         users =  users_administrators()
+        users = users["administrators"]
     if queue_id == 9:
         users = users_analysts()
+        users = users["analysts"]
 
     calendar = calendar_spanish()
     customer = customers_by_period(
@@ -527,13 +594,13 @@ def get_tickets_customer_months_year(
     customer_name = customer["name"]
 
     data_total = {}
-    data_tickets = {}
+    data_tickets: t.Dict[int, t.Dict[str, list]] = {}
     data_user = {}
     data_user_total = {}
     data_user_not_total = {}
-    data_service = {}
+    data_service: t.Dict[int, t.Dict[int, t.Dict[str, list]]] = {}
     data_service_total = {}
-    data_temp = Ticket.tickets_filtered_with(
+    data_temp = Ticket.tickets_period_filtered_with(
         start_period = f"{year}-01-01",
         end_period = f"{year}-12-31", 
         customer_id = customer_id, 
@@ -541,7 +608,8 @@ def get_tickets_customer_months_year(
     )
 
     for ticket in data_temp:
-        date = ticket.create_time
+        ticket: Ticket
+        date: datetime = ticket.create_time
         month = date.month
         
         if month not in data_total:
@@ -587,7 +655,9 @@ def get_tickets_customer_months_year(
                 }
                 
             else:
-                data_user[month]["user_not"][ticket.user_id]["tickets"].append(ticket)
+                data_user[month]["user_not"][ticket.user_id]["tickets"].append(
+                    ticket
+                )
                 data_user_not_total[month][ticket.user_id]["total"] += 1
         
         else:  
@@ -613,13 +683,19 @@ def get_tickets_customer_months_year(
         if ticket.service_id not in data_service[month]:
             data_service_total[month][ticket.service_id] = {
                 "service": {
-                        "name": ticket.service.name if ticket.service else "Undefined"
+                        "name": (
+                            ticket.service.name 
+                            if ticket.service else "Undefined"
+                        )
                     },
                 "total": 1
             }
             data_service[month][ticket.service_id] = {
                 "service": {
-                    "name": ticket.service.name if ticket.service else "Undefined"
+                    "name": (
+                        ticket.service.name 
+                        if ticket.service else "Undefined"
+                    )
                 },
                 "tickets": [ticket]
             }
@@ -633,7 +709,11 @@ def get_tickets_customer_months_year(
         data_x.insert(0, data_total[mont_]["name"])
         data_grah_temp.insert(0, data_total[mont_]["total"])
     
-    data_total_sorted = sorted(data_total.items(), key=lambda x:x[0], reverse=True)
+    data_total_sorted = sorted(
+        data_total.items(),
+        key=lambda x:x[0], 
+        reverse=True
+    )
     total_tickets = sum(data_grah_temp)
     data_grah = [{"name": "Tickets", "data": data_grah_temp}]
 
@@ -650,10 +730,18 @@ def get_tickets_customer_months_year(
                     "total": len(data_service[month_][service_]["tickets"])
                 }
             else:
-                dict_service_temp[service_]["total"] += len(data_service[month_][service_]["tickets"])
+                dict_service_temp[service_]["total"] += len(
+                    data_service[month_][service_]["tickets"]
+                )
 
-    dict_service_temp_desc = sorted(dict_service_temp.items(), key=lambda x:x[1]["total"], reverse=True)
-    list_service_temp = list(service_id[0] for service_id in dict_service_temp_desc)
+    dict_service_temp_desc = sorted(
+        dict_service_temp.items(), 
+        key=lambda x:x[1]["total"], 
+        reverse=True
+    )
+    list_service_temp = list(
+        service_id[0] for service_id in dict_service_temp_desc
+    )
     
     dict_service: t.Dict[t.Union[int, str], t.List] = {}
     for service_temp in list_service_temp:
@@ -677,7 +765,10 @@ def get_tickets_customer_months_year(
         }
         data_grah_service.append(dato_temp)
     
-    data_grah_service_total = [{"name": "Tickets", "data": data_grah_service_total}]
+    data_grah_service_total = [{
+        "name": "Tickets", 
+        "data": data_grah_service_total
+    }]
 
     print(def_name, datetime.today())
     db.session.commit()
@@ -714,7 +805,8 @@ def get_count_tickets_users_years(
     ) -> dict:
     def_name = "get_count_tickets_customers_years"
     print(def_name, datetime.today())
-    """Obtener un recuento de los tickets de todos los clientes
+    """Obtener un recuento de los tickets de todos los
+    usuarios de las colas
     
     Da los datos directos para la gráfica.
     https://www.highcharts.com/demo/column-basic
@@ -730,17 +822,19 @@ def get_count_tickets_users_years(
     """
     users_actives_temp = users_actives()
     if queue_id == 6:
-        users_temp =  users_administrators()
+        users =  users_administrators()
+        users = users["administrators_temp"]
     if queue_id == 9:
-        users_temp = users_analysts()
+        users = users_analysts()
+        users = users["analysts_temp"]
     
     years = list(range(datetime.today().year, 2018, -1))
     total_tickets_users = {}
-    dict_tickets_users = {}
+    dict_tickets_users: t.Dict[int, t.List] = {}
     total_tickets = 0
     for year in years:
-        for user_id in users_temp:
-            data_temp = Ticket.tickets_filtered_with(
+        for user_id in users:
+            data_temp = Ticket.tickets_period_filtered_with(
                 start_period = f"{year}-01-01",
                 end_period = f"{year}-12-31",
                 user_id = user_id,
@@ -762,20 +856,24 @@ def get_count_tickets_users_years(
                 dict_tickets_users[user_id].append(data_temp)
                 total_tickets += data_temp
         
-    total_tickets_users = sorted(total_tickets_users.items(), key=lambda x:x[1]["total"], reverse=True)
+    total_tickets_users = sorted(
+        total_tickets_users.items(), 
+        key=lambda x:x[1]["total"], 
+        reverse=True
+    )
     
     ##Ordenando DESC
     data_x = []
-    users_temp = []
+    users = []
     for user_temp in total_tickets_users:
         user_id = user_temp[0]
-        users_temp.append(user_id)
+        users.append(user_id)
         data_x.append(user_temp[1]["user"]["name"])
 
     data_grah = []
     for pos, year in enumerate(years):
         tickets_year = []
-        for user_id in users_temp:
+        for user_id in users:
             data_temp = dict_tickets_users[user_id][pos]
             tickets_year.append(data_temp)
             data_grah_temp = {
