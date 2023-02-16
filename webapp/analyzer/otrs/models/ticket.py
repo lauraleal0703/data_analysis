@@ -203,7 +203,7 @@ class Ticket(db.Base):
 
 
 	@classmethod
-	def ticktets_filtered_with(cls: SelfTicket,
+	def tickets_filtered_with(cls: SelfTicket,
 		start_period: str,
 		end_period: str,
 		queue_id: Optional[int] = None,

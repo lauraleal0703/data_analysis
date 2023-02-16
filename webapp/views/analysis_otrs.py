@@ -18,8 +18,8 @@ analysis_otrs = Blueprint("analysis_otrs", __name__, url_prefix="/analysis_otrs"
 @analysis_otrs.get("/")
 def index():
     queues = {
-        "administrators": "Administrador",
-        "analysts": "Analista"
+        "administrators": "Administradores",
+        "analysts": "Analistas"
     }
 
     if request.method == "GET":
@@ -44,21 +44,18 @@ def index():
             if queue == "analysts":
                 queue_id = 9
             
-            data = get_otrs.get_count_tickets_customers_years(queue_id=queue_id)
-            customers_actives = data["total_tickets_customers"]
-            data_grah_x = data["data_grah_x"]
-            data_grah_y = data["data_grah_y"]
+            data_grah = get_otrs.get_count_tickets_customers_years(queue_id=queue_id)
+            customers_actives = data_grah["total_tickets_customers"]
             
             if customer:
                 data = get_otrs.get_tickets_customer_years(
                     customer_id = customer,
                     queue_id = queue_id
                 )
+                data_grah = data
                 customer_name = data["customer_name"]
                 data_total = data["data_total"]
                 year_actives = data_total
-                data_grah_x = data["data_x"]
-                data_grah_y = data["data_y"]
                 total_tickets = data["total_tickets"]
                 data_service = data["data_service"]
                 data_user = data["data_user"]
@@ -139,11 +136,10 @@ def index():
                         queue_id = queue_id,
                         year=year
                     )
+                    data_grah = data
                     customer_name = data["customer_name"]
                     data_total = data["data_total"]
                     data_total_sorted = data["data_total_sorted"]
-                    data_grah_x = data["data_x"]
-                    data_grah_y = data["data_y"]
                     total_tickets = data["total_tickets"]
                     data_service = data["data_service"]
                     data_user = data["data_user"]
@@ -246,8 +242,7 @@ def index():
                         current_customer=customer,
                         customer_name=customer_name,
                         months_actives=data_total_sorted,
-                        data_grah_x=data_grah_x,
-                        data_grah_y=data_grah_y,
+                        data_grah=data_grah,
                         total_tickets=total_tickets,
                         data_total=data_total,
                         data_service=data_service,
@@ -267,8 +262,7 @@ def index():
                     current_customer=customer,
                     customer_name=customer_name,
                     year_actives=year_actives,
-                    data_grah_x=data_grah_x,
-                    data_grah_y=data_grah_y,
+                    data_grah=data_grah,
                     total_tickets=total_tickets,
                     data_total=data_total,
                     data_service=data_service,
@@ -283,12 +277,52 @@ def index():
                 queues=queues,
                 current_queue=queue,
                 customers_actives=customers_actives,
-                data_grah_x=data_grah_x,
-                data_grah_y=data_grah_y
+                data_grah=data_grah
             )
         
     return render_template(
-        "analysis_otrs/index/index.html",
-        page={"title": "Data Adaptive Security"},
+        "analysis_otrs/index_customers/index.html",
+        page={"title": """En la pestaña superior puede seleccionar la vista de
+            los tickets generados por los clientes para ser atendidos por los 
+            Administradores o los Analistas."""
+        },
+        queues = queues
+    )
+
+
+@analysis_otrs.get("/attend")
+def attend():
+    queues = {
+        "administrators": "Administradores",
+        "analysts": "Analistas"
+    }
+
+    if request.method == "GET":
+        queue = request.args.get("queue", type=str)
+
+        if queue:
+            if queue == "administrators":
+                queue_id = 6
+            
+            if queue == "analysts":
+                queue_id = 9
+            
+            data_grah = get_otrs.get_count_tickets_users_years(queue_id=queue_id)
+            users_actives = data_grah["total_tickets_users"]
+
+            return render_template(
+                "analysis_otrs/users/index.html",
+                page={"title": "Data Adaptive Security"},
+                queues=queues,
+                current_queue=queue,
+                users_actives=users_actives,
+                data_grah=data_grah
+            )
+        
+    return render_template(
+        "analysis_otrs/index_users/index.html",
+        page={"title": """En la pestaña superior puede seleccionar la vista de
+            los tickets atendidos por los Administradores o los Analistas."""
+        },
         queues = queues
     )

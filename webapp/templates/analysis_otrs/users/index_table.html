@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "analysis_otrs/index_customers/menu.html" %}
+{% include "analysis_otrs/index/menu.html" %}
 
 <div class="card">
     <div class="card-header">
@@ -319,7 +319,7 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#menuOTRSCustomers").addClass("active");
+        $("#menuOTRS").addClass("active");
         $("#menuQueue{{ current_queue }}").addClass("active");
         $("[id='menuCustomer{{ current_customer }}']").addClass("active");
         $("#btnCustomerYearTable{{ current_year_table }}").addClass("active");

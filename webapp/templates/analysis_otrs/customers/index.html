@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "analysis_otrs/index/menu.html" %}
+{% include "analysis_otrs/index_customers/menu.html" %}
 
 <div class="card">
     <div class="card-header">
@@ -123,7 +123,7 @@
             <!-- VISTA POR LOS SERVICIOS DETALLE -->
             {% if data_grah_service %}
             <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-                <h4 class="text-muted">Detalle de los Requerimientos del cliente {{ customer_name }}</h4>
+                <h4 class="text-muted">Detalle de los tickets generados por el cliente {{ customer_name }}</h4>
             </div>
             <div>
                 <figure class="highcharts-figure">
@@ -189,7 +189,7 @@
             <!-- VISTA POR LOS USUARIOS GESTIONADORES -->
             {% if data_user %}
             <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-                <h3 class="text-muted">Requerimientos Resueltos por los Usuarios:</h3>
+                <h3 class="text-muted">Usuarios que han gestionado los tickets del cliente {{ customer_name }}.</h3>
             </div>
             {% for year_user in data_user %}
             {% if current_year %}
@@ -301,7 +301,7 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#menuOTRS").addClass("active");
+        $("#menuOTRSCustomers").addClass("active");
         $("#menuQueue{{ current_queue }}").addClass("active");
         $("[id='menuCustomer{{ current_customer }}']").addClass("active");
         $("#menuCustomerYear{{ current_year }}").addClass("active");
@@ -318,33 +318,38 @@
         },
         {% if total_tickets %}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }}.',
+            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }}.',
             align: 'center'
         },
         {% elif months_actives and not current_month %}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }} durante el año {{ current_year }}.',
+            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} durante el año {{ current_year }}.',
             align: 'center'
         },
         {% elif current_month %}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }} durante el mes de {{ month_name }} el año {{ current_year }}.',
+            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} durante el mes de {{ month_name }} el año {{ current_year }}.',
             align: 'center'
         },
-        {% else %}
+        {% elif current_queue == "administrators" %}
         title: {
-            text: 'Cantidad de tickets generados por los clientes.',
+            text: 'Han sido generados {{ data_grah.total_tickets | safe }} tickets por los clientes de AS para ser atendidos por los Administradores.',
+            align: 'center'
+        },
+        {% elif current_queue == "analysts" %}
+        title: {
+            text: 'Han sido generados {{ data_grah.total_tickets | safe }} tickets por los clientes de AS para ser atendidos por los Analistas.',
             align: 'center'
         },
         {% endif %}
         xAxis: {
-            categories: {{ data_grah_x | safe }},
+            categories: {{ data_grah.data_grah_x | safe }},
             crosshair: true
         },
         yAxis: {
             min: 0,
             title: {
-                text: 'Número de requerimientos'
+                text: 'Número de tickets'
             }
         },
         tooltip: {
@@ -361,7 +366,7 @@
             borderWidth: 0
             }
         },
-        series: {{ data_grah_y | safe }}
+        series: {{ data_grah.data_grah_y | safe }}
     });
 </script>
 
@@ -373,10 +378,17 @@
             height: 500,
             type: 'column'
         },
+        {% if current_year %}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }} distribuidos en las siguientes plataformas.',
+            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }} distribuidos en las siguientes plataformas.',
             align: 'center'
         },
+        {% else %}
+        title: {
+            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} distribuidos en las siguientes plataformas.',
+            align: 'center'
+        },
+        {% endif %}
         xAxis: {
             categories: {{ data_x_service | safe }},
             crosshair: true
@@ -384,7 +396,7 @@
         yAxis: {
             min: 0,
             title: {
-                text: 'Número de requerimientos'
+                text: 'Número de tickets'
             }
         },
         tooltip: {
@@ -415,7 +427,7 @@
             type: 'column'
         },
         title: {
-            text: 'Se han gestinado {{ total_tickets }} requerimientos para el cliente {{ customer_name }} distribuidos en las siguientes plataformas.',
+            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }} distribuidos en las siguientes plataformas.',
             align: 'center'
         },
         xAxis: {
@@ -425,7 +437,7 @@
         yAxis: {
             min: 0,
             title: {
-                text: 'Número de requerimientos'
+                text: 'Número de tickets'
             }
         },
         tooltip: {
