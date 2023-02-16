@@ -232,44 +232,54 @@ def get_count_tickets_customers_years(
     ------
     dict
     """
-    if queue_id == 6:
-        users =  users_administrators()
-    if queue_id == 9:
-        users = users_analysts()
-
-    customers = customers_by_period(
-        queue_id = queue_id
-    )
-
-    data_x = list(customers.keys()) 
+    customers = customers_by_period(queue_id=queue_id)
+    customers_temp = list(customers.keys()) 
     years = list(range(datetime.today().year, 2018, -1))
-    data_grah = []
+    total_tickets_customers = {}
+    dict_tickets_customers = {}
     for year in years:
-        tickets_year = []
-        for customer_id in data_x:
+        for customer_id in customers_temp:
             data_temp = Ticket.ticktets_filtered_with(
                 start_period = f"{year}-01-01",
                 end_period = f"{year}-12-31", 
-                customer_id = customer_id, 
+                customer_id = customer_id,
                 queue_id = queue_id,
-                count=True
+                count = True
             )
-            tickets_year.append(data_temp)
+            if customer_id not in total_tickets_customers:
+                total_tickets_customers[customer_id] = data_temp
+                dict_tickets_customers[customer_id] = [data_temp]
+            else:
+                total_tickets_customers[customer_id] += data_temp
+                dict_tickets_customers[customer_id].append(data_temp)
+        
+    total_tickets_customers = sorted(total_tickets_customers.items(), key=lambda x:x[1], reverse=True)
+    
+    ##Ordenando DESC
+    data_x = []
+    for customer_temp in total_tickets_customers:
+        customer_id = customer_temp[0]
+        data_x.append(customer_id)
 
-        data_grah_temp = {
-            "name": year,
-            "data": tickets_year
-        }
-        
+    data_grah = []
+    for pos, year in enumerate(years):
+        tickets_year = []
+        for customer_id in data_x:
+            data_temp = dict_tickets_customers[customer_id][pos]
+            tickets_year.append(data_temp)
+            data_grah_temp = {
+                "name": year,
+                "data": tickets_year
+            }
+
         data_grah.append(data_grah_temp)
-        
+
     print(def_name, datetime.today())
     db.session.commit()
     return {
         "data_x": data_x,
         "data_grah": data_grah
     }
-
 
 # get_count_tickets_customers_years(6)
 # exit()
