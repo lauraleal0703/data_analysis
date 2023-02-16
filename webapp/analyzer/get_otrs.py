@@ -235,7 +235,7 @@ def get_count_tickets_customers_years(
     if queue_id == 6:
         users =  users_administrators()
     if queue_id == 9:
-        users = users_analysts
+        users = users_analysts()
 
     customers = customers_by_period(
         queue_id = queue_id
@@ -477,7 +477,7 @@ def get_tickets_customer_months_year(
     if queue_id == 6:
         users =  users_administrators()
     if queue_id == 9:
-        users = users_analysts
+        users = users_analysts()
 
     calendar = calendar_spanish()
     customer = customers_by_period(
