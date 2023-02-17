@@ -299,6 +299,8 @@ def attend():
 
     if request.method == "GET":
         queue = request.args.get("queue", type=str)
+        user = request.args.get("user", type=int)
+        year_table = request.args.get("year_table", type=int)
 
         if queue:
             if queue == "administrators":
@@ -309,6 +311,37 @@ def attend():
             
             data_grah = get_otrs.get_count_tickets_users_years(queue_id=queue_id)
             users_actives = data_grah["total_tickets_users"]
+
+            if user:
+                data = get_otrs.get_tickets_users_years(user_id=user)
+                data_grah = data["data_grah_year_total"]
+                data_total_table = data["data_total_table"]
+
+                if year_table:
+                    data_tickets = data["tickets_user"][year_table]["total_year"]["tickets"]
+                    
+                    return render_template(
+                        "analysis_otrs/users/index_table.html",
+                        page={"title": "Data Adaptive Security"},
+                        queues=queues,
+                        current_queue=queue,
+                        users_actives=users_actives,
+                        current_user=user,
+                        current_year_table=year_table,
+                        data_total_table=data_total_table,
+                        data_tickets=data_tickets
+                    )
+                
+                return render_template(
+                    "analysis_otrs/users/index.html",
+                    page={"title": "Data Adaptive Security"},
+                    queues=queues,
+                    current_queue=queue,
+                    users_actives=users_actives,
+                    current_user=user,
+                    data_total_table=data_total_table,
+                    data_grah=data_grah
+                )
 
             return render_template(
                 "analysis_otrs/users/index.html",

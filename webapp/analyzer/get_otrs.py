@@ -309,7 +309,6 @@ def get_count_tickets_customers_years(
     customers_temp = list(customers.keys()) 
     years = list(range(datetime.today().year, 2018, -1))
     total_tickets_customers = {}
-    dict_tickets_customers = {}
     dict_tickets_customers: t.Dict[str, t.List] = {}
     total_tickets = 0
     for year in years:
@@ -413,7 +412,7 @@ def get_tickets_customer_years(
     data_user_not_total = {}
     data_user = {}
     data_service_total = {}
-    data_service: t.Dict[int, t.Dict[int, t.Dict[str, list]]] = {}
+    data_service = {}
     data_grah_temp = []
     for year in years:
         data_x.append(year)
@@ -793,12 +792,14 @@ def get_tickets_customer_months_year(
 
 # get_tickets_customer_months_year("Experian", 6, "2023")
 
+
 ######################################################
 #### Da respuesta a: 
 # 3. Cantidad de tickets atendidos por administrador
 # 4. Cantidad de tickets atendidos por administrador, 
 # por plataforma, por cliente
 ######################################################
+
 
 def get_count_tickets_users_years(
         queue_id: int
@@ -893,4 +894,175 @@ def get_count_tickets_users_years(
     }
 
 # get_count_tickets_users_years(6)
+# exit()
+
+
+def get_tickets_users_years(
+        user_id: int
+    ) -> dict:
+    def_name = "get_tickets_users_years"
+    print(def_name, datetime.today())
+    """Obtener todos los tickets de un
+    usuario
+    usuarios de la cola
+    
+    Da los datos directos para la gráfica.
+    https://www.highcharts.com/demo/column-basic
+
+    Parameters
+    ----------
+    queue_id: int
+        ID de la cola
+    
+    Return
+    ------
+    dict
+    """
+    users_actives_temp = users_actives()
+    user_name = users_actives_temp[user_id]
+    years = list(range(datetime.today().year, 2018, -1))
+    tickets_user = {}
+    for year in years:
+        data_temp = Ticket.tickets_period_filtered_with(
+            start_period = f"{year}-01-01",
+            end_period = f"{year}-12-31",
+            user_id = user_id
+        )
+        if not data_temp:
+            continue
+        for ticket in data_temp:
+            ticket: Ticket
+            if year not in tickets_user:
+                tickets_user[year] = {}
+            if "total_year" not in tickets_user[year]:
+                tickets_user[year]["total_year"] = {
+                    "total": len(data_temp),
+                    "tickets": data_temp
+                }
+                
+            
+            if "queue" not in tickets_user[year]:
+                tickets_user[year]["queue"] = {}
+            if ticket.queue_id not in tickets_user[year]["queue"]:
+                tickets_user[year]["queue"][ticket.queue_id] = {
+                    "name": (
+                        ticket.queue.name if ticket.queue else ticket.queue_id
+                    ),
+                    "tickets": [ticket],
+                    "total": 1
+                }
+                
+            else:
+                tickets_user[year]["queue"][ticket.queue_id]["tickets"].append(ticket)
+                tickets_user[year]["queue"][ticket.queue_id]["total"] += 1
+            
+            if "service" not in tickets_user[year]:
+                tickets_user[year]["service"] = {}
+            if ticket.service_id not in tickets_user[year]["service"]:
+                tickets_user[year]["service"][ticket.service_id] = {
+                    "name": (
+                        ticket.service.name if ticket.service else ticket.service_id
+                    ),
+                    "tickets": [ticket],
+                    "total": 1
+                }
+                
+            else:
+                tickets_user[year]["service"][ticket.service_id]["tickets"].append(ticket)
+                tickets_user[year]["service"][ticket.service_id]["total"] += 1
+            
+            if "customer" not in tickets_user[year]:
+                tickets_user[year]["customer"] = {}
+            if ticket.customer_id not in tickets_user[year]["customer"]:
+                tickets_user[year]["customer"][ticket.customer_id] = {
+                    "name": (
+                        ticket.customer.name if ticket.customer else ticket.customer_id
+                    ),
+                    "tickets": [ticket],
+                    "total": 1
+                }
+                
+            else:
+                tickets_user[year]["customer"][ticket.customer_id]["tickets"].append(ticket)
+                tickets_user[year]["customer"][ticket.customer_id]["total"] += 1
+
+    data_grah_y = []
+    data_x_year_total = []
+    data_y_year_total = []
+    data_total = {}
+    for year in tickets_user:
+        data_total[year] = tickets_user[year]["total_year"]["total"]
+        data_x_year_total.append(year)
+        data_y_year_total.append(tickets_user[year]["total_year"]["total"])
+    
+    data_grah_y.append({
+            "name": "Tickets",
+            "data": data_y_year_total
+        })
+
+    queue_temp = [] 
+    for year in tickets_user:
+        for queue_id in tickets_user[year]["queue"]:
+            if queue_id not in queue_temp:
+                queue_temp.append(queue_id)
+    
+    for queue_id in queue_temp:
+        data_temp = []
+        for year in tickets_user:
+            if queue_id in tickets_user[year]["queue"]:
+                total_ = tickets_user[year]["queue"][queue_id]["total"]
+                name_ = tickets_user[year]["queue"][queue_id]["name"]
+            else:
+                total_ = 0
+            data_temp.append(total_)
+        
+        data_grah_y.append({
+            "name": name_,
+            "data": data_temp
+        })
+            
+    data_grah_year_total =  {
+        "user_name": user_name,
+        "total_tickets": sum(data_y_year_total),
+        "data_grah_x": data_x_year_total,
+        "data_grah_y": data_grah_y
+    }
+
+    # data_x_year_total = []
+    # data_y_year_total = []
+    # data_total_service_table = {}
+    # for year in tickets_user:
+    #     for service_id in tickets_user[year]["service"]:
+    #         if service_id not in data_total_service_table:
+    #             data_total_service_table[service_id] = {
+    #                 "name": tickets_user[year]["service"][service_id]["name"],
+    #                 "total": tickets_user[year]["service"][service_id]["total"]
+    #             }
+    #         else:
+    #             data_total_service_table[service_id]["total"] += (
+    #                 tickets_user[year]["service"][service_id]["total"]
+    #             )
+
+    # pprint(data_total_service_table)
+    # data_grah_service_total =  {
+    #     "user_name": user_name,
+    #     "total_tickets": sum(data_y_year_total),
+    #     "data_grah_x": data_x_year_total,
+    #     "data_grah_y": [{
+    #         "name": "Tickets",
+    #         "data": data_y_year_total
+    #     }]
+    # } 
+
+    print(def_name, datetime.today())
+    db.session.commit()
+    return {
+        "tickets_user": tickets_user,
+        "data_grah_year_total": data_grah_year_total,
+        "data_total_table": data_total
+        # "data_grah_service_total": data_grah_service_total,
+        # "data_total_service_table": data_total_service_table
+    }
+
+# get_tickets_users_years(52)
 # exit()

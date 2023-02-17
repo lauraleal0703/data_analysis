@@ -4,8 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 engine = create_engine(
     "mysql://datastudio:GYR4nka2nqt*rkv.xpg@172.16.33.8/otrs?charset=utf8mb4",
-    pool_size=50,
-    max_overflow=1000
+    pool_recycle=3600
 )
 Session = sessionmaker(bind=engine, autoflush=True)
 session = Session()

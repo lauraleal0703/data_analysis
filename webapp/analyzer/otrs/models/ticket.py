@@ -22,6 +22,7 @@ from .ticket_priority import TicketPriority
 from .ticket_state import TicketState
 from .queue import Queue
 from .ticket_history import TicketHistory
+from .customer_company import CustomerCompany
 
 
 SelfTicket = TypeVar("SelfTicket", bound="Ticket")
@@ -40,7 +41,7 @@ class Ticket(db.Base):
 	responsible_user_id = Column(Integer, nullable=False)
 	ticket_priority_id = Column(Integer, ForeignKey("ticket_priority.id"), nullable=False)
 	ticket_state_id = Column(Integer, ForeignKey("ticket_state.id"), nullable=False)
-	customer_id = Column(String, nullable=True)
+	customer_id = Column(String, ForeignKey("customer_company.customer_id"), nullable=True)
 	customer_user_id = Column(String, nullable=True)
 	timeout = Column(Integer, nullable=False)
 	until_time = Column(Integer, nullable=False)
@@ -58,6 +59,7 @@ class Ticket(db.Base):
 	type: TicketType = relationship("TicketType", lazy=True)
 	service: Service = relationship("Service", lazy=True)
 	sla: Sla = relationship("Sla", lazy=True)
+	customer: CustomerCompany = relationship("CustomerCompany", lazy=True)
 	user: User = relationship("User", back_populates="tickets", lazy=True)
 	ticket_priority: TicketPriority = relationship("TicketPriority", lazy=True)
 	ticket_state: TicketState = relationship("TicketState", lazy=True)
