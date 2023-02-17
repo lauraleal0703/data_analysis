@@ -314,8 +314,10 @@ def attend():
 
             if user:
                 data = get_otrs.get_tickets_users_years(user_id=user)
-                data_grah = data["data_grah_year_total"]
+                data_grah = data["data_grah"]
                 data_total_table = data["data_total_table"]
+                data_grah_services = data["data_grah_services"]
+                data_grah_customers = data["data_grah_customers"]
 
                 if year_table:
                     data_tickets = data["tickets_user"][year_table]["total_year"]["tickets"]
@@ -340,7 +342,9 @@ def attend():
                     users_actives=users_actives,
                     current_user=user,
                     data_total_table=data_total_table,
-                    data_grah=data_grah
+                    data_grah=data_grah,
+                    data_grah_services=data_grah_services,
+                    data_grah_customers=data_grah_customers
                 )
 
             return render_template(
