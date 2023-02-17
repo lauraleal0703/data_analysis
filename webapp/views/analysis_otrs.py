@@ -300,7 +300,11 @@ def attend():
     if request.method == "GET":
         queue = request.args.get("queue", type=str)
         user = request.args.get("user", type=int)
-        year_table = request.args.get("year_table", type=int)
+        year = request.args.get("year", type=int)
+        table_month = request.args.get("table_month", type=str)
+        table_year = request.args.get("table_year", type=int)
+        month = request.args.get("month", type=str)
+        table_day = request.args.get("table_day", type=int)
 
         if queue:
             if queue == "administrators":
@@ -309,18 +313,110 @@ def attend():
             if queue == "analysts":
                 queue_id = 9
             
-            data_grah_general = get_otrs.get_count_tickets_users_years(queue_id=queue_id)
+            data_grah_general = get_otrs.get_count_tickets_users_years(
+                queue_id = queue_id
+            )
             users_actives = data_grah_general["total_tickets_users"]
 
             if user:
                 data = get_otrs.get_tickets_users_years(user_id=user)
                 data_grah_general = data["data_grah_general"]
-                data_total_table = data["data_total_table"]
+                data_total_table_year = data["data_total_table"]
                 data_grah_services = data["data_grah_services"]
                 data_grah_customers = data["data_grah_customers"]
 
-                if year_table:
-                    data_tickets = data["tickets_user"][year_table]["total_year"]["tickets"]
+                if year:
+                    data = get_otrs.get_tickets_users_years(
+                        user_id = user,
+                        year = year
+                    )
+                    data_grah_general = data["data_grah_general"]
+                    data_total_table_month = data["data_total_table"]
+                    data_grah_services = data["data_grah_services"]
+                    data_grah_customers = data["data_grah_customers"]
+
+                    if month:
+                        data = get_otrs.get_tickets_users_years(
+                        user_id = user,
+                        year = year,
+                        month = month
+                        )
+                        data_grah_general = data["data_grah_general"]
+                        data_total_table_day = data["data_total_table"]
+                        data_grah_services = data["data_grah_services"]
+                        data_grah_customers = data["data_grah_customers"]
+                        
+                        if table_day:
+                            data_tickets = data["tickets_user"][table_day]["total"]["tickets"]
+            
+                            return render_template(
+                                "analysis_otrs/users/index_table.html",
+                                page={"title": "Data Adaptive Security"},
+                                queues=queues,
+                                current_queue=queue,
+                                users_actives=users_actives,
+                                current_user=user,
+                                current_year=year,
+                                current_month=month,
+                                current_table_day=table_day,
+                                data_total_year=data_total_table_year,
+                                data_total_month=data_total_table_month,
+                                data_total_table_day=data_total_table_day,
+                                data_tickets=data_tickets
+                            )
+
+                        return render_template(
+                            "analysis_otrs/users/index.html",
+                            page={"title": "Data Adaptive Security"},
+                            queues=queues,
+                            current_queue=queue,
+                            users_actives=users_actives,
+                            current_user=user,
+                            current_year=year,
+                            current_month=month,
+                            data_total_year=data_total_table_year,
+                            data_total_month=data_total_table_month,
+                            data_total_table_day=data_total_table_day,
+                            data_grah_general=data_grah_general,
+                            data_grah_services=data_grah_services,
+                            data_grah_customers=data_grah_customers
+                        )
+
+                    if table_month:
+                        data_tickets = data["tickets_user"][table_month]["total"]["tickets"]
+        
+                        return render_template(
+                            "analysis_otrs/users/index_table.html",
+                            page={"title": "Data Adaptive Security"},
+                            queues=queues,
+                            current_queue=queue,
+                            users_actives=users_actives,
+                            current_user=user,
+                            current_year=year,
+                            current_table_month=table_month,
+                            data_total_year=data_total_table_year,
+                            data_total_table_month=data_total_table_month,
+                            data_tickets=data_tickets
+                        )
+                    
+                    return render_template(
+                        "analysis_otrs/users/index.html",
+                        page={"title": "Data Adaptive Security"},
+                        queues=queues,
+                        current_queue=queue,
+                        users_actives=users_actives,
+                        current_user=user,
+                        current_year=year,
+                        data_total_year=data_total_table_year,
+                        data_total_month=data_total_table_month,
+                        data_total_table_month=data_total_table_month,
+                        data_grah_general=data_grah_general,
+                        data_grah_services=data_grah_services,
+                        data_grah_customers=data_grah_customers
+                    )
+
+                if table_year:
+                    data_tickets = data["tickets_user"][table_year]["total"]["tickets"]
                     
                     return render_template(
                         "analysis_otrs/users/index_table.html",
@@ -329,8 +425,8 @@ def attend():
                         current_queue=queue,
                         users_actives=users_actives,
                         current_user=user,
-                        current_year_table=year_table,
-                        data_total_table=data_total_table,
+                        current_table_year=table_year,
+                        data_total_table=data_total_table_year,
                         data_tickets=data_tickets
                     )
                 
@@ -341,7 +437,8 @@ def attend():
                     current_queue=queue,
                     users_actives=users_actives,
                     current_user=user,
-                    data_total_table=data_total_table,
+                    data_total_year=data_total_table_year,
+                    data_total_table_year=data_total_table_year,
                     data_grah_general=data_grah_general,
                     data_grah_services=data_grah_services,
                     data_grah_customers=data_grah_customers

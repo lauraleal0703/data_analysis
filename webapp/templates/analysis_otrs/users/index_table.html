@@ -18,19 +18,77 @@
             </div>
         </div>
         {% endif %}
+       
         {% if data_total_table %}
         <div class="row p-1">
             <div class="col">
-                {% for year_table in data_total_table %}
-                <a id="menuUserYearTable{{ year_table }}"
+                {% for table_year in data_total_table %}
+                <a id="menuUserYearTable{{ table_year }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year_table={{ year_table }}">
-                    {{ year_table }}={{ data_total_table[year_table] }}
+                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&table_year={{ table_year }}">
+                    {{ table_year }}={{ data_total_table[table_year] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
+        
+        {% if data_total_year %}
+        <div class="row p-1">
+            <div class="col">
+                {% for year in data_total_year %}
+                <a id="menuUserYear{{ year }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ year }}">
+                    {{ year }}={{ data_total_year[year] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if data_total_table_month %}
+        <div class="row p-1">
+            <div class="col">
+                {% for table_month in data_total_table_month %}
+                <a id="menuUserYearMonthTable{{ table_month }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&table_month={{ table_month }}">
+                    {{ table_month }}={{ data_total_table_month[table_month] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if data_total_month %}
+        <div class="row p-1">
+            <div class="col">
+                {% for month in data_total_month %}
+                <a id="menuUserYearMonth{{ month }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ month }}">
+                    {{ month }}={{ data_total_month[month] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if data_total_table_day %}
+        <div class="row p-1">
+            <div class="col">
+                {% for table_day in data_total_table_day %}
+                <a id="menuUserYearMonthDayTable{{ table_day }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ current_month }}&table_day={{ table_day }}">
+                    {{ table_day }}={{ data_total_table_day[table_day] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -143,8 +201,11 @@
         $("#menuOTRSUsers").addClass("active");
         $("#menuQueue{{ current_queue }}").addClass("active");
         $("#menuUser{{ current_user }}").addClass("active");
-        $("#menuUserYearTable{{ current_year_table }}").addClass("active");
-        
+        $("#menuUserYearTable{{ current_table_year }}").addClass("active");
+        $("#menuUserYear{{ current_year }}").addClass("active");
+        $("#menuUserYearMonthTable{{ current_table_month }}").addClass("active");
+        $("#menuUserYearMonth{{ current_month }}").addClass("active");
+        $("#menuUserYearMonthDayTable{{ current_table_day }}").addClass("active");
         
         $("#tablaTicketsCustomer thead tr:eq(1) th").each(function() {
             let title = $(this).text();

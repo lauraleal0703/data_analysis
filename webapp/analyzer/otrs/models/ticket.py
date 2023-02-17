@@ -205,7 +205,7 @@ class Ticket(db.Base):
 		AND t.customer_id = customer_id
 		AND t.user_id = user_id
 		AND t.create_time >= "start_period 00:00:00"
-		AND t.create_time >= "end_period 23:59:59"
+		AND t.create_time < "end_period 23:59:59"
 
 		Parameters
 		----------
@@ -230,7 +230,7 @@ class Ticket(db.Base):
 			cls.type_id.notin_(exceptions_type),
 			cls.ticket_state_id.notin_(exceptions_state),
 			cls.create_time >= f"{start_period} 00:00:00",
-			cls.create_time <= f"{end_period} 23:59:59"
+			cls.create_time < f"{end_period} 00:00:00"
 		)
 
 		if queue_id:

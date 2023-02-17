@@ -19,6 +19,35 @@
             </div>
         </div>
         {% endif %}
+
+        {% if data_total_year %}
+        <div class="row p-1">
+            <div class="col">
+                {% for year in data_total_year %}
+                <a id="menuUserYear{{ year }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ year }}">
+                    {{ year }}={{ data_total_year[year] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if data_total_month %}
+        <div class="row p-1">
+            <div class="col">
+                {% for month in data_total_month %}
+                <a id="menuUserYearMonth{{ month }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ month }}">
+                    {{ month }}={{ data_total_month[month] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -48,34 +77,65 @@
             </div>
             {% endif %}
             
-            {%if data_total_table %}
+            {% if data_total_table_year or data_total_table_month or data_total_table_day %}
             <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
                 <h4 class="text-muted">Detalle de los tickets de {{ data_grah_general.user_name }}</h4>
             </div>
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
                     <tr>
-                        <th style="width: 50px;">Año</th>
+                        <th style="width: 50px;">
+                            {% if data_total_table_year %}
+                            Año
+                            {% elif data_total_table_month %}
+                            Mes
+                            {% elif data_total_table_day %}
+                            Día
+                            {% endif %}
+                        </th>
                         <th style="width: 50px;">Total</th>
                         <th style="width: 50px;"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for dato in data_total_table %}
+                    {% if data_total_table_year %}
+                    {% set data = data_total_table_year %}
+                    {% elif data_total_table_month %}
+                    {% set data = data_total_table_month %}
+                    {% elif data_total_table_day %}
+                    {% set data = data_total_table_day %}
+                    {% endif %}
+                    {% for dato in data %}
                     <tr>
                         <td>
                             {{ dato }}
                         </td>
                         <td>
-                            {{ data_total_table[dato] }}
+                            {{ data[dato] }}
                         </td>
                         <td>
+                            {% if current_month %}
                             <a
                                 role="button"
                                 class="btn btn-sm btn-primary"
-                                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year_table={{ dato }}">
+                                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ current_month }}&table_day={{ dato }}">
                                 Ver
                             </a>
+                            {% elif current_year %}
+                            <a
+                                role="button"
+                                class="btn btn-sm btn-primary"
+                                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&table_month={{ dato }}">
+                                Ver
+                            </a>
+                            {% else %}
+                            <a
+                                role="button"
+                                class="btn btn-sm btn-primary"
+                                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&table_year={{ dato }}">
+                                Ver
+                            </a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -91,6 +151,9 @@
         $("#menuOTRSUsers").addClass("active");
         $("#menuQueue{{ current_queue }}").addClass("active");
         $("#menuUser{{ current_user }}").addClass("active");
+        $("#menuUserYear{{ current_year }}").addClass("active");
+        $("#menuUserYearMonth{{ current_month }}").addClass("active");
+        
     });
 </script>
 
@@ -102,7 +165,17 @@
             height: 500,
             type: 'column'
         },
-        {% if current_user %}
+        {% if current_month %}
+        title: {
+            text: 'Han sido atendidos {{ data_grah_general.total_tickets | safe }} tickets en el mes de {{ current_month }} por {{ data_grah_general.user_name | safe }} distribuidos en las siguientes colas.',
+            align: 'center'
+        },
+        {% elif current_year %}
+        title: {
+            text: 'Han sido atendidos {{ data_grah_general.total_tickets | safe }} tickets en el año {{ current_year }} por {{ data_grah_general.user_name | safe }} distribuidos en las siguientes colas.',
+            align: 'center'
+        },
+        {% elif current_user %}
         title: {
             text: 'Han sido atendidos {{ data_grah_general.total_tickets | safe }} tickets por {{ data_grah_general.user_name | safe }} distribuidos en las siguientes colas.',
             align: 'center'
@@ -160,10 +233,22 @@
             height: 500,
             type: 'column'
         },
+        {% if current_month %}
+        title: {
+            text: 'Han sido atendidos {{ data_grah_services.total_tickets | safe }} tickets en el mes de {{ current_month }} por {{ data_grah_services.user_name | safe }} distribuidos en las siguientes plataformas.',
+            align: 'center'
+        },
+        {% elif current_year %}
+        title: {
+            text: 'Han sido atendidos {{ data_grah_services.total_tickets | safe }} tickets en el año {{ current_year }} por {{ data_grah_services.user_name | safe }} distribuidos en las siguientes plataformas.',
+            align: 'center'
+        },
+        {% else %}
         title: {
             text: 'Han sido atendidos {{ data_grah_services.total_tickets | safe }} tickets por {{ data_grah_services.user_name | safe }} distribuidos en las siguientes plataformas.',
             align: 'center'
         },
+        {% endif %}
         xAxis: {
             categories: {{ data_grah_services.data_grah_x | safe }},
             crosshair: true
@@ -201,10 +286,22 @@
             height: 500,
             type: 'column'
         },
+        {% if current_month %}
+        title: {
+            text: 'Han sido atendidos {{ data_grah_customers.total_tickets | safe }} tickets en el mes de {{ current_month }} por {{ data_grah_customers.user_name | safe }} distribuidos en los siguientes clientes.',
+            align: 'center'
+        },
+        {% elif current_year %}
+        title: {
+            text: 'Han sido atendidos {{ data_grah_customers.total_tickets | safe }} tickets en el año {{ current_year }} por {{ data_grah_customers.user_name | safe }} distribuidos en los siguientes clientes.',
+            align: 'center'
+        },
+        {% else %}
         title: {
             text: 'Han sido atendidos {{ data_grah_customers.total_tickets | safe }} tickets por {{ data_grah_customers.user_name | safe }} distribuidos en los siguientes clientes.',
             align: 'center'
         },
+        {% endif %}
         xAxis: {
             categories: {{ data_grah_customers.data_grah_x | safe }},
             crosshair: true

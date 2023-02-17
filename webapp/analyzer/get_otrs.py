@@ -49,8 +49,13 @@ def calendar_spanish():
         "Diciembre"
     ]
 
+    calendar_num = {pos+1: month for pos, month in enumerate(months)}
+    calendar_name = {months[i]: i+1 for i in list(range(0, 12))}
     print(def_name, datetime.today())
-    return {pos+1: month for pos, month in enumerate(months)}
+    return {
+        "calendar_num": calendar_num,
+        "calendar_name": calendar_name
+    }
 
 
 def customers_actives() -> dict:
@@ -192,7 +197,10 @@ def users_actives() -> dict:
     print(def_name, datetime.today())
     return {user.id: user.full_name for user in users}
 
+
 def users_administrators():
+    def_name = "users_administrators"
+    print(def_name, datetime.today())
     """Los usuaios administradores son:
     Marcelo Fernandez user_id = 4
     Jose Nicolas user_id = 12
@@ -221,15 +229,17 @@ def users_administrators():
             continue
         administrators_temp.append(user_id)
 
+    print(def_name, datetime.today())
     return {
         "administrators_temp": administrators_temp,
         "administrators": administrators
     }
 
 
-
 def users_analysts():
-    """Los usuaios administradores son:
+    def_name = "users_analysts"
+    print(def_name, datetime.today())
+    """Los usuaios analistas son:
     José Sanhueza user_id = 13
     Camila Rojas user_id = 26
     Francisco Sepulveda user_id = 29
@@ -259,6 +269,7 @@ def users_analysts():
             continue
         analysts_temp.append(user_id)
     
+    print(def_name, datetime.today())
     return {
         "analysts_temp": analysts_temp,
         "analysts": analysts
@@ -266,7 +277,9 @@ def users_analysts():
 
 
 def users_infra():
-    """Los usuaios administradores son:
+    def_name = "users_infra"
+    print(def_name, datetime.today())
+    """Los usuaios infra son:
 
     Jaime Nuñez user_id = 14
     Ricardo Perez C user_id = 2
@@ -276,6 +289,7 @@ def users_infra():
     """
     infra = [2, 14]
     
+    print(def_name, datetime.today())
     return infra
 
 
@@ -586,6 +600,7 @@ def get_tickets_customer_months_year(
         users = users["analysts"]
 
     calendar = calendar_spanish()
+    calendar = calendar["calendar_num"]
     customer = customers_by_period(
         queue_id = queue_id,
         customer_id=customer_id
@@ -900,22 +915,22 @@ def make_search(
     search: str,
     search_id: t.Union[int, str],
     name: t.Union[int, str],
-    year: int,
+    date: int,
     tickets_user: dict,
     ticket: Ticket
     )-> None:
     """Crear los datos de un parametro especifico"""
-    if search not in tickets_user[year]:
-        tickets_user[year][search] = {}
-    if search_id not in tickets_user[year][search]:
-        tickets_user[year][search][search_id] = {
+    if search not in tickets_user[date]:
+        tickets_user[date][search] = {}
+    if search_id not in tickets_user[date][search]:
+        tickets_user[date][search][search_id] = {
             "name": name,
             "tickets": [ticket],
             "total": 1
         }
     else:
-        tickets_user[year][search][search_id]["tickets"].append(ticket)
-        tickets_user[year][search][search_id]["total"] += 1
+        tickets_user[date][search][search_id]["tickets"].append(ticket)
+        tickets_user[date][search][search_id]["total"] += 1
 
 
 def search_grah(
@@ -928,17 +943,17 @@ def search_grah(
     """Obtener los datos de la grafica de un parametro especifico"""
 
     search_temp = [] 
-    for year in tickets_user:
-        for search_id in tickets_user[year][search]:
+    for date in tickets_user:
+        for search_id in tickets_user[date][search]:
             if search_id not in search_temp:
                 search_temp.append(search_id)
     
     for search_id in search_temp:
         data_temp = []
-        for year in tickets_user:
-            if search_id in tickets_user[year][search]:
-                total_ = tickets_user[year][search][search_id]["total"]
-                name_ = tickets_user[year][search][search_id]["name"]
+        for date in tickets_user:
+            if search_id in tickets_user[date][search]:
+                total_ = tickets_user[date][search][search_id]["total"]
+                name_ = tickets_user[date][search][search_id]["name"]
             else:
                 total_ = 0
             data_temp.append(total_)
@@ -952,11 +967,14 @@ def search_grah(
 
 
 def get_tickets_users_years(
-        user_id: int
+        user_id: int,
+        year: t.Optional[int] = None,
+        month: t.Optional[str] = None
     ) -> dict:
     def_name = "get_tickets_users_years"
     print(def_name, datetime.today())
     """Obtener todos los tickets de un usuario
+    en toda su estadia o en un año en especifico
     
     Da los datos directos para la gráfica.
     https://www.highcharts.com/demo/column-basic
@@ -970,39 +988,70 @@ def get_tickets_users_years(
     ------
     dict
     """
+    calendar_spanish_ = calendar_spanish()
+    calendar_spanish_temp = calendar_spanish_["calendar_num"]
+    calendar_spanish_temp_ = calendar_spanish_["calendar_name"]
     users_actives_temp = users_actives()
     customers_actives_temp = customers_actives()
     user_name = users_actives_temp[user_id]
-    years = list(range(datetime.today().year, 2018, -1))
+
+    if not year:
+        dates = list(range(datetime.today().year, 2018, -1))
+    else:
+        dates = [year]
+    
+    if month:
+        month = calendar_spanish_temp_[month]
+
     tickets_user = {}
-    for year in years:
-        data_temp = Ticket.tickets_period_filtered_with(
-            start_period = f"{year}-01-01",
-            end_period = f"{year}-12-31",
+    for date in dates:
+        if month:
+            data_temp = Ticket.tickets_period_filtered_with(
+            start_period = f"{date}-{month}-01",
+            end_period = f"{date}-{month+1}-01",
             user_id = user_id
         )
+        else:
+            data_temp = Ticket.tickets_period_filtered_with(
+                start_period = f"{date}-01-01",
+                end_period = f"{date+1}-01-01",
+                user_id = user_id
+            )
+        
         if not data_temp:
             continue
+        
         for ticket in data_temp:
             ticket: Ticket
 
             if ticket.customer_id not in customers_actives_temp:
                 continue
+
+            if year:
+                date_temp: datetime = ticket.create_time
+                date = calendar_spanish_temp[date_temp.month]
             
-            if year not in tickets_user:
-                tickets_user[year] = {}
+            if month:
+                date_temp: datetime = ticket.create_time
+                date = date_temp.day
             
-            if "total_year" not in tickets_user[year]:
-                tickets_user[year]["total_year"] = {
-                    "total": len(data_temp),
-                    "tickets": data_temp
+            if date not in tickets_user:
+                tickets_user[date] = {}
+            
+            if "total" not in tickets_user[date]:
+                tickets_user[date]["total"] = {
+                    "total": 1,
+                    "tickets": [ticket]
                 }
+            else:
+                tickets_user[date]["total"]["total"] += 1
+                tickets_user[date]["total"]["tickets"].append(ticket)
 
             make_search(
                 search = "queues",
                 search_id = ticket.queue_id,
                 name = ticket.queue.name,
-                year = year,
+                date = date,
                 tickets_user = tickets_user,
                 ticket = ticket
             )
@@ -1011,7 +1060,7 @@ def get_tickets_users_years(
                 search = "services",
                 search_id = ticket.service_id,
                 name = ticket.service.name if ticket.service else ticket.service_id,
-                year = year,
+                date = date,
                 tickets_user = tickets_user,
                 ticket = ticket
             )
@@ -1020,7 +1069,7 @@ def get_tickets_users_years(
                 search = "customers",
                 search_id = ticket.customer_id,
                 name = ticket.customer_id,
-                year = year,
+                date = date,
                 tickets_user = tickets_user,
                 ticket = ticket
             )
@@ -1028,10 +1077,10 @@ def get_tickets_users_years(
     data_x = []
     data_y = []
     data_total = {}
-    for year in tickets_user:
-        data_total[year] = tickets_user[year]["total_year"]["total"]
-        data_x.append(year)
-        data_y.append(tickets_user[year]["total_year"]["total"])
+    for date in tickets_user:
+        data_total[date] = tickets_user[date]["total"]["total"]
+        data_x.append(date)
+        data_y.append(tickets_user[date]["total"]["total"])
     
     data_grah_y = [{
         "name": "Tickets",
