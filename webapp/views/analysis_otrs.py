@@ -347,7 +347,7 @@ def attend():
                         data_grah_customers = data["data_grah_customers"]
                         
                         if table_day:
-                            data_tickets = data["tickets_user"][table_day]["total"]["tickets"]
+                            data_tickets = data["dict_tickets"][table_day]["total"]["tickets"]
             
                             return render_template(
                                 "analysis_otrs/users/index_table.html",
@@ -383,7 +383,7 @@ def attend():
                         )
 
                     if table_month:
-                        data_tickets = data["tickets_user"][table_month]["total"]["tickets"]
+                        data_tickets = data["dict_tickets"][table_month]["total"]["tickets"]
         
                         return render_template(
                             "analysis_otrs/users/index_table.html",
@@ -416,7 +416,7 @@ def attend():
                     )
 
                 if table_year:
-                    data_tickets = data["tickets_user"][table_year]["total"]["tickets"]
+                    data_tickets = data["dict_tickets"][table_year]["total"]["tickets"]
                     
                     return render_template(
                         "analysis_otrs/users/index_table.html",
