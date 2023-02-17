@@ -1009,9 +1009,7 @@ def get_tickets_users_years(
                 tickets_user[year]["customer"] = {}
             if ticket.customer_id not in tickets_user[year]["customer"]:
                 tickets_user[year]["customer"][ticket.customer_id] = {
-                    "name": (
-                        ticket.customer.name if ticket.customer else ticket.customer_id
-                    ),
+                    "name": ticket.customer_id,
                     "tickets": [ticket],
                     "total": 1
                 }

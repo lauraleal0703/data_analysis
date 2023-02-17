@@ -31,7 +31,27 @@
                 </figure>
             </div>
             {% endif %}
+
+            {% if data_grah_services %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_tickets_users_services"></div>
+                </figure>
+            </div>
+            {% endif %}
+
+            {% if data_grah_customers %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_tickets_users_customers"></div>
+                </figure>
+            </div>
+            {% endif %}
+            
             {%if data_total_table %}
+            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+                <h4 class="text-muted">Detalle de los tickets de {{ data_grah.user_name }}</h4>
+            </div>
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
                     <tr>
@@ -62,24 +82,6 @@
                 </tbody>
             </table>
             {% endif %}
-
-            {% if data_grah_services %}
-            <div>
-                <figure class="highcharts-figure">
-                    <div id="container_tickets_users_services"></div>
-                </figure>
-            </div>
-            {% endif %}
-
-            {% if data_grah_customers %}
-            <div>
-                <figure class="highcharts-figure">
-                    <div id="container_tickets_users_customers"></div>
-                </figure>
-            </div>
-            {% endif %}
-            
-            
         </div>
     </div>
 </div>
@@ -102,7 +104,7 @@
         },
         {% if current_user %}
         title: {
-            text: 'Han sido atendidos {{ data_grah.total_tickets | safe }} tickets por {{ data_grah.user_name | safe }}.',
+            text: 'Han sido atendidos {{ data_grah.total_tickets | safe }} tickets por {{ data_grah.user_name | safe }} distribuidos en las siguientes colas.',
             align: 'center'
         },
         {% elif current_queue == "administrators" %}

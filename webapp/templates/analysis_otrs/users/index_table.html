@@ -35,33 +35,33 @@
     <div class="card-body">
         <div class="table-responsive">
             {% if data_tickets %}
-            <table id="tablaTicketsCustomer" class="table table-bordered display text-center" style="width:100%">
+            <table id="tablaTicketsCustomer" class="table table-bordered display text-center" style="width: 100%">
                 <thead class="bg-light">
                     <tr>
-                        <th style="width: 10px;">ID</th>
-                        <th style="width: 10px;">TN</th>
-                        <th style="width: 30px;">Titulo</th>
-                        <th style="width: 10px;">Responsable</th>
-                        <th style="width: 10px;">Servicio</th>
-                        <th style="width: 10px;">SLA</th>
-                        <th style="width: 10px;">Estado</th>
-                        <th style="width: 10px;">Tipo</th>
-                        <th style="width: 10px;">Prioridad</th>
-                        <th style="width: 10px;">Cola</th>
-                        <th style="width: 10px"></th>
+                        <th style="width: 5%">ID</th>
+                        <th style="width: 5%">TN</th>
+                        <th style="width: 5%">Titulo</th>
+                        <th style="width: 5%">Responsable</th>
+                        <th style="width: 5%">Servicio</th>
+                        <th style="width: 5%">Cliente</th>
+                        <th style="width: 5%">Estado</th>
+                        <th style="width: 5%">Tipo</th>
+                        <th style="width: 5%">Prioridad</th>
+                        <th style="width: 5%">Cola</th>
+                        <th style="width: 5%"></th>
                     </tr>
                     <tr>
-                        <th style="width: 10px;">ID</th>
-                        <th style="width: 10px;">TN</th>
-                        <th style="width: 30px;">Titulo</th>
-                        <th style="width: 10px;">Responsable</th>
-                        <th style="width: 10px;">Servicio</th>
-                        <th style="width: 10px;">SLA</th>
-                        <th style="width: 10px;">Estado</th>
-                        <th style="width: 10px;">Tipo</th>
-                        <th style="width: 10px;">Prioridad</th>
-                        <th style="width: 10px;">Cola</th>
-                        <th style="width: 10px"></th>
+                        <th style="width: 5%">ID</th>
+                        <th style="width: 5%">TN</th>
+                        <th style="width: 5%">Titulo</th>
+                        <th style="width: 5%">Responsable</th>
+                        <th style="width: 5%">Servicio</th>
+                        <th style="width: 5%">Cliente</th>
+                        <th style="width: 5%">Estado</th>
+                        <th style="width: 5%">Tipo</th>
+                        <th style="width: 5%">Prioridad</th>
+                        <th style="width: 5%">Cola</th>
+                        <th style="width: 5%"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -89,11 +89,7 @@
 
                         </td>
                         <td>
-                            {% if ticket.sla %}
-                            {{ ticket.sla.name }}
-                            {% else %}
-                            {{ ticket.sla_id }}
-                            {% endif %}
+                            {{ ticket.customer_id }}
                         </td>
                         <td>
                             {% if ticket.ticket_state %}
@@ -116,11 +112,7 @@
                             {% endif %}
                         </td>
                         <td> 
-                            {% if ticket.queue %}
-                            {{ ticket.queue.name }}
-                            {% else %}
                             {{ ticket.queue_id }}
-                            {% endif %}
                         </td>
                         <td>
                             <a class="btn btn-sm btn-outline-primary" 
