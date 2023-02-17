@@ -309,12 +309,12 @@ def attend():
             if queue == "analysts":
                 queue_id = 9
             
-            data_grah = get_otrs.get_count_tickets_users_years(queue_id=queue_id)
-            users_actives = data_grah["total_tickets_users"]
+            data_grah_general = get_otrs.get_count_tickets_users_years(queue_id=queue_id)
+            users_actives = data_grah_general["total_tickets_users"]
 
             if user:
                 data = get_otrs.get_tickets_users_years(user_id=user)
-                data_grah = data["data_grah"]
+                data_grah_general = data["data_grah_general"]
                 data_total_table = data["data_total_table"]
                 data_grah_services = data["data_grah_services"]
                 data_grah_customers = data["data_grah_customers"]
@@ -342,7 +342,7 @@ def attend():
                     users_actives=users_actives,
                     current_user=user,
                     data_total_table=data_total_table,
-                    data_grah=data_grah,
+                    data_grah_general=data_grah_general,
                     data_grah_services=data_grah_services,
                     data_grah_customers=data_grah_customers
                 )
@@ -353,7 +353,7 @@ def attend():
                 queues=queues,
                 current_queue=queue,
                 users_actives=users_actives,
-                data_grah=data_grah
+                data_grah_general=data_grah_general
             )
         
     return render_template(

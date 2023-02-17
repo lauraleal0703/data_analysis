@@ -24,7 +24,7 @@
         <div class="table-responsive">
 
             <!-- VISTA POR LOS TICKETS DEL AÑO -->
-            {% if data_grah %}
+            {% if data_grah_general %}
             <div>
                 <figure class="highcharts-figure">
                     <div id="container_tickets_users"></div>
@@ -50,7 +50,7 @@
             
             {%if data_total_table %}
             <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-                <h4 class="text-muted">Detalle de los tickets de {{ data_grah.user_name }}</h4>
+                <h4 class="text-muted">Detalle de los tickets de {{ data_grah_general.user_name }}</h4>
             </div>
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
@@ -94,7 +94,7 @@
     });
 </script>
 
-{% if data_grah %}
+{% if data_grah_general %}
 <script type="text/javascript">
     Highcharts.chart('container_tickets_users', {
         chart: {
@@ -104,17 +104,17 @@
         },
         {% if current_user %}
         title: {
-            text: 'Han sido atendidos {{ data_grah.total_tickets | safe }} tickets por {{ data_grah.user_name | safe }} distribuidos en las siguientes colas.',
+            text: 'Han sido atendidos {{ data_grah_general.total_tickets | safe }} tickets por {{ data_grah_general.user_name | safe }} distribuidos en las siguientes colas.',
             align: 'center'
         },
         {% elif current_queue == "administrators" %}
         title: {
-            text: 'Han sido atendidos {{ data_grah.total_tickets | safe }} tickets por los Administradores de AS.',
+            text: 'Han sido atendidos {{ data_grah_general.total_tickets | safe }} tickets por los Administradores de AS.',
             align: 'center'
         },
         {% elif current_queue == "analysts" %}
         title: {
-            text: 'Han sido atendidos {{ data_grah.total_tickets | safe }} tickets por los Analistas de AS.',
+            text: 'Han sido atendidos {{ data_grah_general.total_tickets | safe }} tickets por los Analistas de AS.',
             align: 'center'
         },
         {% else %}
@@ -124,7 +124,7 @@
         },
         {% endif %}
         xAxis: {
-            categories: {{ data_grah.data_grah_x | safe }},
+            categories: {{ data_grah_general.data_grah_x | safe }},
             crosshair: true
         },
         yAxis: {
@@ -147,7 +147,7 @@
             borderWidth: 0
             }
         },
-        series: {{ data_grah.data_grah_y | safe }}
+        series: {{ data_grah_general.data_grah_y | safe }}
     });
 </script>
 {% endif %}
@@ -160,27 +160,10 @@
             height: 500,
             type: 'column'
         },
-        {% if current_user %}
         title: {
             text: 'Han sido atendidos {{ data_grah_services.total_tickets | safe }} tickets por {{ data_grah_services.user_name | safe }} distribuidos en las siguientes plataformas.',
             align: 'center'
         },
-        {% elif current_queue == "administrators" %}
-        title: {
-            text: 'Han sido atendidos {{ data_grah_services.total_tickets | safe }} tickets por los Administradores de AS.',
-            align: 'center'
-        },
-        {% elif current_queue == "analysts" %}
-        title: {
-            text: 'Han sido atendidos {{ data_grah_services.total_tickets | safe }} tickets por los Analistas de AS.',
-            align: 'center'
-        },
-        {% else %}
-        title: {
-            text: '',
-            align: 'center'
-        },
-        {% endif %}
         xAxis: {
             categories: {{ data_grah_services.data_grah_x | safe }},
             crosshair: true
@@ -218,27 +201,10 @@
             height: 500,
             type: 'column'
         },
-        {% if current_user %}
         title: {
             text: 'Han sido atendidos {{ data_grah_customers.total_tickets | safe }} tickets por {{ data_grah_customers.user_name | safe }} distribuidos en los siguientes clientes.',
             align: 'center'
         },
-        {% elif current_queue == "administrators" %}
-        title: {
-            text: 'Han sido atendidos {{ data_grah_customers.total_tickets | safe }} tickets por los Administradores de AS.',
-            align: 'center'
-        },
-        {% elif current_queue == "analysts" %}
-        title: {
-            text: 'Han sido atendidos {{ data_grah_customers.total_tickets | safe }} tickets por los Analistas de AS.',
-            align: 'center'
-        },
-        {% else %}
-        title: {
-            text: '',
-            align: 'center'
-        },
-        {% endif %}
         xAxis: {
             categories: {{ data_grah_customers.data_grah_x | safe }},
             crosshair: true
