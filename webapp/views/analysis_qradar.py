@@ -15,7 +15,7 @@ analysis_qradar = Blueprint("analysis_qradar", __name__, url_prefix="/analysis_q
 
 @analysis_qradar.get("/")
 def index():
-    services = {"arbor": "Arbor"}
+    services = {"arbor": "Arbor AAN"}
 
     if request.method == "GET":
         service = request.args.get("service", type=str)
