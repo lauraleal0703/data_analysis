@@ -3,10 +3,11 @@ from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import DateTime
 from sqlalchemy import ForeignKey
+from sqlalchemy import and_
 from sqlalchemy import desc
 from sqlalchemy import asc
-from sqlalchemy import and_
 from sqlalchemy.orm import relationship
+
 
 from typing import TypeVar
 from typing import List
@@ -106,9 +107,9 @@ class Ticket(db.Base):
 		).order_by(asc(TicketHistory.create_time)).all()
 	
 
-	########################################
-	#############QUERY#####################
-	#######################################
+	####################################################
+	#############QUERY TICKETS##########################
+	###################################################
 	
 	@classmethod
 	def tickets_filtered_with(cls: SelfTicket,
@@ -246,5 +247,3 @@ class Ticket(db.Base):
 			return query.count()
 
 		return query.all()
-	
-	#########################################################################

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include "analysis_qradar/index/menu.html" %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+            <h3 class="text-muted">{{ page.title }}</h3>
+        </div>
+        {% if dates_actives %}
+        <div class="row p-1">
+            <div class="col">
+                {% for date in dates_actives %}
+                <a id="menuQRadarServiceDate{{ date[1]['date'] }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_qradar?service={{ current_service }}&pos={{ date[0] }}&date={{ date[1]['date'] }}">
+                    {{ date[1]["date_name"] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+
+            <!-- VISTA DEL TOTAL DE EVENTOS BLOQUEADOS -->
+            {% if total_blocked_events %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_total_blocked_events"></div>
+                </figure>
+            </div>
+            {% endif %}
+            
+
+            <!-- VISTA DE EVENTOS BLOQUEADOS -->
+            {% if data_grah %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_eventos_bloqueados"></div>
+                </figure>
+            </div>
+            {% endif %}
+            
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menuQRadar").addClass("active");
+        $("#menuQRadarService{{ current_service }}").addClass("active");
+        $("#menuQRadarServiceDate{{ current_date }}").addClass("active");
+    });
+</script>
+
+
+{% if total_blocked_events %}
+<script type="text/javascript">
+    Highcharts.chart('container_total_blocked_events', {
+        chart: {
+            width: 1200,
+            height: 500,
+            type: 'column'
+        },
+        title: {
+            text: 'Se han gestinado {{ total_blocked_events.total }}.',
+            align: 'center'
+        },
+        xAxis: {
+            categories: {{ total_blocked_events.data_grah_x | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de tickets'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.0f}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ total_blocked_events.data_grah_y | safe }}
+    });
+</script>
+{% endif %}
+
+{% if data_grah %}
+<script type="text/javascript">
+    Highcharts.chart('container_eventos_bloqueados', {
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        {% if current_pos == 5 %}
+        title: {
+            text: 'Los eventos bloqueados que van en el mes de {{ data_grah.name_date}} del año {{ data_grah.year }} son {{ data_grah.total }} distribuidos en:',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: 'Los eventos bloqueados en el mes de {{ data_grah.name_date}} del año {{ data_grah.year }} fueron {{ data_grah.total }} distribuidos en:',
+            align: 'center'
+        },
+        {% endif %}
+        accessibility: {
+            point: {
+            valueSuffix: ''
+            }
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+            dataLabels: {
+                enabled: true,
+                format: '<b>{point.name}</b>: {point.y}'
+                }
+            }
+        },
+        series: {{ data_grah.data_grah  | tojson }}
+    });
+</script>
+{% endif %}
+
+{% endblock %}

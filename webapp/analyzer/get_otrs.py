@@ -3,12 +3,14 @@ try:
     from .otrs.models.user import User
     from .otrs.models.ticket import Ticket
     from .otrs.models.customer_company import CustomerCompany
+    from .otrs.models.dynamic_field_value import DynamicFieldValue
     from .qradar import qradar
 except:
     from otrs.models import db
     from otrs.models.user import User
     from otrs.models.ticket import Ticket
     from otrs.models.customer_company import CustomerCompany
+    from otrs.models.dynamic_field_value import DynamicFieldValue
     from qradar import qradar
 
 
@@ -1153,3 +1155,22 @@ def get_tickets_users_years(
 
 # get_tickets_users_years(52)
 # exit()
+
+###Prueba dado un ticket.id, se tiene el ID de QRadar
+# test = DynamicFieldValue.get_offense_id(45796)
+# print(test)
+# OK
+
+
+''' 
+for ticket in data_otrs:
+    if len(re.findall(r"Ofensa", ticket.title)) > 0 and len(re.findall(r"\d{5,}", ticket.title)) > 0 and len(set(re.findall(r"\d{5,}|-|\d{5,}", ticket.title))) == 2:
+        id_offense = re.findall(r"\d{5,}", ticket.title)
+        data_qradar = tools_qradar.start_time_offenses(id_offense[0])
+        create_time_otrs = ticket.create_time + timedelta(hours=1)
+        start_time_qradar = "0"
+        response_time = "0"
+        print(f" id_offense: {id_offense[0]} --create_time_otrs:{create_time_otrs} --data_qradar:{data_qradar}")
+        handwork = re.findall(r"Ofensa N°", ticket.title)
+        if handwork:
+'''

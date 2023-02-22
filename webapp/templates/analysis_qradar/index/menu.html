@@ -1,0 +1,20 @@
+<nav class="navbar navbar-expand" id="menubar">
+	<ul class="navbar-nav mr-auto font-weight-bold">
+		<li class="nav-item">
+			<a href="#" id="sidebarCollapse">
+				<i class="fas fa-bars"></i>
+			</a>
+		</li>
+		{% for service in services %}
+		<li id="menuQRadarService{{ service }}" class="nav-item">
+			<a href="/analysis_qradar?service={{ service }}">
+				<div class="row">
+					<div class="col">
+						<span>{{ services[service] }}</span>
+					</div>
+				</div>
+			</a>
+		</li>
+		{% endfor %}
+	</ul>
+</nav>
