@@ -316,19 +316,19 @@
             height: 500,
             type: 'column'
         },
-        {% if total_tickets %}
+        {% if current_year == 2023 %}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }}.',
+            text: 'Se han gestionado {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }}.',
             align: 'center'
         },
-        {% elif months_actives and not current_month %}
+        {% elif current_year %}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} durante el año {{ current_year }}.',
+            text: 'Se gestionaron {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }}.',
             align: 'center'
         },
-        {% elif current_month %}
+        {% elif customer_name %}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} durante el mes de {{ month_name }} el año {{ current_year }}.',
+            text: 'Se gestionaron {{ total_tickets }} tickets para el cliente {{ customer_name }}.',
             align: 'center'
         },
         {% elif current_queue == "administrators" %}
@@ -378,14 +378,19 @@
             height: 500,
             type: 'column'
         },
-        {% if current_year %}
+        {% if current_year == 2023 %}
         title: {
             text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }} distribuidos en las siguientes plataformas.',
             align: 'center'
         },
+        {% elif current_year %}
+        title: {
+            text: 'Se gestionaron {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }} distribuidos en las siguientes plataformas.',
+            align: 'center'
+        },
         {% else %}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} distribuidos en las siguientes plataformas.',
+            text: 'Se gestionaron {{ total_tickets }} tickets para el cliente {{ customer_name }} distribuidos en las siguientes plataformas.',
             align: 'center'
         },
         {% endif %}
@@ -426,10 +431,17 @@
             height: 500,
             type: 'column'
         },
+        {% if current_year == 2023 %}
         title: {
             text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }} distribuidos en las siguientes plataformas.',
             align: 'center'
         },
+        {% elif current_year  %}
+        title: {
+            text: 'Se gestionaron {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }} distribuidos en las siguientes plataformas.',
+            align: 'center'
+        },
+        {% endif %}
         xAxis: {
             categories: {{ data_x_service_total | safe }},
             crosshair: true

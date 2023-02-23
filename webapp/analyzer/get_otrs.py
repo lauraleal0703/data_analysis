@@ -385,6 +385,7 @@ def get_count_tickets_customers_years(
 
         data_grah.append(data_grah_temp)
 
+    total_tickets = '{:,}'.format(total_tickets).replace(',','.')
     print(def_name, datetime.today())
     db.session.commit()
     return {
@@ -554,14 +555,23 @@ def get_tickets_customer_years(
                 total = 0
             dict_service[service_temp].append(total)
 
+    dict_service_sum = {ser: sum(dict_service[ser])  for ser in dict_service}
+    dict_service_sum = sorted(
+        dict_service_sum.items(),
+        key=lambda x:x[1], 
+        reverse=True
+    )
+
     data_grah_service = []
-    for service_temp in dict_service:
+    for service_temp in dict_service_sum:
+        service_temp = service_temp[0]
         dato_temp = {
             "name": dict_service_temp[service_temp],
             "data": dict_service[service_temp]
         }
         data_grah_service.append(dato_temp)
 
+    total_tickets = '{:,}'.format(total_tickets).replace(',','.')
     print(def_name, datetime.today())
     db.session.commit()
     return {
@@ -801,6 +811,7 @@ def get_tickets_customer_months_year(
         "data": data_grah_service_total
     }]
 
+    total_tickets = '{:,}'.format(total_tickets).replace(',','.')
     print(def_name, datetime.today())
     db.session.commit()
     return {
@@ -916,6 +927,7 @@ def get_count_tickets_users_years(
 
         data_grah.append(data_grah_temp)
 
+    total_tickets = '{:,}'.format(total_tickets).replace(',','.')
     print(def_name, datetime.today())
     db.session.commit()
     return {
