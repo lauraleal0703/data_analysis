@@ -15,6 +15,21 @@ from googletrans import Translator, constants
 ##########################
 
 
+def customers_arbor():
+    """Los clientes que cuentan con el servicio Arbor son:
+    * AAN
+    """
+    customers = get_otrs.customers_actives()
+    customers_arbor = ["AAN"]
+    
+    dict_customers_arbor = {
+        customer: customers[customer] for customer in customers_arbor
+    }
+
+    return dict_customers_arbor
+
+
+
 def dates_actives():
     """Hay información de 5 meses atrás en QRadar"""
     def_name = "dates_actives"

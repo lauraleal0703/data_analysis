@@ -15,7 +15,7 @@ analysis_qradar = Blueprint("analysis_qradar", __name__, url_prefix="/analysis_q
 
 @analysis_qradar.get("/")
 def index():
-    services = {"arbor": "Arbor AAN"}
+    services = {"arbor": "Arbor"}
 
     if request.method == "GET":
         service = request.args.get("service", type=str)
@@ -23,6 +23,9 @@ def index():
         date = request.args.get("date", type=str)
 
         if service == "arbor":
+            customers_arbor = get_qradar.customers_arbor()
+            current_customer_arbor = "AAN"
+            current_customer_arbor_name = customers_arbor[current_customer_arbor]
             dates_actives = get_qradar.dates_actives()
             total_blocked_events = get_qradar.total_blocked_events()
 
@@ -37,6 +40,9 @@ def index():
                     page={"title": "KPI 1: Eventos Bloqueados"},
                     services = services,
                     current_service = service,
+                    customers_arbor = customers_arbor,
+                    current_customer_arbor = current_customer_arbor,
+                    current_customer_arbor_name = current_customer_arbor_name,
                     dates_actives = dates_actives,
                     current_date = date,
                     current_pos = pos,
@@ -48,6 +54,9 @@ def index():
                 page={"title": "Análisis de Arbor - QRadar"},
                 services = services,
                 current_service = service,
+                customers_arbor = customers_arbor,
+                current_customer_arbor = current_customer_arbor,
+                current_customer_arbor_name = current_customer_arbor_name,
                 dates_actives = dates_actives,
                 total_blocked_events = total_blocked_events
             )

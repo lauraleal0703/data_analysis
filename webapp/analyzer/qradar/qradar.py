@@ -165,6 +165,7 @@ def ariel_results(search_id: str):
         )
         completed = search["completed"]
         time.sleep(2)
+        print("...")
  
     print(def_name, datetime.today())
     return curl_qradar_get(

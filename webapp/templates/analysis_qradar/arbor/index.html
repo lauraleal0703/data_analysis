@@ -5,9 +5,23 @@
 
 <div class="card">
     <div class="card-header">
-        <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+        <div class="p-3 bg-light rounded text-center">
             <h3 class="text-muted">{{ page.title }}</h3>
         </div>
+
+        {% if customers_arbor %}
+        <div class="row p-1">
+            <div class="col">
+                {% for customer in customers_arbor %}
+                <a id="menuQRadarArborCustomer{{ customer }}"
+                    class="btn btn-sm btn-outline-primary">
+                    {{ customer }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         {% if dates_actives %}
         <div class="row p-1">
             <div class="col">
@@ -21,6 +35,7 @@
             </div>
         </div>
         {% endif %}
+
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -53,6 +68,8 @@
         $("#menuQRadar").addClass("active");
         $("#menuQRadarService{{ current_service }}").addClass("active");
         $("#menuQRadarServiceDate{{ current_date }}").addClass("active");
+        $("#menuQRadarArborCustomer{{ current_customer_arbor }}").addClass("active");
+        
     });
 </script>
 
@@ -66,7 +83,7 @@
             type: 'column'
         },
         title: {
-            text: 'Se han gestinado {{ total_blocked_events.total }}.',
+            text: 'Se recibieron un total de {{ total_blocked_events.total }} eventos de la plataforma Arbor del cliente {{ current_customer_arbor_name }}.',
             align: 'center'
         },
         xAxis: {
@@ -109,12 +126,12 @@
         },
         {% if current_pos == 4 %}
         title: {
-            text: 'Los eventos bloqueados que van en el mes de {{ data_grah.name_date}} del año {{ data_grah.year }} son {{ data_grah.total }} distribuidos en:',
+            text: 'Se han recibido en el mes de {{ data_grah.name_date}} del año {{ data_grah.year }} un total de {{ data_grah.total }} eventos de la plataforma Arbor del cliente {{ current_customer_arbor_name }}.',
             align: 'center'
         },
         {% else %}
         title: {
-            text: 'Los eventos bloqueados en el mes de {{ data_grah.name_date}} del año {{ data_grah.year }} fueron {{ data_grah.total }} distribuidos en:',
+            text: 'Se recibieron en el mes de {{ data_grah.name_date}} del año {{ data_grah.year }} un total de {{ data_grah.total }} eventos de la plataforma Arbor del cliente {{ current_customer_arbor_name }}.',
             align: 'center'
         },
         {% endif %}
@@ -128,8 +145,8 @@
                 allowPointSelect: true,
                 cursor: 'pointer',
             dataLabels: {
-                enabled: true,
-                format: '<b>{point.name}</b>: {point.y}'
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.y}'
                 }
             }
         },
