@@ -1,6 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore")
 
+import time
 import requests
 from datetime import datetime
 import typing as t
@@ -158,15 +159,14 @@ def ariel_results(search_id: str):
     )
     completed = search["completed"]
 
-    i = 1
     while not completed:
         search = curl_qradar_get(
             f"ariel/searches/{search_id}"
         )
         completed = search["completed"]
-        i +=1
-
-    print("Iteraciones =", i, def_name, datetime.today())
+        time.sleep(2)
+ 
+    print(def_name, datetime.today())
     return curl_qradar_get(
         f"ariel/searches/{search_id}/results"
     )
