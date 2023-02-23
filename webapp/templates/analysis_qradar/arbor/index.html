@@ -5,16 +5,19 @@
 
 <div class="card">
     <div class="card-header">
+        {% if page.title %}
         <div class="p-3 bg-light rounded text-center">
             <h3 class="text-muted">{{ page.title }}</h3>
         </div>
+        {% endif %}
 
-        {% if customers_arbor %}
+        {% if customers_actives %}
         <div class="row p-1">
             <div class="col">
-                {% for customer in customers_arbor %}
+                {% for customer in customers_actives %}
                 <a id="menuQRadarArborCustomer{{ customer }}"
-                    class="btn btn-sm btn-outline-primary">
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_qradar?service={{ current_service }}&customer={{ customer }}">
                     {{ customer }}
                 </a>
                 {% endfor %}
@@ -28,7 +31,7 @@
                 {% for date in dates_actives %}
                 <a id="menuQRadarServiceDate{{ date[1]['date'] }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_qradar?service={{ current_service }}&pos={{ date[0] }}&date={{ date[1]['date'] }}">
+                    href="/analysis_qradar?service={{ current_service }}&customer={{ current_customer }}&pos={{ date[0] }}&date={{ date[1]['date'] }}">
                     {{ date[1]["date_name"] }}
                 </a>
                 {% endfor %}
@@ -44,21 +47,51 @@
             {% if total_blocked_events %}
             <div>
                 <figure class="highcharts-figure">
-                    <div id="container_total_blocked_events"></div>
+                    <div id="container_barras"></div>
                 </figure>
             </div>
             {% endif %}
             
 
             <!-- VISTA DE EVENTOS BLOQUEADOS -->
-            {% if data_grah %}
+            {% if data_grah_events %}
             <div>
                 <figure class="highcharts-figure">
-                    <div id="container_eventos_bloqueados"></div>
+                    <div id="container_torta"></div>
                 </figure>
             </div>
             {% endif %}
+
+            {% if data_grah_events_paises %}
+            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+                <h3 class="text-muted">Resumen de Eventos Relevantes</h3>
+            </div>
             
+            {% if data_grah_events_paises.data_grah_continent %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_barras_continent"></div>
+                </figure>
+            </div>
+            {% endif %}
+
+            {% if data_grah_events_paises.data_grah_top_continent_pais %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_barras_comparativas"></div>
+                </figure>
+            </div>
+            {% endif %}
+
+            {% if data_grah_events_paises.data_grah_top_paises %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_barras"></div>
+                </figure>
+            </div>
+            {% endif %}
+            {% endif %}
+                
         </div>
     </div>
 </div>
@@ -68,38 +101,61 @@
         $("#menuQRadar").addClass("active");
         $("#menuQRadarService{{ current_service }}").addClass("active");
         $("#menuQRadarServiceDate{{ current_date }}").addClass("active");
-        $("#menuQRadarArborCustomer{{ current_customer_arbor }}").addClass("active");
+        $("#menuQRadarArborCustomer{{ current_customer }}").addClass("active");
         
     });
 </script>
 
-
-{% if total_blocked_events %}
+{% if data_grah_events_paises %}
+{% set data_grah = data_grah_events_paises.data_grah_top_paises %}
+{% elif total_blocked_events %}
+{% set data_grah = total_blocked_events %}
+{% endif %}
+{% if total_blocked_events or data_grah_events_paises %}
 <script type="text/javascript">
-    Highcharts.chart('container_total_blocked_events', {
+    Highcharts.chart('container_barras', {
         chart: {
-            width: 1200,
-            height: 500,
             type: 'column'
         },
-        title: {
-            text: 'Se recibieron un total de {{ total_blocked_events.total }} eventos de la plataforma Arbor del cliente {{ current_customer_arbor_name }}.',
-            align: 'center'
-        },
+        {% if data_grah_events_paises %}
+            {% if current_pos == 4 %}
+            title: {
+                text: 'El top 10 de los países que más eventos estan generando suman un total de {{ data_grah.total }}.',
+                align: 'center'
+            },
+            {% else %}
+            title: {
+                text: 'El top 10 de los países que más eventos generaron sumaron un total de {{ data_grah.total }}.',
+                align: 'center'
+            },
+            {% endif %}
+        {% elif total_blocked_events %}
+            {% if current_pos == 4 %}
+            title: {
+                text: 'Se han recibido un total de {{ data_grah.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
+                align: 'center'
+            },
+            {% else %}
+            title: {
+                text: 'Se recibieron un total de {{ data_grah.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
+                align: 'center'
+            },
+            {% endif %}
+        {% endif %}
         xAxis: {
-            categories: {{ total_blocked_events.data_grah_x | safe }},
+            categories: {{ data_grah.data_grah_x | safe }},
             crosshair: true
         },
         yAxis: {
             min: 0,
             title: {
-                text: 'Número de tickets'
+                text: 'Número de eventos'
             }
         },
         tooltip: {
             headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-            '<td style="padding:0"><b>{point.y:.0f}</b></td></tr>',
+            '<td style="padding:0"><b>{point.y}</b></td></tr>',
             footerFormat: '</table>',
             shared: true,
             useHTML: true
@@ -110,14 +166,63 @@
             borderWidth: 0
             }
         },
-        series: {{ total_blocked_events.data_grah_y | safe }}
+        series: {{ data_grah.data_grah_y | safe }}
     });
 </script>
 {% endif %}
 
-{% if data_grah %}
+{% if data_grah_events_paises %}
+{% set data_grah = data_grah_events_paises.data_grah_continent %}
+{% endif %}
+{% if data_grah_events_paises %}
 <script type="text/javascript">
-    Highcharts.chart('container_eventos_bloqueados', {
+    Highcharts.chart('container_barras_continent', {
+        chart: {
+            type: 'column'
+        },
+        {% if current_pos == 4 %}
+        title: {
+            text: 'Se han recibido un total de {{ data_grah.total }} eventos distribuidos en los siguientes continentes.',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: 'Se recibieron un total de {{ data_grah.total }} eventos distribuidos en los siguientes continentes.',
+            align: 'center'
+        },
+        {% endif %}
+        xAxis: {
+            categories: {{ data_grah.data_grah_x | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de eventos'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah.data_grah_y | safe }}
+    });
+</script>
+{% endif %}
+
+{% if data_grah_events %}
+<script type="text/javascript">
+    Highcharts.chart('container_torta', {
         chart: {
             plotBackgroundColor: null,
             plotBorderWidth: null,
@@ -126,12 +231,12 @@
         },
         {% if current_pos == 4 %}
         title: {
-            text: 'Se han recibido en el mes de {{ data_grah.name_date}} del año {{ data_grah.year }} un total de {{ data_grah.total }} eventos de la plataforma Arbor del cliente {{ current_customer_arbor_name }}.',
+            text: 'Se han recibido en el mes de {{ data_grah_events.name_date}} del año {{ data_grah_events.year }} un total de {{ data_grah_events.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
             align: 'center'
         },
         {% else %}
         title: {
-            text: 'Se recibieron en el mes de {{ data_grah.name_date}} del año {{ data_grah.year }} un total de {{ data_grah.total }} eventos de la plataforma Arbor del cliente {{ current_customer_arbor_name }}.',
+            text: 'Se recibieron en el mes de {{ data_grah_events.name_date}} del año {{ data_grah_events.year }} un total de {{ data_grah_events.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
             align: 'center'
         },
         {% endif %}
@@ -139,6 +244,11 @@
             point: {
             valueSuffix: ''
             }
+        },
+        tooltip: {
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y}</b></td></tr>',
+            shared: true
         },
         plotOptions: {
             pie: {
@@ -150,7 +260,45 @@
                 }
             }
         },
-        series: {{ data_grah.data_grah  | tojson }}
+        series: {{ data_grah_events.data_grah  | tojson }}
+    });
+</script>
+{% endif %}
+
+{% if data_grah_events_paises %}
+{% set data_grah = data_grah_events_paises.data_grah_top_continent_pais %}
+{% endif %}
+{% if data_grah_events_paises %}
+<script>
+    Highcharts.chart('container_barras_comparativas', {
+        chart: {
+            type: 'column'
+        },
+        {% if current_pos == 4 %}
+        title: {
+            text: 'El top 10 de los países que más eventos estan generando suman un total de {{ data_grah.total }}.',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: 'El top 10 de los países que más eventos generaron sumaron un total de {{ data_grah.total }}.',
+            align: 'center'
+        },
+        {% endif %}
+        xAxis: {
+            categories: {{ data_grah.data_grah_x | safe }}
+        },
+        yAxis: {
+            min: 0,
+            title: {
+            text: 'Número de eventos'
+            }
+        },
+        tooltip: {
+            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+            shared: true
+        },
+        series: {{ data_grah.data_grah_y | safe }}
     });
 </script>
 {% endif %}

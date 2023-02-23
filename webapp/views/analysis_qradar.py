@@ -19,34 +19,54 @@ def index():
 
     if request.method == "GET":
         service = request.args.get("service", type=str)
+        customer = request.args.get("customer", type=str)
         pos = request.args.get("pos", type=int)
         date = request.args.get("date", type=str)
 
         if service == "arbor":
-            customers_arbor = get_qradar.customers_arbor()
-            current_customer_arbor = "AAN"
-            current_customer_arbor_name = customers_arbor[current_customer_arbor]
+            customers_actives = get_qradar.customers_arbor()
             dates_actives = get_qradar.dates_actives()
             total_blocked_events = get_qradar.total_blocked_events()
 
-            if date:
-                data_grah = get_qradar.blocked_events(
-                    date = date,
-                    aql_name = "AAN_Informe_Arbor_1"
-                )
+            if customer == "AAN":
+                current_customer_name = customers_actives[customer]
 
+                if date:
+                    data_grah_events = get_qradar.blocked_events(
+                        customer = customer,
+                        date = date
+                    )
+
+                    data_grah_events_paises = get_qradar.events_paises(
+                        customer = customer,
+                        date = date
+                    )
+
+                    return render_template(
+                        "analysis_qradar/arbor/index.html",
+                        page={"title": ""},
+                        services = services,
+                        current_service = service,
+                        customers_actives = customers_actives,
+                        current_customer = customer,
+                        current_customer_name = current_customer_name,
+                        dates_actives = dates_actives,
+                        current_date = date,
+                        current_pos = pos,
+                        data_grah_events = data_grah_events,
+                        data_grah_events_paises = data_grah_events_paises
+                    )
+                
                 return render_template(
                     "analysis_qradar/arbor/index.html",
-                    page={"title": "KPI 1: Eventos Bloqueados"},
+                    page={"title": ""},
                     services = services,
                     current_service = service,
-                    customers_arbor = customers_arbor,
-                    current_customer_arbor = current_customer_arbor,
-                    current_customer_arbor_name = current_customer_arbor_name,
+                    customers_actives = customers_actives,
+                    current_customer = customer,
+                    current_customer_name = current_customer_name,
                     dates_actives = dates_actives,
-                    current_date = date,
-                    current_pos = pos,
-                    data_grah = data_grah
+                    total_blocked_events = total_blocked_events
                 )
 
             return render_template(
@@ -54,11 +74,7 @@ def index():
                 page={"title": "Análisis de Arbor - QRadar"},
                 services = services,
                 current_service = service,
-                customers_arbor = customers_arbor,
-                current_customer_arbor = current_customer_arbor,
-                current_customer_arbor_name = current_customer_arbor_name,
-                dates_actives = dates_actives,
-                total_blocked_events = total_blocked_events
+                customers_actives = customers_actives
             )
 
     return render_template(
