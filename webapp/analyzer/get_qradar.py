@@ -387,7 +387,7 @@ def events_paises(
     )
 
     data_grah_y_top_continent_pais_porcent.append({
-            "name": "Diefrencia",
+            "name": "Diferencia",
             "data": data_y_porcent_dif
         }
     )
