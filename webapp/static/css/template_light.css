@@ -8,7 +8,7 @@ body {
 }
 
 .card-header {
-    font-size: medium !important;
+    font-size: 12px !important;
 }
 
 .card-footer {
@@ -54,7 +54,7 @@ a:focus {
 
 .nav-item {
     font-family: "Roboto", sans-serif;
-    font-size: medium;
+    font-size: 12px !important;
     padding: 0px 5px;
     color: #b2bfdc;
 }

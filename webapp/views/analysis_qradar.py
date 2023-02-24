@@ -71,7 +71,7 @@ def index():
 
             return render_template(
                 "analysis_qradar/arbor/index.html",
-                page={"title": "Análisis de Arbor - QRadar"},
+                page={"title": "Análisis de Arbor - QRadar."},
                 services = services,
                 current_service = service,
                 customers_actives = customers_actives
@@ -79,7 +79,7 @@ def index():
 
     return render_template(
         "analysis_qradar/index/index.html",
-        page={"title": "Análisis de QRadar"},
+        page={"title": "Análisis de QRadar."},
         services = services
     )
 

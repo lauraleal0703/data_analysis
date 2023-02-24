@@ -55,8 +55,10 @@ def index():
 
                 return render_template(
                     "analysis_otrs/customers/index_table.html",
-                    page = {"title": """Se muestran los tickests que durante el
-                    último mes no tienen servicio asociado o el usuario es de otra cola"""},
+                    page = {"title": """Se muestran los tickets que durante el
+                        año 2023 no tienen servicio asociado o el usuario es de
+                        otra cola."""
+                    },
                     queues = queues,
                     current_queue = queue,
                     data_tickets_conflic = data_tickets_conflic
@@ -70,8 +72,10 @@ def index():
 
                 return render_template(
                     "analysis_otrs/customers/index_table.html",
-                    page = {"title": """Se muestran los tickests que durante el
-                    último año no tienen servicio asociado o el usuario es de otra cola"""},
+                    page = {"title": """Se muestran los tickets que en el
+                        año 2022 no tienen servicio asociado o el usuario
+                        es de otra cola."""
+                    },
                     queues = queues,
                     current_queue = queue,
                     data_tickets_conflic = data_tickets_conflic
@@ -85,8 +89,10 @@ def index():
 
                 return render_template(
                     "analysis_otrs/customers/index_table.html",
-                    page = {"title": """Se muestran los tickests que durante los 2 últimos años
-                    no tienen servicio asociado o el usuario es de otra cola"""},
+                    page = {"title": """Se muestran los tickets que en el
+                        año 2021 no tienen servicio asociado o el usuario
+                        es de otra cola."""
+                    },
                     queues = queues,
                     current_queue = queue,
                     data_tickets_conflic = data_tickets_conflic
@@ -399,7 +405,7 @@ def attend():
             
                             return render_template(
                                 "analysis_otrs/users/index_table.html",
-                                page={"title": "Data Adaptive Security"},
+                                page={"title": ""},
                                 queues=queues,
                                 current_queue=queue,
                                 users_actives=users_actives,
@@ -415,7 +421,7 @@ def attend():
 
                         return render_template(
                             "analysis_otrs/users/index.html",
-                            page={"title": "Data Adaptive Security"},
+                            page={"title": ""},
                             queues=queues,
                             current_queue=queue,
                             users_actives=users_actives,
@@ -435,7 +441,7 @@ def attend():
         
                         return render_template(
                             "analysis_otrs/users/index_table.html",
-                            page={"title": "Data Adaptive Security"},
+                            page={"title": ""},
                             queues=queues,
                             current_queue=queue,
                             users_actives=users_actives,
@@ -449,7 +455,7 @@ def attend():
                     
                     return render_template(
                         "analysis_otrs/users/index.html",
-                        page={"title": "Data Adaptive Security"},
+                        page={"title": ""},
                         queues=queues,
                         current_queue=queue,
                         users_actives=users_actives,
@@ -468,7 +474,7 @@ def attend():
                     
                     return render_template(
                         "analysis_otrs/users/index_table.html",
-                        page={"title": "Data Adaptive Security"},
+                        page={"title": ""},
                         queues=queues,
                         current_queue=queue,
                         users_actives=users_actives,
@@ -480,7 +486,7 @@ def attend():
                 
                 return render_template(
                     "analysis_otrs/users/index.html",
-                    page={"title": "Data Adaptive Security"},
+                    page={"title": ""},
                     queues=queues,
                     current_queue=queue,
                     users_actives=users_actives,
@@ -494,7 +500,7 @@ def attend():
 
             return render_template(
                 "analysis_otrs/users/index.html",
-                page={"title": "Data Adaptive Security"},
+                page={"title": ""},
                 queues=queues,
                 current_queue=queue,
                 users_actives=users_actives,
@@ -504,7 +510,8 @@ def attend():
     return render_template(
         "analysis_otrs/index_users/index.html",
         page={"title": """En la pestaña superior puede seleccionar la vista de
-            los tickets atendidos por los Administradores o los Analistas de Adaptive Security."""
+            los tickets atendidos por los Administradores o los Analistas de
+            Adaptive Security."""
         },
         queues = queues
     )
