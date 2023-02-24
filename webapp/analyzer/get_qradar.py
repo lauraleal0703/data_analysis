@@ -392,8 +392,6 @@ def events_paises(
         }
     )
 
-    print(data_grah_y_top_continent_pais_porcent)
-
     data_grah_top_continent_pais = {
         "data_grah_x": data_grah_x_top_paises,
         "data_grah_y": data_grah_y_top_continent_pais,

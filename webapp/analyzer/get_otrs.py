@@ -868,7 +868,7 @@ def get_tickets_conflic(
         )
         if data:
             data_total[queue_id] = data
-    print(data_total.keys())
+ 
     print(def_name, datetime.today())
     return data_total
 

@@ -18,11 +18,11 @@ analysis_otrs = Blueprint("analysis_otrs", __name__, url_prefix="/analysis_otrs"
 @analysis_otrs.get("/")
 def index():
     queues = {
-        "administrators": "Administradores",
-        "analysts": "Analistas",
-        "conflictMonth": "Tickests en Conflicto del mes",
-        "conflictYear": "Tickests en Conflicto del último año",
-        "conflictTwoYear": "Tickests en Conflicto 2 años atrás"
+        "administrators": "De Administración",
+        "analysts": "De Análisis",
+        "conflictMonth": "Tickests en Conflicto del 2023",
+        "conflictYear": "Tickests en Conflicto del 2022",
+        "conflictTwoYear": "Tickests en Conflicto 2021"
     }
 
     if request.method == "GET":

@@ -10,6 +10,7 @@ from sqlalchemy.orm import relationship
 
 
 from datetime import datetime
+from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
 from typing import TypeVar
@@ -295,15 +296,16 @@ class Ticket(db.Base):
 		exceptions_state = [5, 9, 15]
 		users_id = users_id + [1]
 
-		end_period = datetime.strftime(datetime.today(), "%Y-%m-%d")
 		if time == "month":
-			start_period = datetime.strftime(datetime.today() - relativedelta(months=1), "%Y-%m-%d")
+			start_period = "2023-01-01"
+			end_period = datetime.strftime(datetime.today() + timedelta(days=1), "%Y-%m-%d")
+			print(start_period, end_period)
 		if time == "year":
-			start_period = datetime.strftime(datetime.today() - relativedelta(months=12), "%Y-%m-%d")
+			start_period = "2022-01-01"
+			end_period = "2023-01-01"
 		if time == "twoYear":
-			start_period = datetime.strftime(datetime.today() - relativedelta(months=14), "%Y-%m-%d")
-		
-		print(start_period, end_period)
+			start_period = "2021-01-01"
+			end_period = "2022-01-01"
 
 		query = db.session.query(cls).filter(
 			cls.create_time >= f"{start_period} 00:00:00",
