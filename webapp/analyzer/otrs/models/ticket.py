@@ -39,7 +39,7 @@ class Ticket(db.Base):
 	queue_id = Column(Integer, ForeignKey("queue.id"), nullable=False)
 	ticket_lock_id = Column(Integer, nullable=False)
 	type_id = Column(Integer, ForeignKey("ticket_type.id"), nullable=True)
-	service_id = Column(Integer, ForeignKey("service.id"), nullable=True)
+	_service_id = Column("service_id", Integer, ForeignKey("service.id"), nullable=True)
 	sla_id = Column(Integer, ForeignKey("sla.id"), nullable=True)
 	user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 	responsible_user_id = Column(Integer, nullable=False)
@@ -69,6 +69,11 @@ class Ticket(db.Base):
 	ticket_state: TicketState = relationship("TicketState", lazy=True)
 	ticket_history: TicketHistory = relationship("TicketHistory", back_populates="ticket", lazy=True)
 	
+	@property
+	def service_id(self: SelfTicket):
+		if self._service_id is None:
+			return "Undefined"
+		return self._service_id
 
 	@property
 	def last_history(self: SelfTicket) -> TicketHistory:
@@ -301,7 +306,7 @@ class Ticket(db.Base):
 			cls.customer_id.in_(customers),
 			cls.type_id.notin_(exceptions_type),
 			cls.ticket_state_id.notin_(exceptions_state),
-			cls.service_id.is_(None)
+			cls.service_id == "Undefined"
 		)
 
 		return query.all()
