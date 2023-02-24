@@ -9,6 +9,9 @@ from sqlalchemy import asc
 from sqlalchemy.orm import relationship
 
 
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+
 from typing import TypeVar
 from typing import List
 from typing import Optional
@@ -36,7 +39,7 @@ class Ticket(db.Base):
 	queue_id = Column(Integer, ForeignKey("queue.id"), nullable=False)
 	ticket_lock_id = Column(Integer, nullable=False)
 	type_id = Column(Integer, ForeignKey("ticket_type.id"), nullable=True)
-	_service_id = Column("service_id", Integer, ForeignKey("service.id"), nullable=True)
+	service_id = Column(Integer, ForeignKey("service.id"), nullable=True)
 	sla_id = Column(Integer, ForeignKey("sla.id"), nullable=True)
 	user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 	responsible_user_id = Column(Integer, nullable=False)
@@ -65,14 +68,6 @@ class Ticket(db.Base):
 	ticket_priority: TicketPriority = relationship("TicketPriority", lazy=True)
 	ticket_state: TicketState = relationship("TicketState", lazy=True)
 	ticket_history: TicketHistory = relationship("TicketHistory", back_populates="ticket", lazy=True)
-	
-
-	@property
-	def service_id(self: SelfTicket) -> Union[int, str]:
-		"""Redefinir la variable en caso de que sea NULL"""
-		if not self._service_id:
-			return "Undefined"
-		return self._service_id
 	
 
 	@property
@@ -245,5 +240,66 @@ class Ticket(db.Base):
 		
 		if count:
 			return query.count()
+
+		return query.all()
+	
+
+	@classmethod
+	def tickets_month_conflict(cls: SelfTicket,
+		queue_id: int,
+		users_id: list
+	) -> List[SelfTicket]:
+		"""Obtener los tickests como una lista de objetos
+		de un periodo dado los filtros
+		*type_id = 68 es Accion preventiva
+		*ticket_state_id = 5 es removed
+		*ticket_state_id = 9 es merged
+		*ticket_state_id = 15 es cancelado
+		
+		QUERY EN SQL
+
+		SELECT *
+		FROM ticket AS t
+		WHERE t.type_id NOT IN (68)
+		AND t.ticket_state_id NOT IN (5, 9, 15) 
+		AND t.queue_id = queue_id
+		AND t.user_id = user_id
+		AND t.create_time >= "start_period 00:00:00"
+		AND t.create_time < "end_period 23:59:59"
+
+		Parameters
+		----------
+		queue_id: int
+			ID de la cola
+		customer_id: str
+        	ID del cliente
+		user_id: str
+        	ID del usuario
+
+		Returns
+		-------
+		Int
+			Cantidad de tickets COUNT(*)
+		List 
+			Una lista de objetos de tipo ticket
+		"""
+		exceptions_type = [68]
+		exceptions_state = [5, 9, 15]
+		users_id = users_id + [1]
+
+		end_period = datetime.strftime(datetime.today(), "%Y-%m-%d")
+		start_period = datetime.strftime(datetime.today() - relativedelta(months=1), "%Y-%m-%d")
+		
+		print(start_period, end_period)
+
+		query = db.session.query(cls).filter(
+			cls.create_time >= f"{start_period} 00:00:00",
+			cls.create_time < f"{end_period} 00:00:00",
+			cls.queue_id == queue_id,
+			cls.user_id.notin_(users_id),
+			cls.type_id.notin_(exceptions_type),
+			cls.ticket_state_id.notin_(exceptions_state),
+			cls.service_id.is_(None)
+		)
 
 		return query.all()

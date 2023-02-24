@@ -835,6 +835,36 @@ def get_tickets_customer_months_year(
 
 # get_tickets_customer_months_year("Experian", 6, "2023")
 
+####################################################
+###Migueñ Suarez
+#####Resumen de tickest en conflicto
+######################################################
+
+
+def get_tickets_conflic():
+    """Obtener los tickets que en el último mes no tienen
+    servicio asociado o el usuario es de otra cola"""
+    def_name = "get_tickets_conflic"
+    print(def_name, datetime.today())
+    queues_id = [6, 9]
+    data_total = {}
+    for queue_id in queues_id:
+        if queue_id == 6:
+            users =  users_administrators()
+            users = users["administrators_temp"]
+        if queue_id == 9:
+            users = users_analysts()
+            users = users["analysts_temp"]
+        data = Ticket.tickets_month_conflict(
+            queue_id = queue_id,
+            users_id = users
+        )
+        if data:
+            data_total[queue_id] = data
+    print(data_total.keys())
+    print(def_name, datetime.today())
+    return data_total
+
 
 ######################################################
 #### Da respuesta a: 

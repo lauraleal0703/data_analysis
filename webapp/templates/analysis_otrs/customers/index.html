@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "analysis_otrs/index_customers/menu.html" %}
+{% include "analysis_otrs/customers/menu.html" %}
 
 <div class="card">
     <div class="card-header">
+        {% if page.title %}
+        <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+            <h3 class="text-muted">{{ page.title }}</h3>
+        </div>
+        {% endif %}
         <!-- Clientes activos los últimos 3 meses -->
         {% if customers_actives %}
         <div class="row p-1">
@@ -52,11 +57,13 @@
         <div class="table-responsive">
 
             <!-- VISTA POR LOS TICKETS DEL AÑO -->
+            {% if data_grah %}
             <div>
                 <figure class="highcharts-figure">
                     <div id="container_tickets_customers"></div>
                 </figure>
             </div>
+            {% endif %}
             
             {% if data_total %}
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
@@ -309,6 +316,7 @@
     });
 </script>
 
+{% if data_grah %}
 <script type="text/javascript">
     Highcharts.chart('container_tickets_customers', {
         chart: {
@@ -369,6 +377,7 @@
         series: {{ data_grah.data_grah_y | safe }}
     });
 </script>
+{% endif %}
 
 {% if data_grah_service %}
 <script type="text/javascript">
@@ -470,4 +479,5 @@
     });
 </script>
 {% endif %}
+
 {% endblock %}

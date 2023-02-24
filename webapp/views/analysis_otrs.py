@@ -18,6 +18,7 @@ analysis_otrs = Blueprint("analysis_otrs", __name__, url_prefix="/analysis_otrs"
 @analysis_otrs.get("/")
 def index():
     queues = {
+        "conflict": "Tickests en Conflicto",
         "administrators": "Administradores",
         "analysts": "Analistas"
     }
@@ -44,6 +45,18 @@ def index():
             if queue == "analysts":
                 queue_id = 9
             
+            if queue == "conflict":
+                data_tickets_conflic = get_otrs.get_tickets_conflic()
+
+                return render_template(
+                    "analysis_otrs/customers/index_table.html",
+                    page = {"title": """Se muestran los tickests que durante el
+                    último mes no tienen servicio asociado o el usuario es de otra cola"""},
+                    queues = queues,
+                    current_queue = queue,
+                    data_tickets_conflic = data_tickets_conflic
+                )
+            
             data_grah = get_otrs.get_count_tickets_customers_years(queue_id=queue_id)
             customers_actives = data_grah["total_tickets_customers"]
             
@@ -67,7 +80,7 @@ def index():
 
                     return render_template(
                         "analysis_otrs/customers/index_table.html",
-                        page={"title": "Data Adaptive Security"},
+                        page={"title": ""},
                         queues=queues,
                         current_queue=queue,
                         year_actives_table=data_total,
@@ -85,7 +98,7 @@ def index():
                     
                     return render_template(
                         "analysis_otrs/customers/index_table.html",
-                        page={"title": "Data Adaptive Security"},
+                        page={"title": ""},
                         queues=queues,
                         current_queue=queue,
                         customers_actives=customers_actives,
@@ -102,7 +115,7 @@ def index():
                     
                     return render_template(
                         "analysis_otrs/customers/index_table.html",
-                        page={"title": "Data Adaptive Security"},
+                        page={"title": ""},
                         queues=queues,
                         current_queue=queue,
                         customers_actives=customers_actives,
@@ -119,7 +132,7 @@ def index():
                     
                     return render_template(
                         "analysis_otrs/customers/index_table.html",
-                        page={"title": "Data Adaptive Security"},
+                        page={"title": ""},
                         queues=queues,
                         current_queue=queue,
                         customers_actives=customers_actives,
@@ -153,7 +166,7 @@ def index():
 
                         return render_template(
                             "analysis_otrs/customers/index_table.html",
-                            page={"title": "Data Adaptive Security"},
+                            page={"title": ""},
                             queues=queues,
                             current_queue=queue,
                             year_actives=year_actives,
@@ -173,7 +186,7 @@ def index():
 
                         return render_template(
                             "analysis_otrs/customers/index_table.html",
-                            page={"title": "Data Adaptive Security"},
+                            page={"title": ""},
                             queues=queues,
                             current_queue=queue,
                             year_actives=year_actives,
@@ -195,7 +208,7 @@ def index():
                         
                         return render_template(
                             "analysis_otrs/customers/index_table.html",
-                            page={"title": "Data Adaptive Security"},
+                            page={"title": ""},
                             queues=queues,
                             current_queue=queue,
                             year_actives=year_actives,
@@ -217,7 +230,7 @@ def index():
 
                         return render_template(
                             "analysis_otrs/customers/index_table.html",
-                            page={"title": "Data Adaptive Security"},
+                            page={"title": ""},
                             queues=queues,
                             current_queue=queue,
                             year_actives=year_actives,
@@ -233,7 +246,7 @@ def index():
                     
                     return render_template(
                         "analysis_otrs/customers/index.html",
-                        page={"title": "Data Adaptive Security"},
+                        page={"title": ""},
                         queues=queues,
                         current_queue=queue,
                         customers_actives=customers_actives,
@@ -255,7 +268,7 @@ def index():
                 
                 return render_template(
                     "analysis_otrs/customers/index.html",
-                    page={"title": "Data Adaptive Security"},
+                    page={"title": ""},
                     queues=queues,
                     current_queue=queue,
                     customers_actives=customers_actives,
@@ -273,7 +286,7 @@ def index():
 
             return render_template(
                 "analysis_otrs/customers/index.html",
-                page={"title": "Data Adaptive Security"},
+                page={"title": ""},
                 queues=queues,
                 current_queue=queue,
                 customers_actives=customers_actives,
@@ -281,7 +294,7 @@ def index():
             )
         
     return render_template(
-        "analysis_otrs/index_customers/index.html",
+        "analysis_otrs/customers/index.html",
         page={"title": """En la pestaña superior puede seleccionar la vista de
             los tickets generados por los clientes de Adaptive Security
             para ser atendidos por los Administradores o los Analistas."""
