@@ -284,11 +284,11 @@ def events_paises(
             if continet not in dict_continents:
                 dict_continents[continet] = {
                     "paises":  [pais_temp],
-                    "total": recuento_event
+                    "total": int(recuento_event)
                 }
             else:
                 dict_continents[continet]["paises"].append(pais_temp)
-                dict_continents[continet]["total"] += recuento_event
+                dict_continents[continet]["total"] += int(recuento_event)
         
         name_event = f"{continet}.{pais_temp}"
         dict_paises[name_event] = int(recuento_event)
@@ -321,8 +321,10 @@ def events_paises(
         reverse=True
     )
 
+
     data_grah_x_top_paises = []
     data_grah_y_temp = []
+    order_continet_top_10 = []
     total_top_paises = 0
     data_grah_x_top_continent_pais = []
     for pos, pais in enumerate(dict_paises_desc):
@@ -338,6 +340,7 @@ def events_paises(
 
             if name_continent not in data_grah_x_top_continent_pais:
                 data_grah_x_top_continent_pais.append(name_continent)
+                order_continet_top_10.append(dict_continents[name_continent]["total"])
             data_grah_x_top_paises.append(name_pais)
             data_grah_y_temp.append(pais[1])
             total_top_paises += int(pais[1])
@@ -351,25 +354,55 @@ def events_paises(
         "total": total_top_paises
     }
 
+
+    data_grah_y_top_continent_pais_porcent = []
     data_grah_y_top_continent_pais = []
-    for continent_ in data_grah_x_top_continent_pais:
+    data_y_porcent = []
+    data_y_porcent_dif = []
+    for pos_continent, continent_ in enumerate(data_grah_x_top_continent_pais):
         data_y_ = []
+        data_y_porcent_temp = 0
         for pais_continent in data_grah_x_top_paises:
             if pais_continent in dict_continents[continent_]["paises"]:
                 name_complete = f"{continent_}.{pais_continent}"
                 data_y_.append(dict_paises[name_complete])
+                data_y_porcent_temp += dict_paises[name_complete]
             else:
                 data_y_.append(0)
-        
+            
+        data_y_porcent.append(data_y_porcent_temp)
+        dif = order_continet_top_10[pos_continent] - data_y_porcent_temp
+        data_y_porcent_dif.append(dif)
+
         data_grah_y_top_continent_pais.append({
                 "name": continent_,
                 "data": data_y_
             }
         )
 
+    data_grah_y_top_continent_pais_porcent.append({
+            "name": "Total",
+            "data": data_y_porcent
+        }
+    )
+
+    data_grah_y_top_continent_pais_porcent.append({
+            "name": "Diefrencia",
+            "data": data_y_porcent_dif
+        }
+    )
+
+    print(data_grah_y_top_continent_pais_porcent)
+
     data_grah_top_continent_pais = {
         "data_grah_x": data_grah_x_top_paises,
         "data_grah_y": data_grah_y_top_continent_pais,
+        "total": total_top_paises
+    }
+
+    data_grah_top_continent_pais_porcent = {
+        "data_grah_x": data_grah_x_top_continent_pais,
+        "data_grah_y": data_grah_y_top_continent_pais_porcent,
         "total": total_top_paises
     }
 
@@ -379,7 +412,8 @@ def events_paises(
         "name_date": name_date,
         "data_grah_top_paises": data_grah_top_paises,
         "data_grah_continent": data_grah_continent,
-        "data_grah_top_continent_pais": data_grah_top_continent_pais
+        "data_grah_top_continent_pais": data_grah_top_continent_pais,
+        "data_grah_top_continent_pais_porcent": data_grah_top_continent_pais_porcent
     }
 
 

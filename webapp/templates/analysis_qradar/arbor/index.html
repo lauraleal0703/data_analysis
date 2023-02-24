@@ -83,6 +83,14 @@
             </div>
             {% endif %}
 
+            {% if data_grah_events_paises.data_grah_top_continent_pais_porcent %}
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_barras_comparativas_porcent"></div>
+                </figure>
+            </div>
+            {% endif %}
+
             {% if data_grah_events_paises.data_grah_top_paises %}
             <div>
                 <figure class="highcharts-figure">
@@ -286,17 +294,62 @@
         },
         {% endif %}
         xAxis: {
-            categories: {{ data_grah.data_grah_x | safe }}
+            categories: {{ data_grah.data_grah_x | safe }},
+            crosshair: true
         },
         yAxis: {
             min: 0,
             title: {
-            text: 'Número de eventos'
+                text: 'Número de eventos'
             }
         },
         tooltip: {
             pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
             shared: true
+        },
+        series: {{ data_grah.data_grah_y | safe }}
+    });
+</script>
+{% endif %}
+
+{% if data_grah_events_paises %}
+{% set data_grah = data_grah_events_paises.data_grah_top_continent_pais_porcent %}
+{% endif %}
+{% if data_grah_events_paises %}
+<script>
+    Highcharts.chart('container_barras_comparativas_porcent', {
+        chart: {
+            type: 'column'
+        },
+        {% if current_pos == 4 %}
+        title: {
+            text: 'El top 10 de los países que más eventos estan generando suman un total de {{ data_grah.total }}.',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: 'El top 10 de los países que más eventos generaron sumaron un total de {{ data_grah.total }}.',
+            align: 'center'
+        },
+        {% endif %}
+        xAxis: {
+            categories: {{ data_grah.data_grah_x | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de eventos'
+            }
+        },
+        tooltip: {
+            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b>({point.percentage:.1f}%)<br/>',
+            shared: true
+        },
+        plotOptions: {
+            column: {
+                stacking: 'percent'
+            }
         },
         series: {{ data_grah.data_grah_y | safe }}
     });
