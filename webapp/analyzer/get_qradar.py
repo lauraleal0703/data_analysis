@@ -12,24 +12,9 @@ from datetime import datetime
 from googletrans import Translator
 
 
-##############################################################################
-#################################--Arbor######################################
-##############################################################################
-
-
-def customers_arbor():
-    """Los clientes que cuentan con el servicio Arbor son:
-    * AAN
-    """
-    customers = get_otrs.customers_actives()
-    customers_arbor = ["AAN"]
-    
-    dict_customers_arbor = {
-        customer: customers[customer] for customer in customers_arbor
-    }
-
-    return dict_customers_arbor
-
+###############################################################################
+################################--QRadar--#####################################
+###############################################################################
 
 
 def dates_actives():
@@ -63,6 +48,57 @@ def dates_actives():
 
     print(def_name, datetime.today())
     return dict_date
+
+
+###############################################################################
+##############################--Cloudflare--###################################
+###############################################################################
+
+
+def customers_cloudflare():
+    """Los clientes que cuentan con el servicio Arbor son:
+    * AFP capital  es SURA
+    * SBPay 
+    * Adaptive Security
+    * UDLA
+
+    UPD NO ES QRadar
+    """
+    customers = get_otrs.customers_actives()
+    customers_cloudflare = [
+        "SURA",
+        "SBPay",
+        "Adaptive Security",
+        "UDLA"
+    ]
+    
+    dict_customers_cloudflare = {
+        customer: customers[customer] for customer in customers_cloudflare
+    }
+
+    return dict_customers_cloudflare
+
+
+# print(customers_cloudflare())
+# exit()
+
+###############################################################################
+#################################--Arbor--#####################################
+###############################################################################
+
+
+def customers_arbor():
+    """Los clientes que cuentan con el servicio Arbor son:
+    * AAN
+    """
+    customers = get_otrs.customers_actives()
+    customers_arbor = ["AAN"]
+    
+    dict_customers_arbor = {
+        customer: customers[customer] for customer in customers_arbor
+    }
+
+    return dict_customers_arbor
 
 
 def aql(
