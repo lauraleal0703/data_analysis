@@ -247,7 +247,8 @@ class Ticket(db.Base):
 	@classmethod
 	def tickets_month_conflict(cls: SelfTicket,
 		queue_id: int,
-		users_id: list
+		users_id: list,
+		customers: list
 	) -> List[SelfTicket]:
 		"""Obtener los tickests como una lista de objetos
 		de un periodo dado los filtros
@@ -297,6 +298,7 @@ class Ticket(db.Base):
 			cls.create_time < f"{end_period} 00:00:00",
 			cls.queue_id == queue_id,
 			cls.user_id.notin_(users_id),
+			cls.customer_id.in_(customers),
 			cls.type_id.notin_(exceptions_type),
 			cls.ticket_state_id.notin_(exceptions_state),
 			cls.service_id.is_(None)

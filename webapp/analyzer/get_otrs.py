@@ -849,6 +849,8 @@ def get_tickets_conflic():
     queues_id = [6, 9]
     data_total = {}
     for queue_id in queues_id:
+        customers = customers_by_period(queue_id=queue_id)
+        customers = list(customers.keys())
         if queue_id == 6:
             users =  users_administrators()
             users = users["administrators_temp"]
@@ -857,7 +859,8 @@ def get_tickets_conflic():
             users = users["analysts_temp"]
         data = Ticket.tickets_month_conflict(
             queue_id = queue_id,
-            users_id = users
+            users_id = users,
+            customers = customers
         )
         if data:
             data_total[queue_id] = data
