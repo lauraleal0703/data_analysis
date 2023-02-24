@@ -71,6 +71,7 @@ class Ticket(db.Base):
 	
 	@property
 	def service_id(self: SelfTicket):
+		"""JAMÁS CAMBIAR O EL NONE DA PROBLEMAS EN LA BÚSQUEDA"""
 		if self._service_id is None:
 			return "Undefined"
 		return self._service_id
@@ -250,7 +251,8 @@ class Ticket(db.Base):
 	
 
 	@classmethod
-	def tickets_month_conflict(cls: SelfTicket,
+	def tickets_conflict(cls: SelfTicket,
+		time: str,
 		queue_id: int,
 		users_id: list,
 		customers: list
@@ -294,7 +296,12 @@ class Ticket(db.Base):
 		users_id = users_id + [1]
 
 		end_period = datetime.strftime(datetime.today(), "%Y-%m-%d")
-		start_period = datetime.strftime(datetime.today() - relativedelta(months=1), "%Y-%m-%d")
+		if time == "month":
+			start_period = datetime.strftime(datetime.today() - relativedelta(months=1), "%Y-%m-%d")
+		if time == "year":
+			start_period = datetime.strftime(datetime.today() - relativedelta(months=12), "%Y-%m-%d")
+		if time == "twoYear":
+			start_period = datetime.strftime(datetime.today() - relativedelta(months=14), "%Y-%m-%d")
 		
 		print(start_period, end_period)
 
@@ -306,7 +313,7 @@ class Ticket(db.Base):
 			cls.customer_id.in_(customers),
 			cls.type_id.notin_(exceptions_type),
 			cls.ticket_state_id.notin_(exceptions_state),
-			cls.service_id == "Undefined"
+			cls._service_id.is_(None)
 		)
 
 		return query.all()

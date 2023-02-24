@@ -310,16 +310,6 @@
             {% endif %}
 
             {% if data_tickets_conflic %}
-            {% for queue_id in data_tickets_conflic %}
-            {% if queue_id == 6 %}
-            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-                <h3 class="text-muted">Tickets Administradores</h3>
-            </div>
-            {% elif queue_id == 9 %}
-            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-                <h3 class="text-muted">Tickets Analistas</h3>
-            </div>
-            {% endif %}
             <table id="tablaTicketsConflic" class="table table-bordered display text-center" style="width:100%">
                 <thead class="bg-light">
                     <tr>
@@ -334,6 +324,7 @@
                         <th style="width: 5%">Tipo</th>
                         <th style="width: 5%">Prioridad</th>
                         <th style="width: 5%">Cola</th>
+                        <th style="width: 5%">T.Cola</th>
                         <th style="width: 5%"></th>
                     </tr>
                     <tr>
@@ -348,10 +339,12 @@
                         <th style="width: 5%">Tipo</th>
                         <th style="width: 5%">Prioridad</th>
                         <th style="width: 5%">Cola</th>
+                        <th style="width: 5%">T.Cola</th>
                         <th style="width: 5%"></th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for queue_id in data_tickets_conflic %}
                     {% set tickets = data_tickets_conflic[queue_id] %}
                     {% for ticket in tickets %}
                     <tr>
@@ -408,6 +401,13 @@
                         <td> 
                             {{ ticket.queue_id }}
                         </td>
+                        <td> 
+                            {% if queue_id == 6 %}
+                                Tickets Administradores
+                            {% elif queue_id == 9 %}
+                                Tickets Analistas
+                            {% endif %}
+                        </td>
                         <td>
                             <a class="btn btn-sm btn-outline-primary" 
                             target="_blank"
@@ -417,9 +417,9 @@
                         </td>
                     </tr>
                     {% endfor %}
+                    {% endfor %}
                 </tbody>
             </table>
-            {% endfor %}
             {% endif %}
         </div>
     </div>
@@ -493,7 +493,7 @@
             }
         });
         
-        var table = $("#tablaTicketsConflic").DataTable({
+        var tableConflic = $("#tablaTicketsConflic").DataTable({
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -504,7 +504,7 @@
         });
 
         $("#tablaTicketsConflic thead").on("keyup", ".column-search", function () {
-            table
+            tableConflic
             .column( $(this).parent().index() )
             .search( this.value )
             .draw();

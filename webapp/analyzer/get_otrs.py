@@ -841,11 +841,14 @@ def get_tickets_customer_months_year(
 ######################################################
 
 
-def get_tickets_conflic():
-    """Obtener los tickets que en el último mes no tienen
+def get_tickets_conflic(
+        time: str
+):
+    """Obtener los tickets que no tienen
     servicio asociado o el usuario es de otra cola"""
     def_name = "get_tickets_conflic"
     print(def_name, datetime.today())
+    
     queues_id = [6, 9]
     data_total = {}
     for queue_id in queues_id:
@@ -853,11 +856,12 @@ def get_tickets_conflic():
         customers = list(customers.keys())
         if queue_id == 6:
             users =  users_administrators()
-            users = users["administrators_temp"]
+            users = users["administrators"]
         if queue_id == 9:
             users = users_analysts()
-            users = users["analysts_temp"]
-        data = Ticket.tickets_month_conflict(
+            users = users["analysts"]
+        data = Ticket.tickets_conflict(
+            time = time,
             queue_id = queue_id,
             users_id = users,
             customers = customers
@@ -867,6 +871,7 @@ def get_tickets_conflic():
     print(data_total.keys())
     print(def_name, datetime.today())
     return data_total
+
 
 
 ######################################################

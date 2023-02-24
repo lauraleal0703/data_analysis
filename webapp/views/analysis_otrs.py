@@ -18,9 +18,11 @@ analysis_otrs = Blueprint("analysis_otrs", __name__, url_prefix="/analysis_otrs"
 @analysis_otrs.get("/")
 def index():
     queues = {
-        "conflict": "Tickests en Conflicto",
         "administrators": "Administradores",
-        "analysts": "Analistas"
+        "analysts": "Analistas",
+        "conflictMonth": "Tickests en Conflicto del mes",
+        "conflictYear": "Tickests en Conflicto del último año",
+        "conflictTwoYear": "Tickests en Conflicto 2 años atrás"
     }
 
     if request.method == "GET":
@@ -45,13 +47,46 @@ def index():
             if queue == "analysts":
                 queue_id = 9
             
-            if queue == "conflict":
-                data_tickets_conflic = get_otrs.get_tickets_conflic()
+            if queue == "conflictMonth":
+                time = "month"
+                data_tickets_conflic = get_otrs.get_tickets_conflic(
+                    time = time
+                )
 
                 return render_template(
                     "analysis_otrs/customers/index_table.html",
                     page = {"title": """Se muestran los tickests que durante el
                     último mes no tienen servicio asociado o el usuario es de otra cola"""},
+                    queues = queues,
+                    current_queue = queue,
+                    data_tickets_conflic = data_tickets_conflic
+                )
+            
+            if queue == "conflictYear":
+                time = "year"
+                data_tickets_conflic = get_otrs.get_tickets_conflic(
+                    time = time
+                )
+
+                return render_template(
+                    "analysis_otrs/customers/index_table.html",
+                    page = {"title": """Se muestran los tickests que durante el
+                    último año no tienen servicio asociado o el usuario es de otra cola"""},
+                    queues = queues,
+                    current_queue = queue,
+                    data_tickets_conflic = data_tickets_conflic
+                )
+            
+            if queue == "conflictTwoYear":
+                time = "twoYear"
+                data_tickets_conflic = get_otrs.get_tickets_conflic(
+                    time = time
+                )
+
+                return render_template(
+                    "analysis_otrs/customers/index_table.html",
+                    page = {"title": """Se muestran los tickests que durante los 2 últimos años
+                    no tienen servicio asociado o el usuario es de otra cola"""},
                     queues = queues,
                     current_queue = queue,
                     data_tickets_conflic = data_tickets_conflic
