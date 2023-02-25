@@ -15,7 +15,10 @@ analysis_qradar = Blueprint("analysis_qradar", __name__, url_prefix="/analysis_q
 
 @analysis_qradar.get("/")
 def index():
-    services = {"arbor": "Arbor"}
+    services = {
+        "arbor": "Arbor",
+        "cloudflare": "Cloudflare"
+    }
 
     if request.method == "GET":
         service = request.args.get("service", type=str)
@@ -28,7 +31,7 @@ def index():
             dates_actives = get_qradar.dates_actives()
             total_blocked_events = get_qradar.total_blocked_events()
 
-            if customer == "AAN":
+            if customer:
                 current_customer_name = customers_actives[customer]
 
                 if date:
@@ -72,6 +75,51 @@ def index():
             return render_template(
                 "analysis_qradar/arbor/index.html",
                 page={"title": "Análisis de Arbor - QRadar."},
+                services = services,
+                current_service = service,
+                customers_actives = customers_actives
+            )
+        
+        if service == "cloudflare":
+            customers_actives = get_qradar.customers_cloudflare()
+            dates_actives = get_qradar.dates_actives()
+
+            if customer:
+                current_customer_name = customers_actives[customer]
+
+                if date:
+                    data_grah_log_source = get_qradar.event_total_log_source(
+                        customer = customer,
+                        date = date
+                    )
+
+                    return render_template(
+                        "analysis_qradar/arbor/index.html",
+                        page={"title": ""},
+                        services = services,
+                        current_service = service,
+                        customers_actives = customers_actives,
+                        current_customer = customer,
+                        current_customer_name = current_customer_name,
+                        dates_actives = dates_actives,
+                        current_date = date,
+                        current_pos = pos
+                    )
+
+                return render_template(
+                    "analysis_qradar/arbor/index.html",
+                    page={"title": ""},
+                    services = services,
+                    current_service = service,
+                    customers_actives = customers_actives,
+                    current_customer = customer,
+                    current_customer_name = current_customer_name,
+                    dates_actives = dates_actives,
+                )
+                
+            return render_template(
+                "analysis_qradar/arbor/index.html",
+                page={"title": "Análisis de Cloudflare - QRadar."},
                 services = services,
                 current_service = service,
                 customers_actives = customers_actives

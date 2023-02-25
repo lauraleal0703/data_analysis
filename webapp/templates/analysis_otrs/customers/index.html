@@ -63,8 +63,22 @@
                     <div id="container_tickets_customers"></div>
                 </figure>
             </div>
+
+            {% if data_grah.dict_year_total %}
+            {% set data_one = data_grah.dict_year_total %}
+            {% for year in data_one %}
+            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+                <h4 class="text-muted">{{ year }}</h4>
+            </div>
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="total_year_{{ year }}"></div>
+                </figure>
+            </div>
+            {% endfor %}
             {% endif %}
-            
+            {% endif %}
+
             {% if data_total %}
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
@@ -320,8 +334,6 @@
 <script type="text/javascript">
     Highcharts.chart('container_tickets_customers', {
         chart: {
-            width: 1200,
-            height: 500,
             type: 'column'
         },
         {% if current_year == 2023 %}
@@ -363,7 +375,7 @@
         tooltip: {
             headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-            '<td style="padding:0"><b>{point.y:.0f}</b></td></tr>',
+            '<td style="padding:0"><b>{point.y}</b></td></tr>',
             footerFormat: '</table>',
             shared: true,
             useHTML: true
@@ -383,8 +395,6 @@
 <script type="text/javascript">
     Highcharts.chart('container_tickets_customers_service', {
         chart: {
-            width: 1200,
-            height: 500,
             type: 'column'
         },
         {% if current_year == 2023 %}
@@ -436,8 +446,6 @@
 <script type="text/javascript">
     Highcharts.chart('container_tickets_customers_service_total', {
         chart: {
-            width: 1200,
-            height: 500,
             type: 'column'
         },
         {% if current_year == 2023 %}
@@ -479,5 +487,59 @@
     });
 </script>
 {% endif %}
+
+
+{% if data_grah %}
+{% if data_grah.dict_year_total %}
+{% set data_one = data_grah.dict_year_total %}
+{% for year in data_one %}
+{% set data_grah = data_one[year] %}
+<script type="text/javascript">
+    Highcharts.chart('total_year_{{ year }}', {
+        chart: {
+            type: 'column'
+        },
+        {% if year == 2023 %}
+        title: {
+            text: 'Se han gestionado {{ data_grah.total }} en el año {{ year }}.',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: 'Se gestionaron {{ data_grah.total }} en el año {{ year }}.',
+            align: 'center'
+        },
+        {% endif %}
+        xAxis: {
+            categories: {{ data_grah.data_grah_x  | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de tickets'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah.data_grah_y | safe }}
+    });
+</script>
+{% endfor %}
+{% endif %}
+{% endif %}
+
 
 {% endblock %}

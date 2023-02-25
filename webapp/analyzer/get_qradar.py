@@ -50,57 +50,6 @@ def dates_actives():
     return dict_date
 
 
-###############################################################################
-##############################--Cloudflare--###################################
-###############################################################################
-
-
-def customers_cloudflare():
-    """Los clientes que cuentan con el servicio Arbor son:
-    * AFP capital  es SURA
-    * SBPay 
-    * Adaptive Security
-    * UDLA
-
-    UPD NO ES QRadar
-    """
-    customers = get_otrs.customers_actives()
-    customers_cloudflare = [
-        "SURA",
-        "SBPay",
-        "Adaptive Security",
-        "UDLA"
-    ]
-    
-    dict_customers_cloudflare = {
-        customer: customers[customer] for customer in customers_cloudflare
-    }
-
-    return dict_customers_cloudflare
-
-
-# print(customers_cloudflare())
-# exit()
-
-###############################################################################
-#################################--Arbor--#####################################
-###############################################################################
-
-
-def customers_arbor():
-    """Los clientes que cuentan con el servicio Arbor son:
-    * AAN
-    """
-    customers = get_otrs.customers_actives()
-    customers_arbor = ["AAN"]
-    
-    dict_customers_arbor = {
-        customer: customers[customer] for customer in customers_arbor
-    }
-
-    return dict_customers_arbor
-
-
 def aql(
     customer: str,
     date: str,
@@ -126,6 +75,116 @@ def aql(
             '''
             print(def_name, datetime.today())
             return TOP_10_Paises
+    
+    if customer == "SURA":
+        if aql_name == "Eventos_totales_Log_Source":
+            Eventos_totales_Log_Source = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where "domainId"='11' GROUP BY logSourceId order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
+            '''
+            print(def_name, datetime.today())
+            return Eventos_totales_Log_Source
+        
+        # if aql_name == "Eventos_totales_Log_Source":
+        #     Eventos_totales_Log_Source = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where "domainId"='11' GROUP BY logSourceId order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
+        #     '''
+        #     print(def_name, datetime.today())
+        #     return Eventos_totales_Log_Source
+
+
+###############################################################################
+##############################--Cloudflare--###################################
+###############################################################################
+
+
+def customers_cloudflare():
+    """Los clientes que cuentan con el servicio Arbor son:
+    * AFP capital  es SURA
+    * SBPay 
+    * Adaptive Security
+    * UDLA
+
+    UPD NO ES QRadar
+    """
+    customers = get_otrs.customers_actives()
+
+    customers_cloudflare = [
+        "SURA",
+        "SBPay",
+        "UDLA",
+        "Adaptive Security"
+    ]
+    
+    dict_customers_cloudflare = {
+        customer: customers[customer] for customer in customers_cloudflare
+    }
+
+    return dict_customers_cloudflare
+
+# print(customers_cloudflare())
+
+def event_total_log_source(
+    customer: str,
+    date: str,
+    aql_name: str = "Eventos_totales_Log_Source"
+) -> dict:
+    def_name = "event_total_log_source"
+    print(def_name, datetime.today())
+    """Datos para la grafica de 
+    """
+    calendar = get_otrs.calendar_spanish()
+    calendar = calendar["calendar_num"]
+    date_ = datetime.strptime(date, "%Y-%m-%d")
+    year = date_.year
+    name_date = date_.month
+    name_date = calendar[name_date]
+
+    create_id_searches = qradar.ariel_searches_post(
+        query_expression = aql(
+            customer = customer,
+            date = date,
+            aql_name = aql_name
+        )
+    )
+
+    data = qradar.ariel_results(create_id_searches)
+
+    if len(data["events"]) == 0:
+        return {}
+
+    total = 0
+    dict_total_events = {}
+    for event in data["events"]:
+        pprint(event)
+        name_event = event["Origen de registro"]
+        recuento_event =  int(event["Recuento de sucesos (Suma)"])
+        total += recuento_event
+        dict_total_events[name_event] = recuento_event
+    
+    total = '{:,}'.format(total).replace(',','.')
+    pprint(dict_total_events)
+
+    print(def_name, datetime.today())
+    return 
+
+# print(event_total_log_source("SURA", "2023-01-01"))
+
+
+###############################################################################
+#################################--Arbor--#####################################
+###############################################################################
+
+
+def customers_arbor():
+    """Los clientes que cuentan con el servicio Arbor son:
+    * AAN
+    """
+    customers = get_otrs.customers_actives()
+    customers_arbor = ["AAN"]
+    
+    dict_customers_arbor = {
+        customer: customers[customer] for customer in customers_arbor
+    }
+
+    return dict_customers_arbor
 
 
 def blocked_events(

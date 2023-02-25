@@ -17,7 +17,7 @@
                 <a id="menuCustomer{{ customer[0] }}"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer[0] }}">
-                    {{ customer[0] }}= {{ customer[1] }}
+                    {{ customer[0] }}
                 </a>
                 {% endfor %}
             </div>
@@ -218,6 +218,7 @@
                     <tr>
                         <th style="width: 5%">ID</th>
                         <th style="width: 5%">TN</th>
+                        <th style="width: 5%">Creación</th>
                         <th style="width: 5%">Titulo</th>
                         <th style="width: 5%">Responsable</th>
                         <th style="width: 5%">Servicio</th>
@@ -231,6 +232,7 @@
                     <tr>
                         <th style="width: 5%">ID</th>
                         <th style="width: 5%">TN</th>
+                        <th style="width: 5%">Creación</th>
                         <th style="width: 5%">Titulo</th>
                         <th style="width: 5%">Responsable</th>
                         <th style="width: 5%">Servicio</th>
@@ -251,6 +253,9 @@
                         </td>
                         <td>
                             {{ ticket.tn }}
+                        </td>
+                        <td>
+                            {{ ticket.create_time }}
                         </td>
                         <td>
                             {{ ticket.title }}

@@ -98,6 +98,7 @@
                     <tr>
                         <th style="width: 5%">ID</th>
                         <th style="width: 5%">TN</th>
+                        <th style="width: 5%">Creación</th>
                         <th style="width: 5%">Titulo</th>
                         <th style="width: 5%">Responsable</th>
                         <th style="width: 5%">Servicio</th>
@@ -111,6 +112,7 @@
                     <tr>
                         <th style="width: 5%">ID</th>
                         <th style="width: 5%">TN</th>
+                        <th style="width: 5%">Creación</th>
                         <th style="width: 5%">Titulo</th>
                         <th style="width: 5%">Responsable</th>
                         <th style="width: 5%">Servicio</th>
@@ -131,6 +133,9 @@
                         </td>
                         <td>
                             {{ ticket.tn }}
+                        </td>
+                        <td>
+                            {{ ticket.create_time }}
                         </td>
                         <td>
                             {{ ticket.title }}
