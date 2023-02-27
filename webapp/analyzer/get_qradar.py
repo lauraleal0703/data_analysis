@@ -65,29 +65,37 @@ def aql(
     
     if customer == "AAN":
         if aql_name == "Informe_Arbor_1":
-            Informe_Arbor_1 = f'''SELECT QIDNAME(qid) AS 'Nombre de suceso', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', UniqueCount(category) AS 'Categoría de nivel bajo (Recuento exclusivo)', UniqueCount("sourceIP") AS 'IP de origen (Recuento exclusivo)', UniqueCount("sourcePort") AS 'Puerto de origen (Recuento exclusivo)', UniqueCount("destinationIP") AS 'IP de destino (Recuento exclusivo)', UniqueCount("destinationPort") AS 'Puerto de destino (Recuento exclusivo)', COUNT(*) AS 'Recuento' from events where logSourceId='2277' GROUP BY qid order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
+            Informe_Arbor_1 = f'''SELECT QIDNAME(qid) AS 'Nombre de suceso', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', UniqueCount(category) AS 'Categoría de nivel bajo (Recuento exclusivo)', UniqueCount("sourceIP") AS 'IP de origen (Recuento exclusivo)', UniqueCount("sourcePort") AS 'Puerto de origen (Recuento exclusivo)', UniqueCount("destinationIP") AS 'IP de destino (Recuento exclusivo)', UniqueCount("destinationPort") AS 'Puerto de destino (Recuento exclusivo)', COUNT(*) AS 'Recuento' from events where logSourceId='2277' GROUP BY qid order by "Recuento" desc start '{start} 00:00:00' stop '{stop} 00:00:00'
             '''
             print(def_name, datetime.today())
             return Informe_Arbor_1
         
         if aql_name == "TOP_10_Paises":
-            TOP_10_Paises = f'''SELECT "sourceGeographicLocation" AS 'País/región geográfica de origen', UniqueCount(qid) AS 'Nombre de suceso (Recuento exclusivo)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', UniqueCount(category) AS 'Categoría de nivel bajo (Recuento exclusivo)', UniqueCount("sourceIP") AS 'IP de origen (Recuento exclusivo)', UniqueCount("sourcePort") AS 'Puerto de origen (Recuento exclusivo)', UniqueCount("destinationIP") AS 'IP de destino (Recuento exclusivo)', UniqueCount("destinationPort") AS 'Puerto de destino (Recuento exclusivo)', COUNT(*) AS 'Recuento' from events where ( logSourceId='2277' AND qid != '38750074' ) GROUP BY "sourceGeographicLocation" order by "Recuento de sucesos (Suma)" desc start '{start} 00:00' stop '{stop} 00:00'
+            TOP_10_Paises = f'''SELECT "sourceGeographicLocation" AS 'País/región geográfica de origen', UniqueCount(qid) AS 'Nombre de suceso (Recuento exclusivo)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', UniqueCount(category) AS 'Categoría de nivel bajo (Recuento exclusivo)', UniqueCount("sourceIP") AS 'IP de origen (Recuento exclusivo)', UniqueCount("sourcePort") AS 'Puerto de origen (Recuento exclusivo)', UniqueCount("destinationIP") AS 'IP de destino (Recuento exclusivo)', UniqueCount("destinationPort") AS 'Puerto de destino (Recuento exclusivo)', COUNT(*) AS 'Recuento' from events where ( logSourceId='2277' AND qid != '38750074' ) GROUP BY "sourceGeographicLocation" order by "Recuento de sucesos (Suma)" desc start '{start} 00:00:00' stop '{stop} 00:00:00'
             '''
             print(def_name, datetime.today())
             return TOP_10_Paises
     
     if customer == "SURA":
         if aql_name == "Eventos_totales_Log_Source":
-            Eventos_totales_Log_Source = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where "domainId"='11' GROUP BY logSourceId order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
+            Eventos_totales_Log_Source = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where "domainId"='11' GROUP BY logSourceId order by "Recuento" desc start '{start} 00:00:00' stop '{stop} 00:00:00'
             '''
             print(def_name, datetime.today())
             return Eventos_totales_Log_Source
         
-        # if aql_name == "Eventos_totales_Log_Source":
-        #     Eventos_totales_Log_Source = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where "domainId"='11' GROUP BY logSourceId order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
-        #     '''
-        #     print(def_name, datetime.today())
-        #     return Eventos_totales_Log_Source
+        if aql_name == "Total_Accept_per_dominio_Pais":
+            Total_Accept_per_dominio_Pais = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', COUNT(*) AS 'Recuento' from events where ( "FirewallMatchesActions" != '["block"]' AND "domainId"='11' ) GROUP BY "ClientRequestHost", "ClientCountry" order by "Recuento" desc start '{start} 00:00:00' stop '{stop} 00:00:00'
+            '''
+            print(def_name, datetime.today())
+            return Total_Accept_per_dominio_Pais
+
+         
+        if aql_name == "Detalle_drop":
+            Detalle_drop = f'''SELECT "ClientIP" AS 'ClientIP (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientRequestPath" AS 'ClientRequestPath (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', UniqueCount("FirewallMatchesActions") AS 'FirewallMatchesActions (personalizado) (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where ( "FirewallMatchesActions"='["block"]' AND (logSourceId='3612') or (logSourceId='3613') or (logSourceId='3663') or (logSourceId='3664') or (logSourceId='3665') ) GROUP BY "ClientIP", "ClientCountry", "ClientRequestHost", "ClientRequestPath" order by "Recuento" desc start '{start} 00:00:00' stop '{stop} 00:00:00'
+            '''
+            print(def_name, datetime.today())
+            return Detalle_drop
+
 
 
 ###############################################################################
@@ -153,19 +161,152 @@ def event_total_log_source(
     total = 0
     dict_total_events = {}
     for event in data["events"]:
-        pprint(event)
         name_event = event["Origen de registro"]
         recuento_event =  int(event["Recuento de sucesos (Suma)"])
         total += recuento_event
         dict_total_events[name_event] = recuento_event
     
+    dict_total_events["Total"] = total
+    print(def_name, datetime.today())
+    return dict_total_events
+
+# print(event_total_log_source("SURA", "2023-01-01"))
+
+
+def total_accept_per_dominio_pais(
+    customer: str,
+    date: str,
+    aql_name: str = "Total_Accept_per_dominio_Pais"
+) -> dict:
+    def_name = "total_accept_per_dominio_pais"
+    print(def_name, datetime.today())
+    """Datos para la grafica de 
+    """
+    calendar = get_otrs.calendar_spanish()
+    calendar = calendar["calendar_num"]
+    date_ = datetime.strptime(date, "%Y-%m-%d")
+    year = date_.year
+    name_date = date_.month
+    name_date = calendar[name_date]
+
+    create_id_searches = qradar.ariel_searches_post(
+        query_expression = aql(
+            customer = customer,
+            date = date,
+            aql_name = aql_name
+        )
+    )
+
+    data = qradar.ariel_results(create_id_searches)
+
+    if len(data["events"]) == 0:
+        return {}
+
+    total = 0
+    dict_total_events = {}
+    for pos, event in enumerate(data["events"]):
+        name_event = event["Origen de registro"]
+        recuento_event =  int(event["Recuento de sucesos (Suma)"])
+        total += recuento_event
+        print(pos)
+        pprint(event)
+        if name_event not in dict_total_events:
+            dict_total_events[name_event] = recuento_event
+        else:
+            dict_total_events[name_event] += recuento_event
+    
+    dict_total_events["Total"] = total
+    
+    print(def_name, datetime.today())
+    return dict_total_events
+
+# print(total_accept_per_dominio_pais("SURA", "2023-01-01"))
+
+def tabla_reque_acep_boque_per_dominio(
+        customer: str,
+        date: str,
+) -> dict:
+    def_name = "tabla_reque_acep_boque_per_dominio"
+    print(def_name, datetime.today())
+    """Datos para la 
+    """
+    total_reque = event_total_log_source(
+        customer = customer,
+        date = date
+    )
+    total_reque_accep = total_accept_per_dominio_pais(
+        customer = customer,
+        date = date
+    )
+
+    pprint(total_reque)
+    pprint(total_reque_accep)
+
+    dict_dominio ={}
+    for dominio in total_reque:
+        dict_dominio[dominio] = {
+            "Total de Requerimientos": '{:,}'.format(total_reque[dominio]).replace(',','.'), 
+            "Requerimientos Aceptados": '{:,}'.format(total_reque_accep[dominio]).replace(',','.'),
+            "Requerimientos Bloqueados": '{:,}'.format( total_reque[dominio] - total_reque_accep[dominio]).replace(',','.')
+        }
+
+    pprint(dict_dominio)
+    return dict_dominio
+
+
+# tabla_reque_acep_boque_per_dominio("SURA", "2023-01-01")
+
+
+def detalle_drop(
+    customer: str,
+    date: str,
+    aql_name: str = "Detalle_drop"
+) -> dict:
+    def_name = "detalle_drop"
+    print(def_name, datetime.today())
+    """Datos para la grafica de 
+    """
+    calendar = get_otrs.calendar_spanish()
+    calendar = calendar["calendar_num"]
+    date_ = datetime.strptime(date, "%Y-%m-%d")
+    year = date_.year
+    name_date = date_.month
+    name_date = calendar[name_date]
+
+    create_id_searches = qradar.ariel_searches_post(
+        query_expression = aql(
+            customer = customer,
+            date = date,
+            aql_name = aql_name
+        )
+    )
+
+    data = qradar.ariel_results(create_id_searches)
+    print("data, fueraa")
+
+    if len(data["events"]) == 0:
+        return {}
+
+    total = 0
+    dict_total_events = {}
+    print("\n")
+    print(type(data.keys()))
+    pprint(data["events"][0])
+    # for event in data["events"]:
+    #     pprint(event)
+        # name_event = event["Origen de registro"]
+        # recuento_event =  int(event["Recuento de sucesos (Suma)"])
+        # total += recuento_event
+        # dict_total_events[name_event] = recuento_event
+    
     total = '{:,}'.format(total).replace(',','.')
     pprint(dict_total_events)
+    print("\n")
 
     print(def_name, datetime.today())
     return 
 
-# print(event_total_log_source("SURA", "2023-01-01"))
+# print(detalle_drop("SURA", "2023-01-01"))
 
 
 ###############################################################################

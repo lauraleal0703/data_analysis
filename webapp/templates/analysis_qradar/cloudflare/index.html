@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include "analysis_qradar/index/menu.html" %}
+
+<div class="card">
+    <div class="card-header">
+        {% if page.title %}
+        <div class="p-3 bg-light rounded text-center">
+            <h3 class="text-muted">{{ page.title }}</h3>
+        </div>
+        {% endif %}
+
+        {% if customers_actives %}
+        <div class="row p-1">
+            <div class="col">
+                {% for customer in customers_actives %}
+                <a id="menuQRadarArborCustomer{{ customer }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_qradar?service={{ current_service }}&customer={{ customer }}">
+                    {{ customer }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if dates_actives %}
+        <div class="row p-1">
+            <div class="col">
+                {% for date in dates_actives %}
+                <a id="menuQRadarServiceDate{{ date[1]['date'] }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_qradar?service={{ current_service }}&customer={{ current_customer }}&pos={{ date[0] }}&date={{ date[1]['date'] }}">
+                    {{ date[1]["date_name"] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+    <div class="card-body">
+        {% if table_1 %}
+        <div class="table-responsive">
+            <table id="table_1" class="table table-bordered display text-center" style="width:100%">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 5%">Dominio</th>
+                        <th style="width: 5%">Requerimientos Aceptados</th>
+                        <th style="width: 5%">Requerimientos Bloqueados</th>
+                        <th style="width: 5%">Total de Requerimientos</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 5%">Dominio</th>
+                        <th style="width: 5%">Requerimientos Aceptados</th>
+                        <th style="width: 5%">Requerimientos Bloqueados</th>
+                        <th style="width: 5%">Total de Requerimientos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dominio in table_1 %}
+                    <tr>
+                        <td>
+                            {{ dominio }}
+                        </td>
+                        <td>
+                            {{ table_1[dominio]["Requerimientos Aceptados"] }}
+                        </td>
+                        <td>
+                            {{ table_1[dominio]["Requerimientos Bloqueados"] }}
+                        </td>
+                        <td>
+                            {{ table_1[dominio]["Total de Requerimientos"] }}
+                        </td>
+                        
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menuQRadar").addClass("active");
+        $("#menuQRadarService{{ current_service }}").addClass("active");
+        $("#menuQRadarServiceDate{{ current_date }}").addClass("active");
+        $("#menuQRadarArborCustomer{{ current_customer }}").addClass("active");
+        
+    
+
+        $("#table_1 thead tr:eq(1) th").each(function() {
+            let title = $(this).text();
+            if (title != "") {
+                $(this).html("<input type='text' class='form-control form-control-sm text-center column-search' />");
+            }
+        });
+            
+        var table = $("#tabtable_1la_1").DataTable({
+            orderCellsTop: true,
+            ordering: true,
+            order: [],
+            dom: 'Bfrtip',
+            buttons: [
+                'csv', 'excel', 'pdf'
+            ]
+        });
+
+        $("#table_1 thead").on("keyup", ".column-search", function () {
+            table
+            .column( $(this).parent().index() )
+            .search( this.value )
+            .draw();
+        });
+        
+    });
+
+</script>
+
+{% endblock %}

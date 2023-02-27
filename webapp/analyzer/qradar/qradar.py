@@ -159,14 +159,14 @@ def ariel_results(search_id: str):
     )
     completed = search["completed"]
 
+    print(".En while.")
     while not completed:
         search = curl_qradar_get(
             f"ariel/searches/{search_id}"
         )
         completed = search["completed"]
         time.sleep(2)
-        print("...")
- 
+        
     print(def_name, datetime.today())
     return curl_qradar_get(
         f"ariel/searches/{search_id}/results"

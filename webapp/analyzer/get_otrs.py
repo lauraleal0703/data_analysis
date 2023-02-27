@@ -954,7 +954,9 @@ def get_count_tickets_users_years(
     total_tickets_users = {}
     dict_tickets_users: t.Dict[int, t.List] = {}
     total_tickets = 0
+    total_tickets_years = {}
     for year in years:
+        total_tickets_years[year] = {}
         for user_id in users:
             data_temp = Ticket.tickets_period_filtered_with(
                 start_period = f"{year}-01-01",
@@ -962,6 +964,17 @@ def get_count_tickets_users_years(
                 user_id = user_id,
                 count = True
             )
+
+            if user_id not in total_tickets_years[year]:
+                total_tickets_years[year][user_id] =  {
+                    "user":{
+                        "name": users_actives_temp[user_id]
+                    },
+                    "total": int(data_temp)
+                }
+            else:
+                total_tickets_years[year][user_id]["total"] += int(data_temp)
+                
             if user_id not in total_tickets_users:
                 total_tickets_users[user_id] = {
                     "user":{
@@ -977,7 +990,28 @@ def get_count_tickets_users_years(
                 total_tickets_users[user_id]["total"] += data_temp
                 dict_tickets_users[user_id].append(data_temp)
                 total_tickets += data_temp
+
+
+    dict_year_total = {} 
+    for year_ in total_tickets_years:
+        dict_year_total[year_] = {
+            "data_grah_x": [],
+            "data_grah_y": [],
+            "total": 0
+        }
+        for user_ in total_tickets_years[year_]:
+            if total_tickets_years[year_][user_]["total"] != 0:
+                dict_year_total[year_]["data_grah_x"].append(
+                    total_tickets_years[year_][user_]["user"]["name"])
+                dict_year_total[year_]["data_grah_y"].append(
+                    total_tickets_years[year_][user_]["total"])
         
+        dict_year_total[year_]["total"] = sum(dict_year_total[year_]["data_grah_y"])  
+        
+
+    pprint(dict_year_total)
+
+
     total_tickets_users = sorted(
         total_tickets_users.items(), 
         key=lambda x:x[1]["total"], 
@@ -1016,7 +1050,6 @@ def get_count_tickets_users_years(
     }
 
 # get_count_tickets_users_years(6)
-# exit()
 
 def make_search(
     search: str,

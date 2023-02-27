@@ -88,13 +88,13 @@ def index():
                 current_customer_name = customers_actives[customer]
 
                 if date:
-                    data_grah_log_source = get_qradar.event_total_log_source(
+                    table_1 = get_qradar.tabla_reque_acep_boque_per_dominio(
                         customer = customer,
                         date = date
                     )
-
+                    
                     return render_template(
-                        "analysis_qradar/arbor/index.html",
+                        "analysis_qradar/cloudflare/index.html",
                         page={"title": ""},
                         services = services,
                         current_service = service,
@@ -103,11 +103,12 @@ def index():
                         current_customer_name = current_customer_name,
                         dates_actives = dates_actives,
                         current_date = date,
-                        current_pos = pos
+                        current_pos = pos,
+                        table_1 = table_1 
                     )
 
                 return render_template(
-                    "analysis_qradar/arbor/index.html",
+                    "analysis_qradar/cloudflare/index.html",
                     page={"title": ""},
                     services = services,
                     current_service = service,
@@ -118,7 +119,7 @@ def index():
                 )
                 
             return render_template(
-                "analysis_qradar/arbor/index.html",
+                "analysis_qradar/cloudflare/index.html",
                 page={"title": "Análisis de Cloudflare - QRadar."},
                 services = services,
                 current_service = service,
