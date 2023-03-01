@@ -11,16 +11,24 @@ from pprint import pprint
 from datetime import datetime
 from googletrans import Translator
 
+import logging
+logging.basicConfig(
+        format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+        datefmt="%d-%m-%Y %H:%M:%S",
+        level=logging.DEBUG
+    )
+
 
 ###############################################################################
 ################################--QRadar--#####################################
+################################--SOPORTE--####################################
 ###############################################################################
 
 
 def dates_actives():
-    """Hay información de 5 meses atrás en QRadar"""
+    """Hay información de 3 meses atrás en QRadar"""
     def_name = "dates_actives"
-    print(def_name, datetime.today())
+    logging.debug(def_name)
     month_init = datetime.today() - relativedelta(months=3)
     date_init_ = f"{month_init.year}-{month_init.month}-01"
     date_init = datetime.strptime(date_init_, "%Y-%m-%d")
@@ -28,7 +36,7 @@ def dates_actives():
         1: {
             "date": date_init_, 
             "date_name": datetime.strftime(date_init, "%m-%Y")
-            }
+        }
     }
     i = 2
     while i < 5:
@@ -46,7 +54,7 @@ def dates_actives():
         reverse=True
     )
 
-    print(def_name, datetime.today())
+    logging.debug(def_name)
     return dict_date
 
 
@@ -57,7 +65,7 @@ def aql(
 ) -> str:
     """Las AQL"""
     def_name = "aql"
-    print(def_name, datetime.today())
+    logging.debug(def_name)
 
     start = date
     stop = datetime.strptime(date, "%Y-%m-%d") + relativedelta(months=1)
@@ -65,35 +73,38 @@ def aql(
     
     if customer == "AAN":
         if aql_name == "Informe_Arbor_1":
-            Informe_Arbor_1 = f'''SELECT QIDNAME(qid) AS 'Nombre de suceso', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', UniqueCount(category) AS 'Categoría de nivel bajo (Recuento exclusivo)', UniqueCount("sourceIP") AS 'IP de origen (Recuento exclusivo)', UniqueCount("sourcePort") AS 'Puerto de origen (Recuento exclusivo)', UniqueCount("destinationIP") AS 'IP de destino (Recuento exclusivo)', UniqueCount("destinationPort") AS 'Puerto de destino (Recuento exclusivo)', COUNT(*) AS 'Recuento' from events where logSourceId='2277' GROUP BY qid order by "Recuento" desc start '{start} 00:00:00' stop '{stop} 00:00:00'
+            Informe_Arbor_1 = f'''SELECT QIDNAME(qid) AS 'Nombre de suceso', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', UniqueCount(category) AS 'Categoría de nivel bajo (Recuento exclusivo)', UniqueCount("sourceIP") AS 'IP de origen (Recuento exclusivo)', UniqueCount("sourcePort") AS 'Puerto de origen (Recuento exclusivo)', UniqueCount("destinationIP") AS 'IP de destino (Recuento exclusivo)', UniqueCount("destinationPort") AS 'Puerto de destino (Recuento exclusivo)', COUNT(*) AS 'Recuento' from events where logSourceId='2277' GROUP BY qid order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
             '''
-            print(def_name, datetime.today())
+            logging.debug(def_name)
             return Informe_Arbor_1
         
         if aql_name == "TOP_10_Paises":
-            TOP_10_Paises = f'''SELECT "sourceGeographicLocation" AS 'País/región geográfica de origen', UniqueCount(qid) AS 'Nombre de suceso (Recuento exclusivo)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', UniqueCount(category) AS 'Categoría de nivel bajo (Recuento exclusivo)', UniqueCount("sourceIP") AS 'IP de origen (Recuento exclusivo)', UniqueCount("sourcePort") AS 'Puerto de origen (Recuento exclusivo)', UniqueCount("destinationIP") AS 'IP de destino (Recuento exclusivo)', UniqueCount("destinationPort") AS 'Puerto de destino (Recuento exclusivo)', COUNT(*) AS 'Recuento' from events where ( logSourceId='2277' AND qid != '38750074' ) GROUP BY "sourceGeographicLocation" order by "Recuento de sucesos (Suma)" desc start '{start} 00:00:00' stop '{stop} 00:00:00'
+            TOP_10_Paises = f'''SELECT "sourceGeographicLocation" AS 'País/región geográfica de origen', UniqueCount(qid) AS 'Nombre de suceso (Recuento exclusivo)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', UniqueCount(category) AS 'Categoría de nivel bajo (Recuento exclusivo)', UniqueCount("sourceIP") AS 'IP de origen (Recuento exclusivo)', UniqueCount("sourcePort") AS 'Puerto de origen (Recuento exclusivo)', UniqueCount("destinationIP") AS 'IP de destino (Recuento exclusivo)', UniqueCount("destinationPort") AS 'Puerto de destino (Recuento exclusivo)', COUNT(*) AS 'Recuento' from events where ( logSourceId='2277' AND qid != '38750074' ) GROUP BY "sourceGeographicLocation" order by "Recuento de sucesos (Suma)" desc start '{start} 00:00' stop '{stop} 00:00'
             '''
-            print(def_name, datetime.today())
+            logging.debug(def_name)
             return TOP_10_Paises
     
     if customer == "SURA":
         if aql_name == "Eventos_totales_Log_Source":
-            Eventos_totales_Log_Source = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where "domainId"='11' GROUP BY logSourceId order by "Recuento" desc start '{start} 00:00:00' stop '{stop} 00:00:00'
+            Eventos_totales_Log_Source = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where "domainId"='11' GROUP BY logSourceId order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
             '''
-            print(def_name, datetime.today())
+            logging.debug(def_name)
             return Eventos_totales_Log_Source
         
         if aql_name == "Total_Accept_per_dominio_Pais":
-            Total_Accept_per_dominio_Pais = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', COUNT(*) AS 'Recuento' from events where ( "FirewallMatchesActions" != '["block"]' AND "domainId"='11' ) GROUP BY "ClientRequestHost", "ClientCountry" order by "Recuento" desc start '{start} 00:00:00' stop '{stop} 00:00:00'
+            Total_Accept_per_dominio_Pais = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', COUNT(*) AS 'Recuento' from events where ( "FirewallMatchesActions" != '["block"]' AND "domainId"='11' ) GROUP BY "ClientRequestHost", "ClientCountry" order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
             '''
-            print(def_name, datetime.today())
+            logging.debug(def_name)
             return Total_Accept_per_dominio_Pais
 
          
         if aql_name == "Detalle_drop":
-            Detalle_drop = f'''SELECT "ClientIP" AS 'ClientIP (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientRequestPath" AS 'ClientRequestPath (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', UniqueCount("FirewallMatchesActions") AS 'FirewallMatchesActions (personalizado) (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where ( "FirewallMatchesActions"='["block"]' AND (logSourceId='3612') or (logSourceId='3613') or (logSourceId='3663') or (logSourceId='3664') or (logSourceId='3665') ) GROUP BY "ClientIP", "ClientCountry", "ClientRequestHost", "ClientRequestPath" order by "Recuento" desc start '{start} 00:00:00' stop '{stop} 00:00:00'
+            # Detalle_drop = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', "ClientIP" AS 'ClientIP (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientRequestPath" AS 'ClientRequestPath (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', UniqueCount("FirewallMatchesActions") AS 'FirewallMatchesActions (personalizado) (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where ( "FirewallMatchesActions"='["block"]' AND (logSourceId='3612') or (logSourceId='3613') or (logSourceId='3663') or (logSourceId='3664') or (logSourceId='3665') ) GROUP BY "ClientIP", "ClientCountry", "ClientRequestHost", "ClientRequestPath" order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
+            # '''
+            ##Excepción ENERO 2023
+            Detalle_drop = '''SELECT "ClientIP" AS 'ClientIP (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientRequestPath" AS 'ClientRequestPath (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', UniqueCount("FirewallMatchesActions") AS 'FirewallMatchesActions (personalizado) (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where ( ( ("ClientIP"<'143.198.234.131') or ("ClientIP">'143.198.234.131' and "ClientIP"<'165.227.99.174') or ("ClientIP">'165.227.99.174' and "ClientIP"<'167.172.245.180') or ("ClientIP">'167.172.245.180') AND "FirewallMatchesActions"='["block"]' ) AND (logSourceId='3612') or (logSourceId='3613') or (logSourceId='3663') or (logSourceId='3664') or (logSourceId='3665') ) GROUP BY "ClientIP", "ClientCountry", "ClientRequestHost", "ClientRequestPath" order by "Recuento" desc start '2023-01-01 00:00' stop '2023-01-31 23:59'
             '''
-            print(def_name, datetime.today())
+            logging.debug(def_name)
             return Detalle_drop
 
 
@@ -112,6 +123,8 @@ def customers_cloudflare():
 
     UPD NO ES QRadar
     """
+    def_name = "customers_cloudflare"
+    logging.debug(def_name)
     customers = get_otrs.customers_actives()
 
     customers_cloudflare = [
@@ -125,19 +138,21 @@ def customers_cloudflare():
         customer: customers[customer] for customer in customers_cloudflare
     }
 
+    logging.debug(def_name)
     return dict_customers_cloudflare
-
 # print(customers_cloudflare())
+
 
 def event_total_log_source(
     customer: str,
     date: str,
     aql_name: str = "Eventos_totales_Log_Source"
 ) -> dict:
-    def_name = "event_total_log_source"
-    print(def_name, datetime.today())
     """Datos para la grafica de 
     """
+    def_name = "event_total_log_source"
+    logging.debug(def_name)
+
     calendar = get_otrs.calendar_spanish()
     calendar = calendar["calendar_num"]
     date_ = datetime.strptime(date, "%Y-%m-%d")
@@ -153,10 +168,17 @@ def event_total_log_source(
         )
     )
 
-    data = qradar.ariel_results(create_id_searches)
+    data = qradar.ariel_results(
+        search_id = create_id_searches
+    )
 
     if len(data["events"]) == 0:
+        logging.error(def_name)
         return {}
+    
+    logging.info(f'TOTAL DE EVENTOS {def_name} {len(data["events"])}')
+    print("EVENTOS DEL TIPO")
+    pprint(data["events"][0])
 
     total = 0
     dict_total_events = {}
@@ -167,9 +189,8 @@ def event_total_log_source(
         dict_total_events[name_event] = recuento_event
     
     dict_total_events["Total"] = total
-    print(def_name, datetime.today())
+    logging.debug(def_name)
     return dict_total_events
-
 # print(event_total_log_source("SURA", "2023-01-01"))
 
 
@@ -178,10 +199,11 @@ def total_accept_per_dominio_pais(
     date: str,
     aql_name: str = "Total_Accept_per_dominio_Pais"
 ) -> dict:
-    def_name = "total_accept_per_dominio_pais"
-    print(def_name, datetime.today())
     """Datos para la grafica de 
     """
+    def_name = "total_accept_per_dominio_pais"
+    logging.debug(def_name)
+    
     calendar = get_otrs.calendar_spanish()
     calendar = calendar["calendar_num"]
     date_ = datetime.strptime(date, "%Y-%m-%d")
@@ -197,64 +219,54 @@ def total_accept_per_dominio_pais(
         )
     )
 
-    data = qradar.ariel_results(create_id_searches)
-
+    data = qradar.ariel_results(
+        search_id = create_id_searches
+    )
+    
     if len(data["events"]) == 0:
+        logging.error(def_name)
         return {}
+    
+    logging.info(f'TOTAL DE EVENTOS {def_name} {len(data["events"])}')
+    print("EVENTOS DEL TIPO")
+    pprint(data["events"][0])
 
+    paises = qradar.nombre_pais()
     total = 0
     dict_total_events = {}
-    for pos, event in enumerate(data["events"]):
-        name_event = event["Origen de registro"]
+    dict_events_dominio_pais = {}
+    for event in data["events"]:
+        pais = paises[event["ClientCountry (personalizado)"]]
+        name_dominio = event["Origen de registro"]
         recuento_event =  int(event["Recuento de sucesos (Suma)"])
         total += recuento_event
-        print(pos)
-        pprint(event)
-        if name_event not in dict_total_events:
-            dict_total_events[name_event] = recuento_event
+        
+        if name_dominio not in dict_events_dominio_pais:
+            dict_events_dominio_pais[name_dominio] = {
+                "paises": {},
+                "Total": recuento_event
+            }
         else:
-            dict_total_events[name_event] += recuento_event
+            dict_events_dominio_pais[name_dominio]["Total"] += recuento_event
+
+        if pais not in dict_events_dominio_pais[name_dominio]["paises"]:
+            dict_events_dominio_pais[name_dominio]["paises"][pais] = recuento_event
+        else:
+            dict_events_dominio_pais[name_dominio]["paises"][pais] += recuento_event
+        
+        if name_dominio not in dict_total_events:
+            dict_total_events[name_dominio] = recuento_event
+        else:
+            dict_total_events[name_dominio] += recuento_event
     
     dict_total_events["Total"] = total
-    
-    print(def_name, datetime.today())
-    return dict_total_events
 
-# print(total_accept_per_dominio_pais("SURA", "2023-01-01"))
-
-def tabla_reque_acep_boque_per_dominio(
-        customer: str,
-        date: str,
-) -> dict:
-    def_name = "tabla_reque_acep_boque_per_dominio"
-    print(def_name, datetime.today())
-    """Datos para la 
-    """
-    total_reque = event_total_log_source(
-        customer = customer,
-        date = date
-    )
-    total_reque_accep = total_accept_per_dominio_pais(
-        customer = customer,
-        date = date
-    )
-
-    pprint(total_reque)
-    pprint(total_reque_accep)
-
-    dict_dominio ={}
-    for dominio in total_reque:
-        dict_dominio[dominio] = {
-            "Total de Requerimientos": '{:,}'.format(total_reque[dominio]).replace(',','.'), 
-            "Requerimientos Aceptados": '{:,}'.format(total_reque_accep[dominio]).replace(',','.'),
-            "Requerimientos Bloqueados": '{:,}'.format( total_reque[dominio] - total_reque_accep[dominio]).replace(',','.')
-        }
-
-    pprint(dict_dominio)
-    return dict_dominio
-
-
-# tabla_reque_acep_boque_per_dominio("SURA", "2023-01-01")
+    logging.debug(def_name)
+    return {
+        "dict_total_events": dict_total_events,
+        "dict_events_dominio_pais": dict_events_dominio_pais
+    }
+# pprint(total_accept_per_dominio_pais("SURA", "2023-01-01"))
 
 
 def detalle_drop(
@@ -262,10 +274,11 @@ def detalle_drop(
     date: str,
     aql_name: str = "Detalle_drop"
 ) -> dict:
-    def_name = "detalle_drop"
-    print(def_name, datetime.today())
     """Datos para la grafica de 
     """
+    def_name = "detalle_drop"
+    logging.debug(def_name)
+
     calendar = get_otrs.calendar_spanish()
     calendar = calendar["calendar_num"]
     date_ = datetime.strptime(date, "%Y-%m-%d")
@@ -281,32 +294,124 @@ def detalle_drop(
         )
     )
 
-    data = qradar.ariel_results(create_id_searches)
-    print("data, fueraa")
-
+    # data = qradar.ariel_results(
+    #     search_id = create_id_searches,
+    #     headers = {"Range": "items=0-569293"}
+    # )
+    data = qradar.ariel_results(
+        search_id = create_id_searches
+    )
+    
     if len(data["events"]) == 0:
+        logging.error(def_name)
         return {}
+    
+    logging.info(f'TOTAL DE EVENTOS {def_name} {len(data["events"])}')
+    print("EVENTOS DEL TIPO")
+    pprint(data["events"][0])
 
+    exit()
+    paises = qradar.nombre_pais()
     total = 0
     dict_total_events = {}
-    print("\n")
-    print(type(data.keys()))
-    pprint(data["events"][0])
-    # for event in data["events"]:
-    #     pprint(event)
-        # name_event = event["Origen de registro"]
-        # recuento_event =  int(event["Recuento de sucesos (Suma)"])
-        # total += recuento_event
-        # dict_total_events[name_event] = recuento_event
+    dict_events_dominio_pais = {}
+    for event in data["events"]:
+        pais = paises[event["ClientCountry (personalizado)"]]
+        name_dominio = event["Origen de registro"]
+        recuento_event =  int(event["Recuento de sucesos (Suma)"])
+        total += recuento_event
+        
+        if name_dominio not in dict_events_dominio_pais:
+            dict_events_dominio_pais[name_dominio] = {
+                "paises": {},
+                "Total": recuento_event
+            }
+        else:
+            dict_events_dominio_pais[name_dominio]["Total"] += recuento_event
+
+        if pais not in dict_events_dominio_pais[name_dominio]["paises"]:
+            dict_events_dominio_pais[name_dominio]["paises"][pais] = recuento_event
+        else:
+            dict_events_dominio_pais[name_dominio]["paises"][pais] += recuento_event
+        
+        if name_dominio not in dict_total_events:
+            dict_total_events[name_dominio] = recuento_event
+        else:
+            dict_total_events[name_dominio] += recuento_event
     
-    total = '{:,}'.format(total).replace(',','.')
-    pprint(dict_total_events)
-    print("\n")
+    dict_total_events["Total"] = total
 
-    print(def_name, datetime.today())
-    return 
+    logging.debug(def_name)
+    return {
+        "dict_total_events": dict_total_events,
+        "dict_events_dominio_pais": dict_events_dominio_pais
+    }
+# pprint(detalle_drop("SURA", "2023-01-01"))
 
-# print(detalle_drop("SURA", "2023-01-01"))
+
+def tabla_reque_acep_boque_per_dominio(
+        customer: str,
+        date: str,
+) -> dict:
+    """Datos para la 
+    """
+    def_name = "tabla_reque_acep_boque_per_dominio"
+    logging.debug(def_name)
+
+    total_requirements = event_total_log_source(
+        customer = customer,
+        date = date
+    )
+    requirements_drop = detalle_drop(
+         customer = customer,
+        date = date
+    )
+    requirements_accep = total_accept_per_dominio_pais(
+        customer = customer,
+        date = date
+    )
+
+
+    total_requirements_drop = requirements_drop["dict_total_events"]
+    total_requirements_accep = requirements_accep["dict_total_events"]
+    pprint(total_requirements)
+    pprint(total_requirements_accep)
+    pprint(total_requirements_drop)
+
+    dict_dominio ={}
+    for dominio in total_requirements:
+        dict_dominio[dominio] = {
+            "Total de Requerimientos": '{:,}'.format(total_requirements[dominio]).replace(',','.'), 
+            "Requerimientos Aceptados": '{:,}'.format(total_requirements_accep[dominio]).replace(',','.'),
+            "Requerimientos Bloqueados": '{:,}'.format(total_requirements_drop[dominio]).replace(',','.')
+        }
+    
+
+    total_requirements_drop_paises = requirements_drop["dict_events_dominio_pais"]
+    total_requirements_accep_paises = requirements_accep["dict_events_dominio_pais"]
+
+    for dominio in total_requirements:
+        if dominio != "Total":
+            print(dominio)
+            a = total_requirements_drop_paises[dominio]["paises"]
+            a = sorted(
+                a.items(),
+                key=lambda x:x[1], 
+                reverse=True
+            )
+            print(a)
+            b = total_requirements_accep_paises[dominio]["paises"]
+            b = sorted(
+                b.items(),
+                key=lambda x:x[1], 
+                reverse=True
+            )
+            print(b)
+
+
+    logging.debug(def_name)
+    return dict_dominio
+# pprint(tabla_reque_acep_boque_per_dominio("SURA", "2023-01-01"))
 
 
 ###############################################################################
@@ -318,6 +423,9 @@ def customers_arbor():
     """Los clientes que cuentan con el servicio Arbor son:
     * AAN
     """
+    def_name = "customers_arbor"
+    logging.debug(def_name)
+
     customers = get_otrs.customers_actives()
     customers_arbor = ["AAN"]
     
@@ -325,6 +433,7 @@ def customers_arbor():
         customer: customers[customer] for customer in customers_arbor
     }
 
+    logging.debug(def_name)
     return dict_customers_arbor
 
 
@@ -333,11 +442,12 @@ def blocked_events(
     date: str,
     aql_name: str = "Informe_Arbor_1"
 ) -> dict:
-    def_name = "blocked_events"
-    print(def_name, datetime.today())
     """Datos para la grafica de eventos bloquedos del informe de Arbor
     https://www.highcharts.com/demo/pie-basic
     """
+    def_name = "blocked_events"
+    logging.debug(def_name)
+
     calendar = get_otrs.calendar_spanish()
     calendar = calendar["calendar_num"]
     date_ = datetime.strptime(date, "%Y-%m-%d")
@@ -352,12 +462,18 @@ def blocked_events(
             aql_name = aql_name
         )
     )
-    data = qradar.ariel_results(create_id_searches)
-    print("Events", len(data["events"]))
-
+    data = qradar.ariel_results(
+        search_id = create_id_searches
+    )
+    
     if len(data["events"]) == 0:
+        logging.error(def_name)
         return {}
     
+    logging.info(f'TOTAL DE EVENTOS {def_name} {len(data["events"])}')
+    print("EVENTOS DEL TIPO")
+    pprint(data["events"][0])
+
     data_grah = [{
         "name": "Brands",
         "colorByPoint": True,
@@ -397,7 +513,7 @@ def blocked_events(
     
     total = '{:,}'.format(total).replace(',','.')
     
-    print(def_name, datetime.today())
+    logging.debug(def_name)
     return {
         "year": year,
         "name_date": name_date,
@@ -411,7 +527,7 @@ def total_blocked_events():
     https://www.highcharts.com/demo/column-basic
     """
     def_name = "total_blocked_events"
-    print(def_name, datetime.today())
+    logging.debug(def_name)
 
     data_grah_x = [
         "01-2023", 
@@ -427,7 +543,7 @@ def total_blocked_events():
     total = '{:,}'.format(total).replace(',','.')
     data_grah_y = [{"name": "Eventos Bloqueados", "data": data_grah_y_temp}]
     
-    print(def_name, datetime.today())
+    logging.debug(def_name)
     return {
         "data_grah_x": data_grah_x,
         "data_grah_y": data_grah_y,
@@ -440,12 +556,13 @@ def events_paises(
     date: str,
     aql_name: str = "TOP_10_Paises"
 ) -> dict:
-    def_name = "blocked_events"
-    print(def_name, datetime.today())
     """Datos para la grafica de top de paises
     https://www.highcharts.com/demo/column-basic
     https://www.highcharts.com/demo/column-stacked-percent
     """
+    def_name = "events_paises"
+    logging.debug(def_name)
+
     calendar = get_otrs.calendar_spanish()
     calendar = calendar["calendar_num"]
     date_ = datetime.strptime(date, "%Y-%m-%d")
@@ -460,11 +577,17 @@ def events_paises(
             aql_name = aql_name
         )
     )
-    data = qradar.ariel_results(create_id_searches)
-    print("Events", len(data["events"]))
+    data = qradar.ariel_results(
+        search_id = create_id_searches
+    )
     
     if len(data["events"]) == 0:
+        logging.error(def_name)
         return {}
+    
+    logging.info(f'TOTAL DE EVENTOS {def_name} {len(data["events"])}')
+    print("EVENTOS DEL TIPO")
+    pprint(data["events"][0])
     
     translator = Translator()
     dict_paises = {}
@@ -521,7 +644,6 @@ def events_paises(
         reverse=True
     )
 
-
     data_grah_x_top_paises = []
     data_grah_y_temp = []
     order_continet_top_10 = []
@@ -553,7 +675,6 @@ def events_paises(
         "data_grah_y": data_grah_y_top_paises,
         "total": total_top_paises
     }
-
 
     data_grah_y_top_continent_pais_porcent = []
     data_grah_y_top_continent_pais = []
@@ -604,7 +725,7 @@ def events_paises(
         "total": total_top_paises
     }
 
-    print(def_name, datetime.today())
+    logging.debug(def_name)
     return {
         "year": year,
         "name_date": name_date,
@@ -613,7 +734,6 @@ def events_paises(
         "data_grah_top_continent_pais": data_grah_top_continent_pais,
         "data_grah_top_continent_pais_porcent": data_grah_top_continent_pais_porcent
     }
-
 
 
 ##########EJEMPLO##############

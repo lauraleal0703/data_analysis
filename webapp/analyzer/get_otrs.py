@@ -965,15 +965,10 @@ def get_count_tickets_users_years(
                 count = True
             )
 
-            if user_id not in total_tickets_years[year]:
-                total_tickets_years[year][user_id] =  {
-                    "user":{
-                        "name": users_actives_temp[user_id]
-                    },
-                    "total": int(data_temp)
-                }
+            if users_actives_temp[user_id] not in total_tickets_years[year]:
+                total_tickets_years[year][users_actives_temp[user_id]] = int(data_temp)
             else:
-                total_tickets_years[year][user_id]["total"] += int(data_temp)
+                total_tickets_years[year][users_actives_temp[user_id]] += int(data_temp)
                 
             if user_id not in total_tickets_users:
                 total_tickets_users[user_id] = {
@@ -992,26 +987,32 @@ def get_count_tickets_users_years(
                 total_tickets += data_temp
 
 
-    dict_year_total = {} 
+    dict_year_total = {}
     for year_ in total_tickets_years:
+        dict_year_total_temp_y = []
         dict_year_total[year_] = {
             "data_grah_x": [],
             "data_grah_y": [],
             "total": 0
         }
-        for user_ in total_tickets_years[year_]:
-            if total_tickets_years[year_][user_]["total"] != 0:
-                dict_year_total[year_]["data_grah_x"].append(
-                    total_tickets_years[year_][user_]["user"]["name"])
-                dict_year_total[year_]["data_grah_y"].append(
-                    total_tickets_years[year_][user_]["total"])
+        order_desc = sorted(
+            total_tickets_years[year_].items(),
+            key=lambda x:x[1],
+            reverse=True
+        )
+        print(order_desc)
+        for cust in order_desc:
+            if cust[1] != 0:
+                dict_year_total[year_]["data_grah_x"].append(cust[0])
+                dict_year_total_temp_y.append(cust[1])
+                dict_year_total[year_]["total"] += cust[1]
         
-        dict_year_total[year_]["total"] = sum(dict_year_total[year_]["data_grah_y"])  
+        dict_year_total[year_]["data_grah_y"].append({
+            "name": year_,
+            "data": dict_year_total_temp_y
+        })
+
         
-
-    pprint(dict_year_total)
-
-
     total_tickets_users = sorted(
         total_tickets_users.items(), 
         key=lambda x:x[1]["total"], 
@@ -1046,7 +1047,8 @@ def get_count_tickets_users_years(
         "total_tickets_users": total_tickets_users,
         "data_grah_x": data_x,
         "data_grah_y": data_grah,
-        "total_tickets": total_tickets
+        "total_tickets": total_tickets,
+        "dict_year_total": dict_year_total
     }
 
 # get_count_tickets_users_years(6)
