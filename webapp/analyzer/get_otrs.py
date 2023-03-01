@@ -913,7 +913,6 @@ def get_tickets_conflic(
     return data_total
 
 
-
 ######################################################
 #### Da respuesta a: 
 # 3. Cantidad de tickets atendidos por administrador

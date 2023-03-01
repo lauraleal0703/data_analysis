@@ -55,9 +55,8 @@ def index():
 
                 return render_template(
                     "analysis_otrs/customers/index_table.html",
-                    page = {"title": """Se muestran los tickets que durante el
-                        año 2023 no tienen servicio asociado o el usuario es de
-                        otra cola."""
+                    page = {"title": """Se muestran los tickets que durante la última semana
+                        no tienen servicio asociado o el usuario es de otra cola."""
                     },
                     queues = queues,
                     current_queue = queue,
