@@ -392,7 +392,9 @@ def get_count_tickets_customers_years(
             if cust[1] != 0:
                 dict_year_total[year_]["data_grah_x"].append(cust[0])
                 dict_year_total_temp_y.append(cust[1])
-                dict_year_total[year_]["total"] += cust[1]
+            total = sum(dict_year_total_temp_y)
+            total = '{:,}'.format(total).replace(',','.')
+            dict_year_total[year_]["total"] = total
         
         dict_year_total[year_]["data_grah_y"].append({
             "name": year_,
@@ -999,12 +1001,14 @@ def get_count_tickets_users_years(
             key=lambda x:x[1],
             reverse=True
         )
-        print(order_desc)
+        
         for cust in order_desc:
             if cust[1] != 0:
                 dict_year_total[year_]["data_grah_x"].append(cust[0])
                 dict_year_total_temp_y.append(cust[1])
-                dict_year_total[year_]["total"] += cust[1]
+            total = sum(dict_year_total_temp_y)
+            total = '{:,}'.format(total).replace(',','.')
+            dict_year_total[year_]["total"] = total
         
         dict_year_total[year_]["data_grah_y"].append({
             "name": year_,
