@@ -5,11 +5,12 @@ except:
     from qradar import qradar
     import get_otrs
 
-
-from dateutil.relativedelta import relativedelta
+import json
+from pathlib import Path
 from pprint import pprint
 from datetime import datetime
 from googletrans import Translator
+from dateutil.relativedelta import relativedelta
 
 import logging
 logging.basicConfig(
@@ -24,22 +25,23 @@ logging.basicConfig(
 ################################--SOPORTE--####################################
 ###############################################################################
 
+"""Resumen:
+ Evertec: 
+    *Solange ve: IPS (Firepower) y WAF (A10)
+    *Jose ve: PAM
+"""
+
 
 def dates_actives():
     """Hay información de 3 meses atrás en QRadar"""
     def_name = "dates_actives"
     logging.debug(def_name)
-    month_init = datetime.today() - relativedelta(months=3)
+    month_init = datetime.today() - relativedelta(months=4)
     date_init_ = f"{month_init.year}-{month_init.month}-01"
     date_init = datetime.strptime(date_init_, "%Y-%m-%d")
-    dict_date = {
-        1: {
-            "date": date_init_, 
-            "date_name": datetime.strftime(date_init, "%m-%Y")
-        }
-    }
-    i = 2
-    while i < 5:
+    dict_date = {}
+    i = 1
+    while i < 4:
         date_temp = date_init + relativedelta(months=1)
         dict_date[i] = {
             "date": datetime.strftime(date_temp, "%Y-%m-%d"), 
@@ -56,6 +58,7 @@ def dates_actives():
 
     logging.debug(def_name)
     return dict_date
+# pprint(dates_actives())
 
 
 def aql(
@@ -99,14 +102,67 @@ def aql(
 
          
         if aql_name == "Detalle_drop":
-            # Detalle_drop = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', "ClientIP" AS 'ClientIP (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientRequestPath" AS 'ClientRequestPath (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', UniqueCount("FirewallMatchesActions") AS 'FirewallMatchesActions (personalizado) (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where ( "FirewallMatchesActions"='["block"]' AND (logSourceId='3612') or (logSourceId='3613') or (logSourceId='3663') or (logSourceId='3664') or (logSourceId='3665') ) GROUP BY "ClientIP", "ClientCountry", "ClientRequestHost", "ClientRequestPath" order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
-            # '''
-            ##Excepción ENERO 2023
-            Detalle_drop = '''SELECT "ClientIP" AS 'ClientIP (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientRequestPath" AS 'ClientRequestPath (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', UniqueCount("FirewallMatchesActions") AS 'FirewallMatchesActions (personalizado) (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where ( ( ("ClientIP"<'143.198.234.131') or ("ClientIP">'143.198.234.131' and "ClientIP"<'165.227.99.174') or ("ClientIP">'165.227.99.174' and "ClientIP"<'167.172.245.180') or ("ClientIP">'167.172.245.180') AND "FirewallMatchesActions"='["block"]' ) AND (logSourceId='3612') or (logSourceId='3613') or (logSourceId='3663') or (logSourceId='3664') or (logSourceId='3665') ) GROUP BY "ClientIP", "ClientCountry", "ClientRequestHost", "ClientRequestPath" order by "Recuento" desc start '2023-01-01 00:00' stop '2023-01-31 23:59'
+            Detalle_drop = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', "ClientIP" AS 'ClientIP (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientRequestPath" AS 'ClientRequestPath (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', UniqueCount("FirewallMatchesActions") AS 'FirewallMatchesActions (personalizado) (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where ( "FirewallMatchesActions"='["block"]' AND (logSourceId='3612') or (logSourceId='3613') or (logSourceId='3663') or (logSourceId='3664') or (logSourceId='3665') ) GROUP BY "ClientIP", "ClientCountry", "ClientRequestHost", "ClientRequestPath" order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
             '''
+            ##Excepción ENERO 2023
+            # Detalle_drop = '''SELECT logsourcename(logSourceId) AS 'Origen de registro', "ClientIP" AS 'ClientIP (personalizado)', "ClientCountry" AS 'ClientCountry (personalizado)', "ClientRequestHost" AS 'ClientRequestHost (personalizado)', "ClientRequestPath" AS 'ClientRequestPath (personalizado)', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', UniqueCount("FirewallMatchesActions") AS 'FirewallMatchesActions (personalizado) (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where ( ( ("ClientIP"<'143.198.234.131') or ("ClientIP">'143.198.234.131' and "ClientIP"<'165.227.99.174') or ("ClientIP">'165.227.99.174' and "ClientIP"<'167.172.245.180') or ("ClientIP">'167.172.245.180') AND "FirewallMatchesActions"='["block"]' ) AND (logSourceId='3612') or (logSourceId='3613') or (logSourceId='3663') or (logSourceId='3664') or (logSourceId='3665') ) GROUP BY "ClientIP", "ClientCountry", "ClientRequestHost", "ClientRequestPath" order by "Recuento" desc start '2023-01-01 00:00' stop '2023-01-31 23:59'
+            # '''
             logging.debug(def_name)
             return Detalle_drop
+        
+    if customer == "EVERTEC":
+        if aql_name == "EVERTEC_LLEAL_Test2":
+            EVERTEC_LLEAL_Test2 = f'''SELECT QIDNAME(qid) as 'Nombre de suceso',"From" as 'From (personalizado)',"Impact" as 'Impact (personalizado)',"eventCount" as 'Recuento de sucesos',"startTime" as 'Hora de inicio',"sourceIP" as 'IP de origen',categoryname(category) as 'Categoría de nivel bajo',"Priority" as 'Priority (personalizado)',"sourcePort" as 'Puerto de origen',"destinationPort" as 'Puerto de destino',"destinationIP" as 'IP de destino',"Classification" as 'Classification (personalizado)' from events where ("creEventList"='120176') or ("creEventList"='120180') or ("creEventList"='120181') or ("creEventList"='120182') or ("creEventList"='125185') or ("creEventList"='125234') or ("creEventList"='125444') or ("creEventList"='125445') or ("creEventList"='125446') or ("creEventList"='125447') or ("creEventList"='125448') or ("creEventList"='125449') or ("creEventList"='125450') or ("creEventList"='125805') or ("creEventList"='125806') or ("creEventList"='125807') order by "startTime" desc start '{start} 00:00' stop '{stop} 00:00'
+            '''
+            logging.debug(def_name)
+            return EVERTEC_LLEAL_Test2
 
+
+def get_json(
+    def_name: str,
+    customer: str,
+    date: str,
+    aql_name: str
+) -> dict:
+    """Funcion que permite traer la data de QRadar y guardarla
+    en data_qradar para que lueego la consulta sea más rápida"""
+    
+    """Siempre se debe comprobar el directorio"""
+    path_data_qradar: Path = Path(__file__).parent/"data_qradar"
+    if not path_data_qradar.exists():
+        path_data_qradar.mkdir()
+    
+    current_path = path_data_qradar / f"{date}_{customer}_{def_name}.json"
+    if not current_path.exists():
+        logging.info(f"Creando JSON {current_path}")
+        create_id_searches = qradar.ariel_searches_post(
+            query_expression = aql(
+                customer = customer,
+                date = date,
+                aql_name = aql_name
+            )
+        )
+        data = qradar.ariel_results(
+            search_id = create_id_searches
+        )
+        current_path.touch()
+        f = current_path.open("w")
+        f.write(json.dumps(data))
+        f.close()
+    else:
+        logging.info(f"Abriendo JSON {current_path}")
+        f = open(str(current_path))
+        data = json.load(f)
+
+    if len(data["events"]) == 0:
+        logging.error(def_name)
+        return {}
+    
+    logging.info(f'TOTAL DE EVENTOS {def_name} -> Total: {len(data["events"])}')
+    logging.info("EVENTOS DEL TIPO")
+    pprint(data["events"][0])
+
+    return data
 
 
 ###############################################################################
@@ -150,7 +206,7 @@ def event_total_log_source(
 ) -> dict:
     """Datos para la grafica de 
     """
-    def_name = "event_total_log_source"
+    def_name = f"eventos_totales_Log_Source"
     logging.debug(def_name)
 
     calendar = get_otrs.calendar_spanish()
@@ -160,26 +216,13 @@ def event_total_log_source(
     name_date = date_.month
     name_date = calendar[name_date]
 
-    create_id_searches = qradar.ariel_searches_post(
-        query_expression = aql(
-            customer = customer,
-            date = date,
-            aql_name = aql_name
-        )
+    data = get_json(
+        def_name = def_name,
+        customer = customer,
+        date = date,
+        aql_name = aql_name
     )
-
-    data = qradar.ariel_results(
-        search_id = create_id_searches
-    )
-
-    if len(data["events"]) == 0:
-        logging.error(def_name)
-        return {}
-    
-    logging.info(f'TOTAL DE EVENTOS {def_name} {len(data["events"])}')
-    print("EVENTOS DEL TIPO")
-    pprint(data["events"][0])
-
+   
     total = 0
     dict_total_events = {}
     for event in data["events"]:
@@ -192,6 +235,7 @@ def event_total_log_source(
     logging.debug(def_name)
     return dict_total_events
 # print(event_total_log_source("SURA", "2023-01-01"))
+# exit()
 
 
 def total_accept_per_dominio_pais(
@@ -201,7 +245,7 @@ def total_accept_per_dominio_pais(
 ) -> dict:
     """Datos para la grafica de 
     """
-    def_name = "total_accept_per_dominio_pais"
+    def_name = f"total_accept_per_dominio_pais"
     logging.debug(def_name)
     
     calendar = get_otrs.calendar_spanish()
@@ -211,31 +255,20 @@ def total_accept_per_dominio_pais(
     name_date = date_.month
     name_date = calendar[name_date]
 
-    create_id_searches = qradar.ariel_searches_post(
-        query_expression = aql(
-            customer = customer,
-            date = date,
-            aql_name = aql_name
-        )
+    data = get_json(
+        def_name = def_name,
+        customer = customer,
+        date = date,
+        aql_name = aql_name
     )
-
-    data = qradar.ariel_results(
-        search_id = create_id_searches
-    )
-    
-    if len(data["events"]) == 0:
-        logging.error(def_name)
-        return {}
-    
-    logging.info(f'TOTAL DE EVENTOS {def_name} {len(data["events"])}')
-    print("EVENTOS DEL TIPO")
-    pprint(data["events"][0])
 
     paises = qradar.nombre_pais()
     total = 0
     dict_total_events = {}
     dict_events_dominio_pais = {}
     for event in data["events"]:
+        if not event["ClientCountry (personalizado)"]:
+            event["ClientCountry (personalizado)"] = "None"
         pais = paises[event["ClientCountry (personalizado)"]]
         name_dominio = event["Origen de registro"]
         recuento_event =  int(event["Recuento de sucesos (Suma)"])
@@ -276,7 +309,7 @@ def detalle_drop(
 ) -> dict:
     """Datos para la grafica de 
     """
-    def_name = "detalle_drop"
+    def_name = f"detalle_drop"
     logging.debug(def_name)
 
     calendar = get_otrs.calendar_spanish()
@@ -286,36 +319,20 @@ def detalle_drop(
     name_date = date_.month
     name_date = calendar[name_date]
 
-    create_id_searches = qradar.ariel_searches_post(
-        query_expression = aql(
-            customer = customer,
-            date = date,
-            aql_name = aql_name
-        )
-    )
-
-    # data = qradar.ariel_results(
-    #     search_id = create_id_searches,
-    #     headers = {"Range": "items=0-569293"}
-    # )
-    data = qradar.ariel_results(
-        search_id = create_id_searches
+    data = get_json(
+        def_name = def_name,
+        customer = customer,
+        date = date,
+        aql_name = aql_name
     )
     
-    if len(data["events"]) == 0:
-        logging.error(def_name)
-        return {}
-    
-    logging.info(f'TOTAL DE EVENTOS {def_name} {len(data["events"])}')
-    print("EVENTOS DEL TIPO")
-    pprint(data["events"][0])
-
-    exit()
     paises = qradar.nombre_pais()
     total = 0
     dict_total_events = {}
     dict_events_dominio_pais = {}
     for event in data["events"]:
+        if not event["ClientCountry (personalizado)"]:
+            event["ClientCountry (personalizado)"] = "None"
         pais = paises[event["ClientCountry (personalizado)"]]
         name_dominio = event["Origen de registro"]
         recuento_event =  int(event["Recuento de sucesos (Suma)"])
@@ -362,22 +379,32 @@ def tabla_reque_acep_boque_per_dominio(
         customer = customer,
         date = date
     )
-    requirements_drop = detalle_drop(
-         customer = customer,
-        date = date
-    )
+    logging.info("total_requirements")
+    pprint(total_requirements)
+
+
     requirements_accep = total_accept_per_dominio_pais(
         customer = customer,
         date = date
     )
-
-
-    total_requirements_drop = requirements_drop["dict_total_events"]
+    logging.info("requirements_accep")
+    pprint(requirements_accep)
+    
     total_requirements_accep = requirements_accep["dict_total_events"]
-    pprint(total_requirements)
+    logging.info("total_requirements_accep")
     pprint(total_requirements_accep)
-    pprint(total_requirements_drop)
 
+    requirements_drop = detalle_drop(
+         customer = customer,
+        date = date
+    )
+    logging.info("requirements_drop")
+    pprint(requirements_drop)
+    
+    total_requirements_drop = requirements_drop["dict_total_events"]
+    logging.info("total_requirements_drop")
+    pprint(total_requirements_drop)
+    
     dict_dominio ={}
     for dominio in total_requirements:
         dict_dominio[dominio] = {
@@ -386,6 +413,8 @@ def tabla_reque_acep_boque_per_dominio(
             "Requerimientos Bloqueados": '{:,}'.format(total_requirements_drop[dominio]).replace(',','.')
         }
     
+    logging.info("TABLA 1")
+    pprint(dict_dominio)
 
     total_requirements_drop_paises = requirements_drop["dict_events_dominio_pais"]
     total_requirements_accep_paises = requirements_accep["dict_events_dominio_pais"]
@@ -413,6 +442,277 @@ def tabla_reque_acep_boque_per_dominio(
     return dict_dominio
 # pprint(tabla_reque_acep_boque_per_dominio("SURA", "2023-01-01"))
 
+
+###############################################################################
+##############################--Firepower--###################################
+###############################################################################
+
+def customers_firepower():
+    """Los clientes que cuentan con el servicio son:
+    * EVERTEC
+    """
+    def_name = "customers_firepower"
+    logging.debug(def_name)
+    customers = get_otrs.customers_actives()
+
+    customers_firepower = [
+        "EVERTEC"
+    ]
+    
+    dict_customers_firepower = {
+        customer: customers[customer] for customer in customers_firepower
+    }
+    print(dict_customers_firepower)
+    logging.debug(def_name)
+    return dict_customers_firepower
+# print(customers_firepower())
+
+
+def create_dict_top3_top_10(
+    clasification_top: str,
+    ips_evertec: list,
+    dict_base: dict,
+    ip: tuple,
+    position_top3: int,
+    position_top10: int
+):
+    """Llenar el dict"""
+    if ip[0] in ips_evertec:
+        identificacion = "Red Evertec"
+    else:
+        identificacion = "Desconodida"
+    
+    if position_top3 not in dict_base:
+        dict_base[position_top3] = {}
+    
+    if clasification_top not in dict_base[position_top3]:
+        dict_base[position_top3][clasification_top] = {}
+
+    if "ips_destino" not in dict_base[position_top3][clasification_top]:
+        dict_base[position_top3][clasification_top]["ips_destino"] = {}
+
+    if "ips_destino" not in dict_base[position_top3][clasification_top]:
+        dict_base[position_top3][clasification_top]["ips_destino"] = {}
+    
+    if position_top10 not in dict_base[position_top3][clasification_top]["ips_destino"]:
+        dict_base[position_top3][clasification_top]["ips_destino"][position_top10] = {}
+
+    if "ips" not in dict_base[position_top3][clasification_top]["ips_destino"][position_top10]:
+        dict_base[position_top3][clasification_top]["ips_destino"][position_top10]["ips"] = {}
+
+    if ip[0] not in dict_base[position_top3][clasification_top]["ips_destino"][position_top10]["ips"]:
+        dict_base[position_top3][clasification_top]["ips_destino"][position_top10]["ips"][ip[0]] = {
+            "identification": identificacion,
+            "total": ip[1]["total"],
+            "ips_origen": ip[1]["ips_origen"]
+        }
+
+
+def create_data_table(dict_base: dict) -> dict:
+    """Crear el dict para la tabla"""
+    dict_info_final = {}
+    for pos_final in dict_base:
+        dict_info_final[pos_final] = {}
+        for clas_ in dict_base[pos_final]:
+            dict_info_final[pos_final][clas_] = {}
+            for top10_ip in dict_base[pos_final][clas_]["ips_destino"]:
+                dict_info_final[pos_final][clas_][top10_ip] = {}
+                for ip in dict_base[pos_final][clas_]["ips_destino"][top10_ip]["ips"]:
+                    dict_info_final[pos_final][clas_][top10_ip][ip] = {
+                        "Identificación/Riesgo": dict_base[pos_final][clas_]["ips_destino"][top10_ip]["ips"][ip]["identification"],
+                        "Cantidad de eventos": dict_base[pos_final][clas_]["ips_destino"][top10_ip]["ips"][ip]["total"],
+                        "ips_origen": {}
+                    }
+
+                    ips_origen = dict_base[pos_final][clas_]["ips_destino"][top10_ip]["ips"][ip]["ips_origen"]
+                    ips_origen_desc = sorted(
+                        ips_origen.items(),
+                        key=lambda x:x[1], 
+                        reverse=True
+                    )
+
+                    for pos_origen, ip_origen_ in enumerate(ips_origen_desc):
+                        ip_origen_temp = ip_origen_[0]
+                        # risk = qradar.curl_score_ip_get(ip=ip_origen_temp)
+                        risk = 1
+                        if risk < int(4):
+                            riesgo = f"Desconocido/Bajo({risk})"
+                        if risk >= int(4) and risk < int(7):
+                            riesgo = f"Desconocido/Medio({risk})"
+                        if risk >= int(7):
+                            riesgo = f"Desconocido/Alto({risk})"
+                        data_ = dict_base[pos_final][clas_]["ips_destino"][top10_ip]["ips"][ip]["ips_origen"][ip_origen_temp]
+                        dict_info_final[pos_final][clas_][top10_ip][ip]["ips_origen"][pos_origen+1] = {}
+                        dict_info_final[pos_final][clas_][top10_ip][ip]["ips_origen"][pos_origen+1][ip_origen_temp] = {
+                            "Cantidad de eventos": data_,
+                            "Identificación/Riesgo": riesgo
+                        }
+    return dict_info_final
+
+
+def total_firepower(
+    customer: str,
+    date: str,
+    aql_name: str = "EVERTEC_LLEAL_Test2"
+) -> dict:
+    """Datos para la grafica de 
+    """
+    def_name = f"total_firepower"
+    logging.debug(def_name)
+    
+    calendar = get_otrs.calendar_spanish()
+    calendar = calendar["calendar_num"]
+    date_ = datetime.strptime(date, "%Y-%m-%d")
+    year = date_.year
+    name_date = date_.month
+    name_date = calendar[name_date]
+
+    path_data_qradar: Path = Path(__file__).parent/"data_qradar"
+    if not path_data_qradar.exists():
+        path_data_qradar.mkdir()
+
+    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
+    if not current_path.exists():
+        logging.info(f"Creando JSON {current_path}")
+
+        data = get_json(
+            def_name = def_name,
+            customer = customer,
+            date = date,
+            aql_name = aql_name
+        )
+
+        total = 0
+        dict_clasifications = {}
+        dict_clasifications_ip = {}
+        for event in data["events"]:
+            clasification = event["Classification (personalizado)"]
+            recuento_event =  int(event["Recuento de sucesos"])
+            if clasification not in dict_clasifications:
+                dict_clasifications[clasification] = recuento_event
+            else: 
+                dict_clasifications[clasification] += recuento_event
+            
+            ip_destino = event['IP de destino']
+            ip_origen = event['IP de origen']
+            if clasification not in dict_clasifications_ip:
+                dict_clasifications_ip[clasification] = {"ips_destino": {}}
+            
+            if ip_destino not in dict_clasifications_ip[clasification]["ips_destino"]:
+                dict_clasifications_ip[clasification]["ips_destino"][ip_destino] = {
+                    "ips_origen": {ip_origen: recuento_event},
+                    "total": recuento_event
+                }  
+            else:
+                dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["total"] += recuento_event
+            
+            if ip_origen not in dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["ips_origen"]:
+                dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["ips_origen"][ip_origen] = recuento_event
+            else:
+                dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["ips_origen"][ip_origen] += recuento_event
+            
+            total += recuento_event
+        dict_clasifications["Total"] = total
+
+        dict_clasifications_desc = sorted(
+            dict_clasifications.items(),
+            key=lambda x:x[1], 
+            reverse=True
+        )
+
+        data_grah_x = []
+        data_grah_y_temp = []
+        for value in dict_clasifications_desc[1:]:
+            data_grah_x.append(value[0])
+            data_grah_y_temp.append(value[1])
+
+        data_grah_y = [{"name": "Eventos", "data": data_grah_y_temp}]
+        total = '{:,}'.format(total).replace(',','.')
+        
+        data_grah = {
+            "data_grah_x": data_grah_x,
+            "data_grah_y": data_grah_y,
+            "total": total
+        }
+
+
+        clasificationes_top = []
+        for pos, clasification_ in enumerate(dict_clasifications_desc):
+            if pos == 0:
+                continue
+            clasificationes_top.append(clasification_[0])
+            
+        print("clasificationes_top", len(clasificationes_top))
+        ips_evertec = qradar.ips_evertec()
+        dict_clasification_top3_top_10 = {}
+        dict_clasification_all_top = {}
+        for position_top3, clasification_top in enumerate(clasificationes_top):
+            position_top3 = position_top3+1
+            ips_destino = dict_clasifications_ip[clasification_top]["ips_destino"]
+            ips_destino_desc = sorted(
+                ips_destino.items(),
+                key=lambda x:x[1]["total"], 
+                reverse=True
+            )
+            
+            for position_top10, ip in enumerate(ips_destino_desc):
+                position_top10 = position_top10+1
+                create_dict_top3_top_10(
+                    clasification_top = clasification_top,
+                    ips_evertec = ips_evertec,
+                    dict_base = dict_clasification_all_top,
+                    ip = ip,
+                    position_top3 = position_top3,
+                    position_top10 = position_top10
+                )
+                 
+                if position_top3 > 3:
+                    continue
+                if position_top10 > 9:
+                    continue
+               
+                create_dict_top3_top_10(
+                    clasification_top = clasification_top,
+                    ips_evertec = ips_evertec,
+                    dict_base = dict_clasification_top3_top_10,
+                    ip = ip,
+                    position_top3 = position_top3,
+                    position_top10 = position_top10
+                )
+                    
+        table_top = create_data_table(
+            dict_base = dict_clasification_top3_top_10
+
+        )
+
+        table_all = create_data_table(
+            dict_base = dict_clasification_all_top
+
+        )
+        
+        data = {
+            "data_grah": data_grah,
+            "table_top": table_top,
+            "table_all": table_all,
+            "name_date": name_date,
+            "year": year
+        } 
+
+        current_path.touch()
+        f = current_path.open("w")
+        f.write(json.dumps(data))
+        f.close()
+    else:
+        logging.info(f"Abriendo JSON {current_path}")
+        f = open(str(current_path))
+        data = json.load(f)
+
+    return data
+
+# dates = ["2023-02-01","2023-01-01", "2022-12-01"]
+# for date in dates:
+#     print("date", date)
+#     total_firepower(customer = "EVERTEC", date = date)
 
 ###############################################################################
 #################################--Arbor--#####################################
@@ -445,7 +745,7 @@ def blocked_events(
     """Datos para la grafica de eventos bloquedos del informe de Arbor
     https://www.highcharts.com/demo/pie-basic
     """
-    def_name = "blocked_events"
+    def_name = f"blocked_events"
     logging.debug(def_name)
 
     calendar = get_otrs.calendar_spanish()
@@ -455,71 +755,96 @@ def blocked_events(
     name_date = date_.month
     name_date = calendar[name_date]
 
-    create_id_searches = qradar.ariel_searches_post(
-        query_expression = aql(
+    path_data_qradar: Path = Path(__file__).parent/"data_qradar"
+    if not path_data_qradar.exists():
+        path_data_qradar.mkdir()
+    
+    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
+    if not current_path.exists():
+        logging.info(f"Creando JSON {current_path}")
+        data = get_json(
+            def_name = def_name,
             customer = customer,
             date = date,
             aql_name = aql_name
         )
-    )
-    data = qradar.ariel_results(
-        search_id = create_id_searches
-    )
-    
-    if len(data["events"]) == 0:
-        logging.error(def_name)
-        return {}
-    
-    logging.info(f'TOTAL DE EVENTOS {def_name} {len(data["events"])}')
-    print("EVENTOS DEL TIPO")
-    pprint(data["events"][0])
 
-    data_grah = [{
-        "name": "Brands",
-        "colorByPoint": True,
-        "data": []
-    }]
-    translator = Translator()
-    total = 0
-    dict_events_desc = {}
-    for event in data["events"]:
-        name_event = event["Nombre de suceso"]
-        name_event = translator.translate(name_event, dest="es")
-        name_event = name_event.text
-        recuento_event =  event["Recuento de sucesos (Suma)"]
-        total += int(recuento_event)
-        dict_events_desc[name_event] = recuento_event
-    
-    dict_events_desc = sorted(
-        dict_events_desc.items(),
-        key=lambda x:x[1], 
-        reverse=True
-    )
-    for pos, event_ in enumerate(dict_events_desc):
-        if pos == 0:
-            data_grah_temp = {
-                "name": event_[0],
-                "y": event_[1],
-                "sliced": True,
-                "selected": True
-            }
-        else:
-            data_grah_temp = {
-                "name": event_[0],
-                "y": event_[1]
-            }
+        data_grah = [{
+            "name": "Brands",
+            "colorByPoint": True,
+            "data": []
+        }]
+        translator = Translator()
+        total = 0
+        dict_events_desc = {}
+        for event in data["events"]:
+            name_event = event["Nombre de suceso"]
+            name_event = translator.translate(name_event, dest="es")
+            name_event = name_event.text
+            recuento_event =  event["Recuento de sucesos (Suma)"]
+            total += int(recuento_event)
+            dict_events_desc[name_event] = recuento_event
         
-        data_grah[0]["data"].append(data_grah_temp)
+        dict_events_desc = sorted(
+            dict_events_desc.items(),
+            key=lambda x:x[1], 
+            reverse=True
+        )
+
+        data_grah_x = []
+        data_grah_y_temp = []
+        total_ = 0
+        for clasifi in dict_events_desc:
+            data_grah_x.append(clasifi[0])
+            data_grah_y_temp.append(int(clasifi[1]))
+            total_ += int(clasifi[1])
     
-    total = '{:,}'.format(total).replace(',','.')
-    
+        data_grah_y= [{"name": "Eventos", "data": data_grah_y_temp}]
+        total_ = '{:,}'.format(total_).replace(',','.')
+        data_grah_barras = {
+            "data_grah_x": data_grah_x,
+            "data_grah_y": data_grah_y,
+            "total": total_
+        }
+
+
+        for pos, event_ in enumerate(dict_events_desc):
+            if pos == 0:
+                data_grah_temp = {
+                    "name": event_[0],
+                    "y": event_[1],
+                    "sliced": True,
+                    "selected": True
+                }
+            else:
+                data_grah_temp = {
+                    "name": event_[0],
+                    "y": event_[1]
+                }
+            
+            data_grah[0]["data"].append(data_grah_temp)
+        
+        total = '{:,}'.format(total).replace(',','.')
+        
+        data = {
+            "year": year,
+            "name_date": name_date,
+            "data_grah": data_grah,
+            "data_grah_barras": data_grah_barras,
+            "total": total
+        }
+
+        current_path.touch()
+        f = current_path.open("w")
+        f.write(json.dumps(data))
+        f.close()
+    else:
+        logging.info(f"Abriendo JSON {current_path}")
+        f = open(str(current_path))
+        data = json.load(f)
+
     logging.debug(def_name)
-    return {
-        "year": year,
-        "name_date": name_date,
-        "data_grah": data_grah,
-        "total": total
-    }
+    return data
 
 
 def total_blocked_events():
@@ -530,11 +855,13 @@ def total_blocked_events():
     logging.debug(def_name)
 
     data_grah_x = [
+        "02-2023", 
         "01-2023", 
         "12-2022",
         "11-2022"
     ]
     data_grah_y_temp = [
+        3413917,
         3862522,
         3236739,
         3121628
@@ -560,7 +887,7 @@ def events_paises(
     https://www.highcharts.com/demo/column-basic
     https://www.highcharts.com/demo/column-stacked-percent
     """
-    def_name = "events_paises"
+    def_name = f"events_paises"
     logging.debug(def_name)
 
     calendar = get_otrs.calendar_spanish()
@@ -570,170 +897,177 @@ def events_paises(
     name_date = date_.month
     name_date = calendar[name_date]
 
-    create_id_searches = qradar.ariel_searches_post(
-        query_expression = aql(
+    path_data_qradar: Path = Path(__file__).parent/"data_qradar"
+    if not path_data_qradar.exists():
+        path_data_qradar.mkdir()
+    
+    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
+    if not current_path.exists():
+        logging.info(f"Creando JSON {current_path}")
+        
+        data = get_json(
+            def_name = def_name,
             customer = customer,
             date = date,
             aql_name = aql_name
         )
-    )
-    data = qradar.ariel_results(
-        search_id = create_id_searches
-    )
-    
-    if len(data["events"]) == 0:
-        logging.error(def_name)
-        return {}
-    
-    logging.info(f'TOTAL DE EVENTOS {def_name} {len(data["events"])}')
-    print("EVENTOS DEL TIPO")
-    pprint(data["events"][0])
-    
-    translator = Translator()
-    dict_paises = {}
-    dict_continents = {}
-    for pos, event in enumerate(data["events"]):
-        name_event = event["País/región geográfica de origen"]
-        pais_ = name_event.split(".")
-        recuento_event =  event["Recuento de sucesos (Suma)"]
-        if len(pais_) > 1:
-            continet = translator.translate(pais_[0], dest="es")
-            continet = continet.text
-            if pais_[1] == "China":
-                pais_temp = pais_[1]
-            else:
-                pais_temp = translator.translate(pais_[1], dest="es")
-                pais_temp = pais_temp.text
-            if continet not in dict_continents:
-                dict_continents[continet] = {
-                    "paises":  [pais_temp],
-                    "total": int(recuento_event)
-                }
-            else:
-                dict_continents[continet]["paises"].append(pais_temp)
-                dict_continents[continet]["total"] += int(recuento_event)
         
-        name_event = f"{continet}.{pais_temp}"
-        dict_paises[name_event] = int(recuento_event)
-    
-    dict_continents_ = sorted(
-        dict_continents.items(),
-        key=lambda x:x[1]["total"], 
-        reverse=True
-    )
-
-    data_grah_x_continent = []
-    data_grah_y_temp = []
-    total_continent = 0
-    for continent in dict_continents_:
-        data_grah_x_continent.append(continent[0])
-        data_grah_y_temp.append(int(continent[1]["total"]))
-        total_continent += int(continent[1]["total"])
-    
-    data_grah_y_continent = [{"name": "Eventos", "data": data_grah_y_temp}]
-    total_continent = '{:,}'.format(total_continent).replace(',','.')
-    data_grah_continent = {
-        "data_grah_x": data_grah_x_continent,
-        "data_grah_y": data_grah_y_continent,
-        "total": total_continent
-    }
-
-    dict_paises_desc = sorted(
-        dict_paises.items(),
-        key=lambda x:x[1], 
-        reverse=True
-    )
-
-    data_grah_x_top_paises = []
-    data_grah_y_temp = []
-    order_continet_top_10 = []
-    total_top_paises = 0
-    data_grah_x_top_continent_pais = []
-    for pos, pais in enumerate(dict_paises_desc):
-        if pos < 10:
-            name_ = pais[0].split(".")
-            if len(name_) == 2:
-                name_continent = name_[0]
-                name_pais = name_[1]
-            else:
-                name_ = pais[0].split(" ")
-                name_continent = name_[0]
-                name_pais = name_[1::]
-
-            if name_continent not in data_grah_x_top_continent_pais:
-                data_grah_x_top_continent_pais.append(name_continent)
-                order_continet_top_10.append(dict_continents[name_continent]["total"])
-            data_grah_x_top_paises.append(name_pais)
-            data_grah_y_temp.append(pais[1])
-            total_top_paises += int(pais[1])
-
-    data_grah_y_top_paises = [{"name": "Eventos", "data": data_grah_y_temp}]
-    total_top_paises = '{:,}'.format(total_top_paises).replace(',','.')
-    
-    data_grah_top_paises = {
-        "data_grah_x": data_grah_x_top_paises,
-        "data_grah_y": data_grah_y_top_paises,
-        "total": total_top_paises
-    }
-
-    data_grah_y_top_continent_pais_porcent = []
-    data_grah_y_top_continent_pais = []
-    data_y_porcent = []
-    data_y_porcent_dif = []
-    for pos_continent, continent_ in enumerate(data_grah_x_top_continent_pais):
-        data_y_ = []
-        data_y_porcent_temp = 0
-        for pais_continent in data_grah_x_top_paises:
-            if pais_continent in dict_continents[continent_]["paises"]:
-                name_complete = f"{continent_}.{pais_continent}"
-                data_y_.append(dict_paises[name_complete])
-                data_y_porcent_temp += dict_paises[name_complete]
-            else:
-                data_y_.append(0)
+        translator = Translator()
+        dict_paises = {}
+        dict_continents = {}
+        for pos, event in enumerate(data["events"]):
+            name_event = event["País/región geográfica de origen"]
+            pais_ = name_event.split(".")
+            recuento_event =  event["Recuento de sucesos (Suma)"]
+            if len(pais_) > 1:
+                continet = translator.translate(pais_[0], dest="es")
+                continet = continet.text
+                if pais_[1] == "China":
+                    pais_temp = pais_[1]
+                else:
+                    pais_temp = translator.translate(pais_[1], dest="es")
+                    pais_temp = pais_temp.text
+                if continet not in dict_continents:
+                    dict_continents[continet] = {
+                        "paises":  [pais_temp],
+                        "total": int(recuento_event)
+                    }
+                else:
+                    dict_continents[continet]["paises"].append(pais_temp)
+                    dict_continents[continet]["total"] += int(recuento_event)
             
-        data_y_porcent.append(data_y_porcent_temp)
-        dif = order_continet_top_10[pos_continent] - data_y_porcent_temp
-        data_y_porcent_dif.append(dif)
+            name_event = f"{continet}.{pais_temp}"
+            dict_paises[name_event] = int(recuento_event)
+        
+        dict_continents_ = sorted(
+            dict_continents.items(),
+            key=lambda x:x[1]["total"], 
+            reverse=True
+        )
 
-        data_grah_y_top_continent_pais.append({
-                "name": continent_,
-                "data": data_y_
+        data_grah_x_continent = []
+        data_grah_y_temp = []
+        total_continent = 0
+        for continent in dict_continents_:
+            data_grah_x_continent.append(continent[0])
+            data_grah_y_temp.append(int(continent[1]["total"]))
+            total_continent += int(continent[1]["total"])
+        
+        data_grah_y_continent = [{"name": "Eventos", "data": data_grah_y_temp}]
+        total_continent = '{:,}'.format(total_continent).replace(',','.')
+        data_grah_continent = {
+            "data_grah_x": data_grah_x_continent,
+            "data_grah_y": data_grah_y_continent,
+            "total": total_continent
+        }
+
+        dict_paises_desc = sorted(
+            dict_paises.items(),
+            key=lambda x:x[1], 
+            reverse=True
+        )
+
+        data_grah_x_top_paises = []
+        data_grah_y_temp = []
+        order_continet_top_10 = []
+        total_top_paises = 0
+        data_grah_x_top_continent_pais = []
+        for pos, pais in enumerate(dict_paises_desc):
+            if pos < 10:
+                name_ = pais[0].split(".")
+                if len(name_) == 2:
+                    name_continent = name_[0]
+                    name_pais = name_[1]
+                else:
+                    name_ = pais[0].split(" ")
+                    name_continent = name_[0]
+                    name_pais = name_[1::]
+
+                if name_continent not in data_grah_x_top_continent_pais:
+                    data_grah_x_top_continent_pais.append(name_continent)
+                    order_continet_top_10.append(dict_continents[name_continent]["total"])
+                data_grah_x_top_paises.append(name_pais)
+                data_grah_y_temp.append(pais[1])
+                total_top_paises += int(pais[1])
+
+        data_grah_y_top_paises = [{"name": "Eventos", "data": data_grah_y_temp}]
+        total_top_paises = '{:,}'.format(total_top_paises).replace(',','.')
+        
+        data_grah_top_paises = {
+            "data_grah_x": data_grah_x_top_paises,
+            "data_grah_y": data_grah_y_top_paises,
+            "total": total_top_paises
+        }
+
+        data_grah_y_top_continent_pais_porcent = []
+        data_grah_y_top_continent_pais = []
+        data_y_porcent = []
+        data_y_porcent_dif = []
+        for pos_continent, continent_ in enumerate(data_grah_x_top_continent_pais):
+            data_y_ = []
+            data_y_porcent_temp = 0
+            for pais_continent in data_grah_x_top_paises:
+                if pais_continent in dict_continents[continent_]["paises"]:
+                    name_complete = f"{continent_}.{pais_continent}"
+                    data_y_.append(dict_paises[name_complete])
+                    data_y_porcent_temp += dict_paises[name_complete]
+                else:
+                    data_y_.append(0)
+                
+            data_y_porcent.append(data_y_porcent_temp)
+            dif = order_continet_top_10[pos_continent] - data_y_porcent_temp
+            data_y_porcent_dif.append(dif)
+
+            data_grah_y_top_continent_pais.append({
+                    "name": continent_,
+                    "data": data_y_
+                }
+            )
+
+        data_grah_y_top_continent_pais_porcent.append({
+                "name": "Total",
+                "data": data_y_porcent
             }
         )
 
-    data_grah_y_top_continent_pais_porcent.append({
-            "name": "Total",
-            "data": data_y_porcent
+        data_grah_y_top_continent_pais_porcent.append({
+                "name": "Diferencia",
+                "data": data_y_porcent_dif
+            }
+        )
+
+        data_grah_top_continent_pais = {
+            "data_grah_x": data_grah_x_top_paises,
+            "data_grah_y": data_grah_y_top_continent_pais,
+            "total": total_top_paises
         }
-    )
 
-    data_grah_y_top_continent_pais_porcent.append({
-            "name": "Diferencia",
-            "data": data_y_porcent_dif
+        data_grah_top_continent_pais_porcent = {
+            "data_grah_x": data_grah_x_top_continent_pais,
+            "data_grah_y": data_grah_y_top_continent_pais_porcent,
+            "total": total_top_paises
         }
-    )
 
-    data_grah_top_continent_pais = {
-        "data_grah_x": data_grah_x_top_paises,
-        "data_grah_y": data_grah_y_top_continent_pais,
-        "total": total_top_paises
-    }
+        data = {
+            "year": year,
+            "name_date": name_date,
+            "data_grah_top_paises": data_grah_top_paises,
+            "data_grah_continent": data_grah_continent,
+            "data_grah_top_continent_pais": data_grah_top_continent_pais,
+            "data_grah_top_continent_pais_porcent": data_grah_top_continent_pais_porcent
+        }
 
-    data_grah_top_continent_pais_porcent = {
-        "data_grah_x": data_grah_x_top_continent_pais,
-        "data_grah_y": data_grah_y_top_continent_pais_porcent,
-        "total": total_top_paises
-    }
+        current_path.touch()
+        f = current_path.open("w")
+        f.write(json.dumps(data))
+        f.close()
+    else:
+        logging.info(f"Abriendo JSON {current_path}")
+        f = open(str(current_path))
+        data = json.load(f)
 
     logging.debug(def_name)
-    return {
-        "year": year,
-        "name_date": name_date,
-        "data_grah_top_paises": data_grah_top_paises,
-        "data_grah_continent": data_grah_continent,
-        "data_grah_top_continent_pais": data_grah_top_continent_pais,
-        "data_grah_top_continent_pais_porcent": data_grah_top_continent_pais_porcent
-    }
+    return data
 
 
 ##########EJEMPLO##############

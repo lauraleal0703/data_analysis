@@ -397,7 +397,7 @@ def get_count_tickets_customers_years(
             dict_year_total[year_]["total"] = total
         
         dict_year_total[year_]["data_grah_y"].append({
-            "name": year_,
+            "name": "Tickets",
             "data": dict_year_total_temp_y
         })
 
@@ -1011,7 +1011,7 @@ def get_count_tickets_users_years(
             dict_year_total[year_]["total"] = total
         
         dict_year_total[year_]["data_grah_y"].append({
-            "name": year_,
+            "name": "Tickets",
             "data": dict_year_total_temp_y
         })
 

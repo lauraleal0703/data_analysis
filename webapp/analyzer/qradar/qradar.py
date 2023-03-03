@@ -456,7 +456,8 @@ def nombre_pais():
     zw Zimbabue
     xk Kosovo
     xx Desconocido
-    t1 Other'''
+    t1 Other
+    None None'''
     text_paises = text_paises.split("\n")
     dict_paises = {}
     for pais in text_paises:
@@ -466,3 +467,262 @@ def nombre_pais():
         dict_paises[pais[0]] = " ".join(name)
     
     return dict_paises
+
+
+def ips_evertec():
+    """Lista con todas las Redes Evertec
+    actualizada 02/03/2023 13:17"""
+    parents_network_evertec = [
+        "192.168.190.0/28",
+        "10.200.1.56/29",
+        "192.168.95.0/24",
+        "192.168.201.0/24",
+        "192.168.110.0/24",
+        "192.168.50.8/29",
+        "172.19.3.16/29",
+        "172.29.231.40/29",
+        "10.251.2.0/27",
+        "192.168.239.8/29",
+        "192.168.111.0/29",
+        "192.168.202.0/24",
+        "172.31.3.0/29",
+        "192.156.142.0/24",
+        "192.168.198.0/28",
+        "192.168.80.0/29",
+        "10.44.51.160/28",
+        "172.27.180.160/28",
+        "10.216.26.0/24",
+        "172.31.22.96/29",
+        "192.168.60.0/24",
+        "10.231.126.0/28",
+        "10.42.33.160/26",
+        "10.10.25.0/24",
+        "10.10.26.0/23",
+        "10.10.30.0/23",
+        "10.10.32.0/24",
+        "10.10.45.0/24",
+        "10.10.20.0/24",
+        "10.10.22.0/24",
+        "10.10.85.0/24",
+        "206.151.103.96/27",
+        "10.170.26.0/25",
+        "200.75.7.192/26",
+        "190.196.71.240/28",
+        "200.111.186.128/26",
+        "172.21.140.0/23",
+        "172.21.142.0/24",
+        "10.10.8.0/22",
+        "10.90.0.0/16",
+        "10.10.65.0/24",
+        "192.168.180.0/24",
+        "10.10.70.0/24",
+        "10.91.0.32/27",
+        "10.170.31.0/27",
+        "10.10.50.0/24",
+        "10.10.52.0/24",
+        "10.10.12.0/24",
+        "10.10.60.0/24",
+        "10.10.80.0/24",
+        "10.10.90.0/24",
+        "200.75.7.192/26",
+        "190.196.71.240/28",
+        "200.111.186.129/26",
+        "192.168.190.0/28",
+        "192.168.95.0/24",
+        "192.168.50.8/28",
+        "192.168.198.0/28",
+        "10.44.51.160/28",
+        "172.27.180.160/28",
+        "10.216.26.0/24",
+        "172.31.22.96/29",
+        "192.168.60.0/24",
+        "10.231.126.0/28"
+    ]
+
+    # parents_network_evertec = ["192.168.190.0/28"]
+
+    ips_evertec = []
+    for parent_network in parents_network_evertec:
+        parent_network = parent_network.split("/")
+        network = parent_network[0].split(".")
+        network_without_one = ".".join(network[0:-1])
+        end_network_one = int(network[-1])
+        end_network_two = int(network[-2])
+        network_without_two = ".".join(network[0:-2])
+        mascara = int(parent_network[1])
+
+        if mascara == 16:
+            ends = list(range(0,256))
+            for pos, end in enumerate(ends):
+                if pos < len(ends) - 1:
+                    range_temp = list(range(0, 256))
+                else:
+                    range_temp = list(range(0, 255))
+                for i in range_temp:
+                    ip_temp = f"{network_without_two}.{end}.{i}"
+                    ips_evertec.append(ip_temp)
+
+        if mascara == 22:
+            ends = list(range(end_network_two, end_network_two+4))
+            for pos, end in enumerate(ends):
+                if pos < len(ends) - 1:
+                    range_temp = list(range(0, 256))
+                else:
+                    range_temp = list(range(0, 255))
+                for i in range_temp:
+                    ip_temp = f"{network_without_two}.{end}.{i}"
+                    ips_evertec.append(ip_temp)
+
+        if mascara == 23:
+            ends = list(range(end_network_two, end_network_two+2))
+            for pos, end in enumerate(ends):
+                if pos < len(ends) - 1:
+                    range_temp = list(range(0, 256))
+                else:
+                    range_temp = list(range(0, 255))
+                for i in range_temp:
+                    ip_temp = f"{network_without_two}.{end}.{i}"
+                    ips_evertec.append(ip_temp)
+
+        if mascara == 24:
+            for i in range(0, 255):
+                ip_temp = f"{network_without_one}.{i}"
+                ips_evertec.append(ip_temp)
+        
+        if mascara == 25:
+            for i in range(end_network_one, end_network_one+128):
+                ip_temp = f"{network_without_one}.{i}"
+                ips_evertec.append(ip_temp)
+
+        if mascara == 26:
+            if end_network_one == 129:
+                range_temp = list(range(end_network_one-1, end_network_one+63))
+            if end_network_one == 160:
+                range_temp = list(range(end_network_one-32, end_network_one+32))
+            end_network_ones = [128, 192]
+            if end_network_one in end_network_ones:
+                range_temp = list(range(end_network_one, end_network_one+64))
+            for i in range_temp:
+                ip_temp = f"{network_without_one}.{i}"
+                ips_evertec.append(ip_temp)
+        
+        if mascara == 27:
+            for i in range(end_network_one, end_network_one+32):
+                ip_temp = f"{network_without_one}.{i}"
+                ips_evertec.append(ip_temp)
+
+        if mascara == 28:
+            for i in range(end_network_one, end_network_one+16):
+                ip_temp = f"{network_without_one}.{i}"
+                ips_evertec.append(ip_temp)
+
+        if mascara == 29:
+            for i in range(end_network_one, end_network_one+8):
+                ip_temp = f"{network_without_one}.{i}"
+                ips_evertec.append(ip_temp)
+
+    # print(ips_evertec)
+    # print(len(ips_evertec))
+
+    additional_ips = [
+        "200.75.7.228",
+        "190.196.71.242",
+        "200.75.7.230",
+        "200.75.7.198",
+        "200.75.7.208",
+        "200.75.7.195",
+        "200.75.7.238",
+        "200.75.7.247",
+        "200.75.7.241",
+        "200.75.7.241",
+        "200.111.186.147",
+        "172.16.10.21",
+        "10.10.45.32",
+        "172.16.90.4",
+        "10.10.30.120",
+        "10.10.30.89",
+        "10.10.30.160"
+        "10.10.30.112",
+        "10.10.30.77",
+        "10.10.30.85",
+        "10.10.32.238",
+        "10.10.30.154",
+        "10.10.30.231",
+        "10.10.50.66",
+        "10.10.31.120",
+        "10.10.31.89",
+        "10.10.31.160",
+        "10.10.31.112",
+        "10.10.31.77",
+        "10.10.31.85",
+        "10.10.31.238",
+        "10.10.31.154",
+        "10.10.31.231",
+        "10.10.31.231",
+        "10.10.31.66"
+    ]
+
+    for additional_ip in additional_ips:
+        if additional_ip not in ips_evertec:
+            ips_evertec.append(additional_ip)
+    # print(len(ips_evertec))
+
+    return ips_evertec
+
+
+def curl_score_ip_get(
+        ip: str
+    ) -> dict:
+    """Función """
+    def_name = "curl_ip_get"
+    logging.debug(def_name)
+
+    url_api = "https://api.xforce.ibmcloud.com/api/ipr"
+    r = requests.get(
+            url = f"{url_api}/{ip}",
+            auth = ("4add7624-c8ab-498d-8638-e456a442684c", "e1219a0c-31e7-43d7-8ff4-1e9c10c41c2c")
+        )
+
+    """{'categoryDescriptions': {},
+        'cats': {},
+        'geo': {'country': 'Private Network'},
+        'history': [{'categoryDescriptions': {},
+                    'cats': {},
+                    'created': '2012-05-23T06:39:00.000Z',
+                    'geo': {'country': 'Private Network'},
+                    'ip': '172.16.0.0/12',
+                    'reason': 'Security analyst review',
+                    'reasonDescription': 'Based on the review of an X-Force security '
+                                        'analyst.',
+                    'score': 1}],
+        'ip': '172.16.10.102',
+        'reason': 'Security analyst review',
+        'reasonDescription': 'Based on the review of an X-Force security analyst.',
+        'score': 1,
+        'subnets': [{'categoryDescriptions': {},
+                    'cats': {},
+                    'created': '2012-05-23T06:39:00.000Z',
+                    'geo': {'country': 'Private Network'},
+                    'ip': '172.16.0.0',
+                    'reason': 'Security analyst review',
+                    'reasonDescription': 'Based on the review of an X-Force security '
+                                        'analyst.',
+                    'score': 1,
+                    'subnet': '172.16.0.0/12'}],
+        'tags': []}
+    """
+    
+    if r.status_code == 200:
+        data = r.json()
+        time.sleep(1)
+        # logging.debug(def_name)
+        # print(data['score'], type(data['score']))
+        return data['score']
+
+    if r.status_code == 403:
+        # logging.info(r)
+        return 0
+    
+    else:
+        logging.info(r)
+        return 0

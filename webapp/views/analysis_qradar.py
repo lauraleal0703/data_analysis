@@ -17,7 +17,8 @@ analysis_qradar = Blueprint("analysis_qradar", __name__, url_prefix="/analysis_q
 def index():
     services = {
         "arbor": "Arbor",
-        "cloudflare": "Cloudflare"
+        "cloudflare": "Cloudflare",
+        "firepower": "Firepower"
     }
 
     if request.method == "GET":
@@ -28,10 +29,10 @@ def index():
 
         if service == "arbor":
             customers_actives = get_qradar.customers_arbor()
-            dates_actives = get_qradar.dates_actives()
             total_blocked_events = get_qradar.total_blocked_events()
 
             if customer:
+                dates_actives = get_qradar.dates_actives()
                 current_customer_name = customers_actives[customer]
 
                 if date:
@@ -82,9 +83,9 @@ def index():
         
         if service == "cloudflare":
             customers_actives = get_qradar.customers_cloudflare()
-            dates_actives = get_qradar.dates_actives()
 
             if customer:
+                dates_actives = get_qradar.dates_actives()
                 current_customer_name = customers_actives[customer]
 
                 if date:
@@ -115,7 +116,7 @@ def index():
                     customers_actives = customers_actives,
                     current_customer = customer,
                     current_customer_name = current_customer_name,
-                    dates_actives = dates_actives,
+                    dates_actives = dates_actives
                 )
                 
             return render_template(
@@ -125,7 +126,131 @@ def index():
                 current_service = service,
                 customers_actives = customers_actives
             )
+        
+        if service == "firepower":
+            customers_actives = get_qradar.customers_firepower()
+            
+            if customer:
+                dates_actives = get_qradar.dates_actives()
+                current_customer_name = customers_actives[customer]
 
+                if date:
+                    data = get_qradar.total_firepower(
+                        customer = customer,
+                        date = date
+                    )
+                    if date != "2023-01-01":
+                        data_grah = data["data_grah"]
+                        data_table_top_1 = data["table_top"]["1"]
+                        data_table_top_2 = data["table_top"]["2"]
+                        data_table_top_3 = data["table_top"]["3"]
+                        data_table_1 = data["table_all"]["1"]
+                        data_table_2 = data["table_all"]["2"]
+                        data_table_3 = data["table_all"]["3"]
+                        data_table_4 = data["table_all"]["4"]
+                        data_table_5 = data["table_all"]["5"]
+                        data_table_6 = data["table_all"]["6"]
+                        data_table_7 = data["table_all"]["7"]
+                        data_table_8 = data["table_all"]["8"]
+                        data_table_9 = data["table_all"]["9"]
+                        data_table_10 = data["table_all"]["10"]
+                        data_table_11 = data["table_all"]["11"]
+                        name_date = data["name_date"]
+                        year = data["year"]
+
+                        return render_template(
+                            "analysis_qradar/firepower/index.html",
+                            page={"title": ""},
+                            services = services,
+                            current_service = service,
+                            customers_actives = customers_actives,
+                            current_customer = customer,
+                            current_customer_name = current_customer_name,
+                            dates_actives = dates_actives,
+                            current_date = date,
+                            current_pos = pos,
+                            name_date = name_date,
+                            year = year,
+                            data_grah = data_grah,
+                            data_table_top_1 = data_table_top_1,
+                            data_table_top_2 = data_table_top_2,
+                            data_table_top_3 = data_table_top_3,
+                            data_table_1 = data_table_1,
+                            data_table_2 = data_table_2,
+                            data_table_3 = data_table_3,
+                            data_table_4 = data_table_4,
+                            data_table_5 = data_table_5,
+                            data_table_6 = data_table_6,
+                            data_table_7 = data_table_7,
+                            data_table_8 = data_table_8,
+                            data_table_9 = data_table_9,
+                            data_table_10 = data_table_10,
+                            data_table_11 = data_table_11
+                        )
+                    else:
+                        data_grah = data["data_grah"]
+                        data_table_top_1 = data["table_top"]["1"]
+                        data_table_top_2 = data["table_top"]["2"]
+                        data_table_top_3 = data["table_top"]["3"]
+                        data_table_1 = data["table_all"]["1"]
+                        data_table_2 = data["table_all"]["2"]
+                        data_table_3 = data["table_all"]["3"]
+                        data_table_4 = data["table_all"]["4"]
+                        data_table_5 = data["table_all"]["5"]
+                        data_table_6 = data["table_all"]["6"]
+                        data_table_7 = data["table_all"]["7"]
+                        data_table_8 = data["table_all"]["8"]
+                        data_table_9 = data["table_all"]["9"]
+                        name_date = data["name_date"]
+                        year = data["year"]
+
+                        return render_template(
+                            "analysis_qradar/firepower/index.html",
+                            page={"title": ""},
+                            services = services,
+                            current_service = service,
+                            customers_actives = customers_actives,
+                            current_customer = customer,
+                            current_customer_name = current_customer_name,
+                            dates_actives = dates_actives,
+                            current_date = date,
+                            current_pos = pos,
+                            name_date = name_date,
+                            year = year,
+                            data_grah = data_grah,
+                            data_table_top_1 = data_table_top_1,
+                            data_table_top_2 = data_table_top_2,
+                            data_table_top_3 = data_table_top_3,
+                            data_table_1 = data_table_1,
+                            data_table_2 = data_table_2,
+                            data_table_3 = data_table_3,
+                            data_table_4 = data_table_4,
+                            data_table_5 = data_table_5,
+                            data_table_6 = data_table_6,
+                            data_table_7 = data_table_7,
+                            data_table_8 = data_table_8,
+                            data_table_9 = data_table_9
+                        )
+                
+                return render_template(
+                    "analysis_qradar/firepower/index.html",
+                    page={"title": "Análisis de Firepower - QRadar."},
+                    services = services,
+                    current_service = service,
+                    customers_actives = customers_actives,
+                    current_customer = customer,
+                    current_customer_name = current_customer_name,
+                    dates_actives = dates_actives
+                )
+        
+            return render_template(
+                "analysis_qradar/firepower/index.html",
+                page={"title": "Análisis de Firepower - QRadar."},
+                services = services,
+                current_service = service,
+                customers_actives = customers_actives
+            )
+    
     return render_template(
         "analysis_qradar/index/index.html",
         page={"title": "Análisis de QRadar."},

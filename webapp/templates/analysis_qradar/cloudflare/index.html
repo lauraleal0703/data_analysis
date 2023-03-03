@@ -91,16 +91,14 @@
         $("#menuQRadarServiceDate{{ current_date }}").addClass("active");
         $("#menuQRadarArborCustomer{{ current_customer }}").addClass("active");
         
-    
-
         $("#table_1 thead tr:eq(1) th").each(function() {
             let title = $(this).text();
             if (title != "") {
                 $(this).html("<input type='text' class='form-control form-control-sm text-center column-search' />");
             }
         });
-            
-        var table = $("#tabtable_1la_1").DataTable({
+        
+        var table = $("#table_1").DataTable({
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -116,7 +114,6 @@
             .search( this.value )
             .draw();
         });
-        
     });
 
 </script>

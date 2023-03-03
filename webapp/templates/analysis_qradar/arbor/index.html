@@ -60,6 +60,11 @@
                     <div id="container_torta"></div>
                 </figure>
             </div>
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_torta_a_barras"></div>
+                </figure>
+            </div>
             {% endif %}
 
             {% if data_grah_events_paises %}
@@ -269,6 +274,43 @@
             }
         },
         series: {{ data_grah_events.data_grah  | tojson }}
+    });
+</script>
+{% set data_grah = data_grah_events.data_grah_barras %}
+<script type="text/javascript">
+    Highcharts.chart('container_torta_a_barras', {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'Se recibieron un total de {{ data_grah.total }} eventos.',
+            align: 'center'
+        },
+        xAxis: {
+            categories: {{ data_grah.data_grah_x | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de eventos'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah.data_grah_y | safe }}
     });
 </script>
 {% endif %}
