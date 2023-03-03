@@ -4,6 +4,7 @@
 {% include "analysis_otrs/customers/menu.html" %}
 
 <div class="card">
+    
     <div class="card-header">
         {% if page.title %}
         <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
@@ -16,6 +17,7 @@
             <div class="col">
                 {% for customer in customers_actives %}
                 <a id="menuCustomer{{ customer[0] }}"
+                    title="Ver el detalle del cliente"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer[0] }}">
                     {{ customer[0] }}={{ customer[1] }}
@@ -30,32 +32,19 @@
             <div class="col">
                 {% for year in year_actives %}
                 <a id="menuCustomerYear{{ year }}"
+                    title="Ver el detalle del año del cliente"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ year }}">
-                    {{ year }}={{ year_actives[year] }}
+                    {{ year }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        <!-- Los meses activos del cliente en el año seleccionado -->
-        <!-- {% if months_actives %}
-        <div class="row p-1">
-            <div class="col">
-                {% for month in months_actives %}
-                <a id="menuCustomerMonth{{ month[0] }}"
-                    class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ month[0] }}">
-                    {{ month[1]["name"] }}={{ month[1]["total"] }}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %} -->
     </div>
+    
     <div class="card-body">
         <div class="table-responsive">
-
             <!-- VISTA POR LOS TICKETS DEL AÑO -->
             {% if data_grah %}
             <div>
@@ -63,20 +52,41 @@
                     <div id="container_tickets_customers"></div>
                 </figure>
             </div>
-
-            {% if data_grah.dict_year_total %}
-            {% set data_one = data_grah.dict_year_total %}
-            {% for year in data_one %}
-            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-                <h4 class="text-muted">{{ year }}</h4>
+            <div class="accordion" id="accordionOne">
+                {% if data_grah.dict_year_total %}
+                <div class="p-3 mt-4 mb-4 rounded text-center">
+                    <h5 class="text-muted">Ver detalle</h5>
+                </div>
+                {% set data_one = data_grah.dict_year_total %}
+                {% for year in data_one %}
+                <div id="heading{{ year }}">
+                    <p class="text-center">
+                        <button 
+                            class="btn btn-primary"
+                            type="button" 
+                            title="Ver el detalle del año"
+                            data-toggle="collapse" 
+                            data-target="#collapse{{ year }}" 
+                            aria-expanded="false" 
+                            aria-controls="#collapse{{ year }}">
+                            {{ year }}
+                        </button>
+                    </p>
+                </div>
+                <div 
+                    id="collapse{{ year }}" 
+                    class="collapse" 
+                    aria-labelledby="heading{{ year }}" 
+                    data-parent="#accordionOne">
+                    <div>
+                        <figure class="highcharts-figure">
+                            <div id="total_year_{{ year }}"></div>
+                        </figure>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
             </div>
-            <div>
-                <figure class="highcharts-figure">
-                    <div id="total_year_{{ year }}"></div>
-                </figure>
-            </div>
-            {% endfor %}
-            {% endif %}
             {% endif %}
 
             {% if data_total %}

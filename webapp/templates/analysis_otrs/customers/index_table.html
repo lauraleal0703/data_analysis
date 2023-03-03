@@ -10,11 +10,22 @@
             <h3 class="text-muted">{{ page.title }}</h3>
         </div>
         {% endif %}
+        {% if mensaje %}
+        <div class="row d-flex align-content-center">
+            <div class="col-1">
+                <div class="alert alert-success text-center" role="alert">
+                    <h5>{{ mensaje }}</h5>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         {% if customers_actives %}
         <div class="row p-1">
             <div class="col">
                 {% for customer in customers_actives %}
-                <a id="menuCustomer{{ customer[0] }}"
+                <a 
+                    id="menuCustomer{{ customer[0] }}"
+                    title="Ver el detalle del cliente"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer[0] }}">
                     {{ customer[0] }}
@@ -28,10 +39,12 @@
         <div class="row p-1">
             <div class="col">
                 {% for year_table in year_actives_table %}
-                <a id="btnCustomerYearTable{{ year_table }}"
+                <a 
+                    id="btnCustomerYearTable{{ year_table }}"
+                    title="Ver el detalle del año del cliente"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ year_table }}">
-                    {{ year_table }}={{ year_actives_table[year_table] }}
+                    {{ year_table }}
                 </a>
                 {% endfor %}
             </div>
@@ -41,7 +54,8 @@
         {% if current_year_service %}
         <div class="row p-1">
             <div class="col">
-                <a id="btnCustomerYearService{{ current_year_service }}"
+                <a 
+                    id="btnCustomerYearService{{ current_year_service }}"
                     class="btn btn-sm btn-outline-primary">
                     Servicios del año {{ current_year_service }}
                 </a>
@@ -52,7 +66,9 @@
         <div class="row p-1">
             <div class="col">
                 {% for service in data_service_total %}
-                <a id="btnCustomerYearServiceID{{ service }}"
+                <a 
+                    id="btnCustomerYearServiceID{{ service }}"
+                    title="Ver el detalle del servicio"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ current_year_service }}&service={{ service }}">
                     {{ data_service_total[service]["service"]["name"] }}={{ data_service_total[service]["total"] }}
@@ -65,7 +81,8 @@
         {% if current_year_user %}
         <div class="row p-1">
             <div class="col">
-                <a id="btnCustomerYearUser{{ current_year_user }}"
+                <a 
+                    id="btnCustomerYearUser{{ current_year_user }}"
                     class="btn btn-sm btn-outline-primary">
                     Usuarios del año {{ current_year_user }}
                 </a>
@@ -76,10 +93,12 @@
         <div class="row p-1">
             <div class="col">
                 {% for user in data_user_total %}
-                <a id="btnCustomerYearUserID{{ user }}"
+                <a 
+                    id="btnCustomerYearUserID{{ user }}"
+                    title="Ver el detalle del usuario"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ current_year_user }}&user={{ user }}">
-                    {{ data_user_total[user]["user"]["name"] }}={{ data_user_total[user]["total"] }}
+                    {{ data_user_total[user]["user"]["name"] }}
                 </a>
                 {% endfor %}
             </div>
@@ -89,7 +108,8 @@
         {% if current_year_user_not %}
         <div class="row p-1">
             <div class="col">
-                <a id="btnCustomerYearUserNot{{ current_year_user_not }}"
+                <a 
+                    id="btnCustomerYearUserNot{{ current_year_user_not }}"
                     class="btn btn-sm btn-outline-primary">
                     Usuarios no asigados a la cola del año {{ current_year_user_not }}
                 </a>
@@ -100,7 +120,9 @@
         <div class="row p-1">
             <div class="col">
                 {% for user in data_user_not_total %}
-                <a id="btnCustomerYearUserNotID{{ user }}"
+                <a 
+                    id="btnCustomerYearUserNotID{{ user }}"
+                    title="Ver el detalle del usuario en conflicto"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ current_year_user_not }}&user_not={{ user }}">
                     {{ data_user_not_total[user]["user"]["name"] }}={{ data_user_not_total[user]["total"] }}
@@ -114,7 +136,9 @@
         <div class="row p-1">
             <div class="col">
                 {% for year in year_actives %}
-                <a id="menuCustomerYear{{ year }}"
+                <a 
+                    id="menuCustomerYear{{ year }}"
+                    title="Ver el detalle del año del cliente"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ year }}">
                     {{ year }}={{ year_actives[year] }}
@@ -128,7 +152,9 @@
         <div class="row p-1">
             <div class="col">
                 {% for month_table in months_actives_table %}
-                <a id="btnCustomerMonthTable{{ month_table[0] }}"
+                <a 
+                    id="btnCustomerMonthTable{{ month_table[0] }}"
+                    title="Ver el detalle del mes"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_table={{ month_table[0] }}">
                     {{ month_table[1]["name"] }}={{ month_table[1]["total"] }}
@@ -141,7 +167,8 @@
         {% if current_month_service %}
         <div class="row p-1">
             <div class="col">
-                <a id="btnCustomerMonthService{{ current_month_service }}"
+                <a 
+                    id="btnCustomerMonthService{{ current_month_service }}"
                     class="btn btn-sm btn-outline-primary">
                     Servicios del mes de {{ month_service_name[current_month_service]["name"] }}
                 </a>
@@ -152,7 +179,9 @@
         <div class="row p-1">
             <div class="col">
                 {% for service in data_service_total_month %}
-                <a id="btnCustomerYearMonthServiceID{{ service }}"
+                <a 
+                    id="btnCustomerYearMonthServiceID{{ service }}"
+                    title="Ver el detalle del servicio"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_service={{ current_month_service }}&service={{ service }}">
                     {{ data_service_total_month[service]["service"]["name"] }}={{ data_service_total_month[service]["total"] }}
@@ -165,7 +194,8 @@
         {% if current_month_user %}
         <div class="row p-1">
             <div class="col">
-                <a id="btnCustomerYearMonthUser{{ current_month_user }}"
+                <a 
+                    id="btnCustomerYearMonthUser{{ current_month_user }}"
                     class="btn btn-sm btn-outline-primary">
                     Usuarios del mes de {{ month_user_name[current_month_user]["name"] }}
                 </a>
@@ -176,7 +206,9 @@
         <div class="row p-1">
             <div class="col">
                 {% for user in data_user_total_month %}
-                <a id="btnCustomerYearUserID{{ user }}"
+                <a 
+                    id="btnCustomerYearUserID{{ user }}"
+                    title="Ver el detalle del usuario"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_user={{ current_month_user }}&user={{ user }}">
                     {{ data_user_total_month[user]["user"]["name"] }}={{ data_user_total_month[user]["total"] }}
@@ -189,7 +221,8 @@
         {% if current_month_user_not %}
         <div class="row p-1">
             <div class="col">
-                <a id="btnCustomerYearMonthUserNot{{ current_month_user_not }}"
+                <a 
+                    id="btnCustomerYearMonthUserNot{{ current_month_user_not }}"
                     class="btn btn-sm btn-outline-primary">
                     Usuarios del mes de {{ month_user_name[current_month_user_not]["name"] }}
                 </a>
@@ -200,7 +233,9 @@
         <div class="row p-1">
             <div class="col">
                 {% for user in data_user_not_total_month %}
-                <a id="btnCustomerYearUserNotID{{ user }}"
+                <a 
+                    id="btnCustomerYearUserNotID{{ user }}"
+                    title="Ver el detalle del usuario"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_user={{ current_month_user }}&user_not={{ user }}">
                     {{ data_user_not_total_month[user]["user"]["name"] }}={{ data_user_not_total_month[user]["total"] }}
@@ -414,10 +449,11 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a class="btn btn-sm btn-outline-primary" 
-                            target="_blank"
-                            href="https://otrs.adaptivesecurity.cl/otrs/index.pl?Action=AgentTicketZoom;TicketID={{ ticket.id }}">
-                            <i class="fa fa-search"></i>
+                            <a 
+                                class="btn btn-sm btn-outline-primary" 
+                                target="_blank"
+                                href="https://otrs.adaptivesecurity.cl/otrs/index.pl?Action=AgentTicketZoom;TicketID={{ ticket.id }}">
+                                <i class="fa fa-search"></i>
                             </a>
                         </td>
                     </tr>

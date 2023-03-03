@@ -682,7 +682,7 @@ def curl_score_ip_get(
             url = f"{url_api}/{ip}",
             auth = ("4add7624-c8ab-498d-8638-e456a442684c", "e1219a0c-31e7-43d7-8ff4-1e9c10c41c2c")
         )
-
+    print(r)
     """{'categoryDescriptions': {},
         'cats': {},
         'geo': {'country': 'Private Network'},
@@ -714,6 +714,7 @@ def curl_score_ip_get(
     
     if r.status_code == 200:
         data = r.json()
+        print(data)
         time.sleep(1)
         # logging.debug(def_name)
         # print(data['score'], type(data['score']))
@@ -726,3 +727,5 @@ def curl_score_ip_get(
     else:
         logging.info(r)
         return 0
+    
+# print(curl_score_ip_get(ip = "99.234.31.250"))

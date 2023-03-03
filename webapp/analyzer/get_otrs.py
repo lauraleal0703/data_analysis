@@ -338,7 +338,7 @@ def get_count_tickets_customers_years(
     """
     customers = customers_by_period(queue_id = queue_id)
     customers_temp = list(customers.keys()) 
-    years = list(range(datetime.today().year, 2018, -1))
+    years = list(range(datetime.today().year, 2017, -1))
     total_tickets_customers = {}
     dict_tickets_customers: t.Dict[str, t.List] = {}
     total_tickets = 0
@@ -348,7 +348,7 @@ def get_count_tickets_customers_years(
         for customer_id in customers_temp:
             data_temp = Ticket.tickets_period_filtered_with(
                 start_period = f"{year}-01-01",
-                end_period = f"{year}-12-31", 
+                end_period = f"{year+1}-01-01", 
                 customer_id = customer_id,
                 queue_id = queue_id,
                 count = True
@@ -409,11 +409,7 @@ def get_count_tickets_customers_years(
         data_x.append(customer_id)
         total_tickets_years.append(customer_temp[1])
 
-    data_grah = [{
-        "name": "Total",
-        "data": total_tickets_years
-    }]
-
+    data_grah = []
     for pos, year in enumerate(years):
         tickets_year = []
         for customer_id in data_x:
@@ -423,8 +419,12 @@ def get_count_tickets_customers_years(
                 "name": year,
                 "data": tickets_year
             }
-
         data_grah.append(data_grah_temp)
+    data_grah_temp = {
+        "name": "Total",
+        "data": total_tickets_years
+    }
+    data_grah.append(data_grah_temp)
 
     total_tickets = '{:,}'.format(total_tickets).replace(',','.')
     print(def_name, datetime.today())
@@ -492,7 +492,7 @@ def get_tickets_customer_years(
         data_x.append(year)
         data_temp = Ticket.tickets_period_filtered_with(
             start_period = f"{year}-01-01",
-            end_period = f"{year}-12-31", 
+            end_period = f"{year+1}-01-01", 
             customer_id = customer_id, 
             queue_id = queue_id
         )
@@ -915,6 +915,7 @@ def get_tickets_conflic(
     return data_total
 
 
+
 ######################################################
 #### Da respuesta a: 
 # 3. Cantidad de tickets atendidos por administrador
@@ -943,26 +944,28 @@ def get_count_tickets_users_years(
     ------
     dict
     """
+    customers_actives_temp = customers_actives()
+    customers_actives_temp = list(customers_actives_temp.keys())
     users_actives_temp = users_actives()
     if queue_id == 6:
         users =  users_administrators()
-        users = users["administrators_temp"]
+        users = users["administrators"]
     if queue_id == 9:
         users = users_analysts()
-        users = users["analysts_temp"]
+        users = users["analysts"]
     
-    years = list(range(datetime.today().year, 2018, -1))
+    years = list(range(datetime.today().year, 2017, -1))
     total_tickets_users = {}
     dict_tickets_users: t.Dict[int, t.List] = {}
-    total_tickets = 0
     total_tickets_years = {}
     for year in years:
         total_tickets_years[year] = {}
         for user_id in users:
             data_temp = Ticket.tickets_period_filtered_with(
                 start_period = f"{year}-01-01",
-                end_period = f"{year}-12-31",
+                end_period = f"{year+1}-01-01",
                 user_id = user_id,
+                customers = customers_actives_temp,
                 count = True
             )
 
@@ -978,15 +981,10 @@ def get_count_tickets_users_years(
                     },
                     "total": data_temp
                 }
-                
-                data_temp
                 dict_tickets_users[user_id] = [data_temp]
-                total_tickets = data_temp
             else:
                 total_tickets_users[user_id]["total"] += data_temp
                 dict_tickets_users[user_id].append(data_temp)
-                total_tickets += data_temp
-
 
     dict_year_total = {}
     for year_ in total_tickets_years:
@@ -1015,7 +1013,6 @@ def get_count_tickets_users_years(
             "data": dict_year_total_temp_y
         })
 
-        
     total_tickets_users = sorted(
         total_tickets_users.items(), 
         key=lambda x:x[1]["total"], 
@@ -1025,10 +1022,12 @@ def get_count_tickets_users_years(
     ##Ordenando DESC
     data_x = []
     users = []
+    total_tickets_user_year = []
     for user_temp in total_tickets_users:
         user_id = user_temp[0]
         users.append(user_id)
         data_x.append(user_temp[1]["user"]["name"])
+        total_tickets_user_year.append(user_temp[1]["total"])
 
     data_grah = []
     for pos, year in enumerate(years):
@@ -1040,10 +1039,14 @@ def get_count_tickets_users_years(
                 "name": year,
                 "data": tickets_year
             }
-
         data_grah.append(data_grah_temp)
+    data_grah_temp = {
+        "name": "Total",
+        "data": total_tickets_user_year
+    }
+    data_grah.append(data_grah_temp)
 
-    total_tickets = '{:,}'.format(total_tickets).replace(',','.')
+    total_tickets = '{:,}'.format(sum(total_tickets_user_year)).replace(',','.')
     print(def_name, datetime.today())
     db.session.commit()
     return {
@@ -1053,7 +1056,6 @@ def get_count_tickets_users_years(
         "total_tickets": total_tickets,
         "dict_year_total": dict_year_total
     }
-
 # get_count_tickets_users_years(6)
 
 def make_search(
@@ -1081,18 +1083,40 @@ def make_search(
 def search_grah(
         search: str, 
         dict_tickets: dict,
-        data_grah_y: list
-    )-> dict:
+        data_total = dict
+    )-> list:
     def_name = "search_grah"
     print(def_name, datetime.today())
     """Obtener los datos de la grafica de un parametro especifico"""
 
-    search_temp = [] 
+    search_temp = []
+    dict_grah_year = {}
     for date in dict_tickets:
-        for search_id in dict_tickets[date][search]:
+        data_grah_x = []
+        data_grah_y_temp = []
+        order_desc = sorted(
+            dict_tickets[date][search].items(),
+            key=lambda x:x[1]["total"],
+            reverse=True
+        )
+        for search_ in order_desc:
+            search_id = search_[0]
+            data_grah_x.append(dict_tickets[date][search][search_id]["name"])
+            data_grah_y_temp.append(dict_tickets[date][search][search_id]["total"])
+            
             if search_id not in search_temp:
                 search_temp.append(search_id)
-    
+        data_grah = {
+            "data_grah_x": data_grah_x,
+            "data_grah_y": [{ 
+                "name": "Tickets",
+                "data": data_grah_y_temp
+            }],
+            "total" : '{:,}'.format(sum(data_grah_y_temp)).replace(',','.')
+        }
+        dict_grah_year[date] = data_grah
+   
+    data_grah_y = []
     for search_id in search_temp:
         data_temp = []
         for date in dict_tickets:
@@ -1107,9 +1131,12 @@ def search_grah(
             "name": name_,
             "data": data_temp
         })
+    data_grah_y.append(data_total)
     
-    return data_grah_y
-
+    return {
+        "data_grah_y": data_grah_y,
+        "dict_grah_year": dict_grah_year
+    }
 
 def get_tickets_users_years(
         user_id: int,
@@ -1138,10 +1165,11 @@ def get_tickets_users_years(
     calendar_spanish_temp_ = calendar_spanish_["calendar_name"]
     users_actives_temp = users_actives()
     customers_actives_temp = customers_actives()
+    customers_actives_temp = list(customers_actives_temp.keys())
     user_name = users_actives_temp[user_id]
 
     if not year:
-        dates = list(range(datetime.today().year, 2018, -1))
+        dates = list(range(datetime.today().year, 2017, -1))
     else:
         dates = [year]
     
@@ -1154,13 +1182,15 @@ def get_tickets_users_years(
             data_temp = Ticket.tickets_period_filtered_with(
             start_period = f"{date}-{month}-01",
             end_period = f"{date}-{month+1}-01",
-            user_id = user_id
+            user_id = user_id,
+            customers = customers_actives_temp
         )
         else:
             data_temp = Ticket.tickets_period_filtered_with(
                 start_period = f"{date}-01-01",
                 end_period = f"{date+1}-01-01",
-                user_id = user_id
+                user_id = user_id,
+                customers = customers_actives_temp
             )
         
         if not data_temp:
@@ -1168,9 +1198,6 @@ def get_tickets_users_years(
         
         for ticket in data_temp:
             ticket: Ticket
-
-            if ticket.customer_id not in customers_actives_temp:
-                continue
 
             if year:
                 date_temp: datetime = ticket.create_time
@@ -1227,49 +1254,50 @@ def get_tickets_users_years(
         data_x.append(date)
         data_y.append(dict_tickets[date]["total"]["total"])
     
-    data_grah_y = [{
-        "name": "Tickets",
+    data_grah_y_temp = {
+        "name": "Total",
         "data": data_y
-    }]
+    }
 
-    data_grah_y_ = search_grah(
+    data_grah_y = search_grah(
         search = "queues",
         dict_tickets = dict_tickets,
-        data_grah_y = data_grah_y.copy()
+        data_total = data_grah_y_temp
     )
-
     data_grah_general =  {
         "user_name": user_name,
-        "total_tickets": sum(data_y),
+        "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
         "data_grah_x": data_x,
-        "data_grah_y": data_grah_y_
+        "data_grah_y": data_grah_y["data_grah_y"]
     }
+    dict_grah_year = data_grah_y["dict_grah_year"]
 
     data_grah_y_services = search_grah(
         search = "services",
         dict_tickets = dict_tickets,
-        data_grah_y = data_grah_y.copy()
+        data_total = data_grah_y_temp
     )
-    
     data_grah_services =  {
         "user_name": user_name,
-        "total_tickets": sum(data_y),
+        "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
         "data_grah_x": data_x,
-        "data_grah_y": data_grah_y_services
+        "data_grah_y": data_grah_y_services["data_grah_y"]
     }
+    dict_grah_year_services = data_grah_y_services["dict_grah_year"]
 
     data_grah_y_customers = search_grah(
         search = "customers",
         dict_tickets = dict_tickets,
-        data_grah_y = data_grah_y.copy()
+        data_total = data_grah_y_temp
     )
-    
+
     data_grah_customers =  {
         "user_name": user_name,
-        "total_tickets": sum(data_y),
+        "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
         "data_grah_x": data_x,
-        "data_grah_y": data_grah_y_customers
+        "data_grah_y": data_grah_y_customers["data_grah_y"]
     }
+    dict_grah_year_customers = data_grah_y_customers["dict_grah_year"]
 
     print(def_name, datetime.today())
     db.session.commit()
@@ -1278,7 +1306,10 @@ def get_tickets_users_years(
         "data_total_table": data_total,
         "data_grah_general": data_grah_general,
         "data_grah_services": data_grah_services,
-        "data_grah_customers": data_grah_customers
+        "data_grah_customers": data_grah_customers,
+        "dict_grah_year_services": dict_grah_year_services,
+        "dict_grah_year_customers": dict_grah_year_customers,
+        "dict_grah_year": dict_grah_year
     }
 
 # get_tickets_users_years(52)

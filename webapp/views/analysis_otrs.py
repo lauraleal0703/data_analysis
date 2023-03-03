@@ -60,7 +60,8 @@ def index():
                     },
                     queues = queues,
                     current_queue = queue,
-                    data_tickets_conflic = data_tickets_conflic
+                    data_tickets_conflic = data_tickets_conflic,
+                    mensaje = "OK"
                 )
             
             if queue == "conflictYear":
@@ -77,7 +78,8 @@ def index():
                     },
                     queues = queues,
                     current_queue = queue,
-                    data_tickets_conflic = data_tickets_conflic
+                    data_tickets_conflic = data_tickets_conflic,
+                    mensaje = "OK"
                 )
             
             if queue == "conflictTwoYear":
@@ -94,7 +96,8 @@ def index():
                     },
                     queues = queues,
                     current_queue = queue,
-                    data_tickets_conflic = data_tickets_conflic
+                    data_tickets_conflic = data_tickets_conflic,
+                    mensaje = "OK"
                 )
             
             data_grah = get_otrs.get_count_tickets_customers_years(queue_id=queue_id)
@@ -377,6 +380,8 @@ def attend():
                 data_total_table_year = data["data_total_table"]
                 data_grah_services = data["data_grah_services"]
                 data_grah_customers = data["data_grah_customers"]
+                data_grah_services_year = data["dict_grah_year_services"]
+                data_grah_customers_year = data["dict_grah_year_customers"]
 
                 if year:
                     data = get_otrs.get_tickets_users_years(
@@ -387,6 +392,9 @@ def attend():
                     data_total_table_month = data["data_total_table"]
                     data_grah_services = data["data_grah_services"]
                     data_grah_customers = data["data_grah_customers"]
+                    data_grah_services_year = data["dict_grah_year_services"]
+                    data_grah_customers_year = data["dict_grah_year_customers"]
+                    dict_grah_year = data["dict_grah_year"]
 
                     if month:
                         data = get_otrs.get_tickets_users_years(
@@ -398,6 +406,8 @@ def attend():
                         data_total_table_day = data["data_total_table"]
                         data_grah_services = data["data_grah_services"]
                         data_grah_customers = data["data_grah_customers"]
+                        data_grah_services_year = data["dict_grah_year_services"]
+                        data_grah_customers_year = data["dict_grah_year_customers"]
                         
                         if table_day:
                             data_tickets = data["dict_tickets"][table_day]["total"]["tickets"]
@@ -432,7 +442,9 @@ def attend():
                             data_total_table_day=data_total_table_day,
                             data_grah_general=data_grah_general,
                             data_grah_services=data_grah_services,
-                            data_grah_customers=data_grah_customers
+                            data_grah_customers=data_grah_customers,
+                            data_grah_services_year=data_grah_services_year,
+                            data_grah_customers_year=data_grah_customers_year
                         )
 
                     if table_month:
@@ -465,7 +477,10 @@ def attend():
                         data_total_table_month=data_total_table_month,
                         data_grah_general=data_grah_general,
                         data_grah_services=data_grah_services,
-                        data_grah_customers=data_grah_customers
+                        data_grah_customers=data_grah_customers,
+                        data_grah_services_year=data_grah_services_year,
+                        data_grah_customers_year=data_grah_customers_year,
+                        dict_grah_year=dict_grah_year
                     )
 
                 if table_year:
@@ -494,7 +509,9 @@ def attend():
                     data_total_table_year=data_total_table_year,
                     data_grah_general=data_grah_general,
                     data_grah_services=data_grah_services,
-                    data_grah_customers=data_grah_customers
+                    data_grah_customers=data_grah_customers,
+                    data_grah_services_year=data_grah_services_year,
+                    data_grah_customers_year=data_grah_customers_year
                 )
 
             return render_template(
@@ -512,5 +529,5 @@ def attend():
             los tickets atendidos por los Administradores o los Analistas de
             Adaptive Security."""
         },
-        queues = queues
+        queues=queues
     )

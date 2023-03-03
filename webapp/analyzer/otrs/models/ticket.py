@@ -186,6 +186,7 @@ class Ticket(db.Base):
 		queue_id: Optional[int] = None,
 		user_id: Optional[int] = None,
 		customer_id: Optional[str] = None,
+		customers: Optional[list] = None,
 		count: bool = False
 	) -> Union[int, List[SelfTicket]]:
 		"""Obtener los tickests (como una lista de objetos
@@ -208,7 +209,7 @@ class Ticket(db.Base):
 		AND t.customer_id = customer_id
 		AND t.user_id = user_id
 		AND t.create_time >= "start_period 00:00:00"
-		AND t.create_time < "end_period 23:59:59"
+		AND t.create_time < "end_period 00:00:00"
 
 		Parameters
 		----------
@@ -241,6 +242,9 @@ class Ticket(db.Base):
 		
 		if customer_id:
 			query = query.filter(cls.customer_id == customer_id)
+		
+		if customers:
+			query = query.filter(cls.customer_id.in_(customers))
 		
 		if user_id:
 			query = query.filter(cls.user_id == user_id)
