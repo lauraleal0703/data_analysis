@@ -82,7 +82,6 @@ def customers_actives() -> dict:
     def_name = "customers_actives"
     logging.debug(def_name)
     customers = CustomerCompany.all()
-
     logging.debug(def_name)
     return {
         customer.customer_id: customer.name for customer in customers 
@@ -526,6 +525,7 @@ def get_count_tickets_customers_years(
 
     total_tickets = '{:,}'.format(total_tickets).replace(',','.')
     logging.debug(def_name)
+    db.session.commit()
     return {
         "total_tickets_customers": total_tickets_customers,
         "data_grah_x": data_x,
