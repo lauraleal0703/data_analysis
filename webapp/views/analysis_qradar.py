@@ -234,7 +234,7 @@ def index():
                 
                 return render_template(
                     "analysis_qradar/firepower/index.html",
-                    page={"title": "Análisis de Firepower - QRadar."},
+                    page={"title": ""},
                     services = services,
                     current_service = service,
                     customers_actives = customers_actives,
