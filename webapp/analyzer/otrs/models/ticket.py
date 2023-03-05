@@ -3,7 +3,6 @@ from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import DateTime
 from sqlalchemy import ForeignKey
-from sqlalchemy import and_
 from sqlalchemy import desc
 from sqlalchemy import asc
 from sqlalchemy.orm import relationship
@@ -11,7 +10,6 @@ from sqlalchemy.orm import relationship
 
 from datetime import datetime
 from datetime import timedelta
-from dateutil.relativedelta import relativedelta
 
 from typing import TypeVar
 from typing import List

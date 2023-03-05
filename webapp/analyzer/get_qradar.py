@@ -5,7 +5,8 @@ except:
     from qradar import qradar
     import get_otrs
 
-import json
+import orjson
+import typing as t
 from pathlib import Path
 from pprint import pprint
 from datetime import datetime
@@ -20,6 +21,8 @@ logging.basicConfig(
     )
 
 
+dates = ["2023-02-01", "2023-01-01", "2022-12-01"]
+
 ###############################################################################
 ################################--QRadar--#####################################
 ################################--SOPORTE--####################################
@@ -31,11 +34,21 @@ logging.basicConfig(
     *Jose ve: PAM
 """
 
-
-def dates_actives():
-    """Hay información de 3 meses atrás en QRadar"""
+def dates_actives() -> list:
+    """OJO, MEJOR ACTUALIZAR MANUAL
+    Hay información de 3 meses atrás en QRadar"""
     def_name = "dates_actives"
     logging.debug(def_name)
+    
+    list_dates = [
+        (3, {'date': '2023-02-01', 'date_name': '02-2023'}),
+        (2, {'date': '2023-01-01', 'date_name': '01-2023'}),
+        (1, {'date': '2022-12-01', 'date_name': '12-2022'})
+    ]
+
+    if list_dates:
+        return list_dates
+    
     month_init = datetime.today() - relativedelta(months=4)
     date_init_ = f"{month_init.year}-{month_init.month}-01"
     date_init = datetime.strptime(date_init_, "%Y-%m-%d")
@@ -146,13 +159,13 @@ def get_json(
             search_id = create_id_searches
         )
         current_path.touch()
-        f = current_path.open("w")
-        f.write(json.dumps(data))
+        f = current_path.open("wb")
+        f.write(orjson.dumps(data))
         f.close()
     else:
         logging.info(f"Abriendo JSON {current_path}")
-        f = open(str(current_path))
-        data = json.load(f)
+        f = open(str(current_path), "rb")
+        data = orjson.loads(f.read())
 
     if len(data["events"]) == 0:
         logging.error(def_name)
@@ -161,7 +174,6 @@ def get_json(
     logging.info(f'TOTAL DE EVENTOS {def_name} -> Total: {len(data["events"])}')
     logging.info("EVENTOS DEL TIPO")
     pprint(data["events"][0])
-
     return data
 
 
@@ -216,26 +228,49 @@ def event_total_log_source(
     name_date = date_.month
     name_date = calendar[name_date]
 
-    data = get_json(
-        def_name = def_name,
-        customer = customer,
-        date = date,
-        aql_name = aql_name
-    )
-   
-    total = 0
-    dict_total_events = {}
-    for event in data["events"]:
-        name_event = event["Origen de registro"]
-        recuento_event =  int(event["Recuento de sucesos (Suma)"])
-        total += recuento_event
-        dict_total_events[name_event] = recuento_event
+    path_data_qradar: Path = Path(__file__).parent/"data_qradar"
+    if not path_data_qradar.exists():
+        path_data_qradar.mkdir()
+
+    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
+    if not current_path.exists():
+        logging.info(f"Creando JSON {current_path}")
+
+        data = get_json(
+            def_name = def_name,
+            customer = customer,
+            date = date,
+            aql_name = aql_name
+        )
     
-    dict_total_events["Total"] = total
+        total = 0
+        dict_total_events = {}
+        for event in data["events"]:
+            name_event = event["Origen de registro"]
+            recuento_event =  int(event["Recuento de sucesos (Suma)"])
+            total += recuento_event
+            dict_total_events[name_event] = recuento_event
+        
+        dict_total_events["Total"] = '{:,}'.format(total).replace(',','.')
+        data = {
+            "dict_total_events": dict_total_events,
+            "name_date": name_date,
+            "year": year
+        }
+        current_path.touch()
+        f = current_path.open("wb")
+        f.write(orjson.dumps(data))
+        f.close()
+    else:
+        logging.info(f"Abriendo JSON {current_path}")
+        f = open(str(current_path), "rb")
+        data = orjson.loads(f.read())
+
     logging.debug(def_name)
-    return dict_total_events
-# print(event_total_log_source("SURA", "2023-01-01"))
-# exit()
+    return data
+# for date in dates:
+#     print("date", date)
+#     print(event_total_log_source("SURA", date))
 
 
 def total_accept_per_dominio_pais(
@@ -255,51 +290,74 @@ def total_accept_per_dominio_pais(
     name_date = date_.month
     name_date = calendar[name_date]
 
-    data = get_json(
-        def_name = def_name,
-        customer = customer,
-        date = date,
-        aql_name = aql_name
-    )
+    path_data_qradar: Path = Path(__file__).parent/"data_qradar"
+    if not path_data_qradar.exists():
+        path_data_qradar.mkdir()
 
-    paises = qradar.nombre_pais()
-    total = 0
-    dict_total_events = {}
-    dict_events_dominio_pais = {}
-    for event in data["events"]:
-        if not event["ClientCountry (personalizado)"]:
-            event["ClientCountry (personalizado)"] = "None"
-        pais = paises[event["ClientCountry (personalizado)"]]
-        name_dominio = event["Origen de registro"]
-        recuento_event =  int(event["Recuento de sucesos (Suma)"])
-        total += recuento_event
-        
-        if name_dominio not in dict_events_dominio_pais:
-            dict_events_dominio_pais[name_dominio] = {
-                "paises": {},
-                "Total": recuento_event
-            }
-        else:
-            dict_events_dominio_pais[name_dominio]["Total"] += recuento_event
+    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
+    if not current_path.exists():
+        logging.info(f"Creando JSON {current_path}")
 
-        if pais not in dict_events_dominio_pais[name_dominio]["paises"]:
-            dict_events_dominio_pais[name_dominio]["paises"][pais] = recuento_event
-        else:
-            dict_events_dominio_pais[name_dominio]["paises"][pais] += recuento_event
+        data = get_json(
+            def_name = def_name,
+            customer = customer,
+            date = date,
+            aql_name = aql_name
+        )
+
+        paises = qradar.nombre_pais()
+        total = 0
+        dict_total_events = {}
+        dict_events_dominio_pais = {}
+        for event in data["events"]:
+            if not event["ClientCountry (personalizado)"]:
+                event["ClientCountry (personalizado)"] = "None"
+            pais = paises[event["ClientCountry (personalizado)"]]
+            name_dominio = event["Origen de registro"]
+            recuento_event =  int(event["Recuento de sucesos (Suma)"])
+            total += recuento_event
+            
+            if name_dominio not in dict_events_dominio_pais:
+                dict_events_dominio_pais[name_dominio] = {
+                    "paises": {},
+                    "Total": recuento_event
+                }
+            else:
+                dict_events_dominio_pais[name_dominio]["Total"] += recuento_event
+
+            if pais not in dict_events_dominio_pais[name_dominio]["paises"]:
+                dict_events_dominio_pais[name_dominio]["paises"][pais] = recuento_event
+            else:
+                dict_events_dominio_pais[name_dominio]["paises"][pais] += recuento_event
+            
+            if name_dominio not in dict_total_events:
+                dict_total_events[name_dominio] = recuento_event
+            else:
+                dict_total_events[name_dominio] += recuento_event
         
-        if name_dominio not in dict_total_events:
-            dict_total_events[name_dominio] = recuento_event
-        else:
-            dict_total_events[name_dominio] += recuento_event
-    
-    dict_total_events["Total"] = total
+        dict_total_events["Total"] = '{:,}'.format(total).replace(',','.')
+
+        data = {
+            "dict_total_events": dict_total_events,
+            "dict_events_dominio_pais": dict_events_dominio_pais,
+            "name_date": name_date,
+            "year": year
+        }
+        current_path.touch()
+        f = current_path.open("wb")
+        f.write(orjson.dumps(data))
+        f.close()
+    else:
+        logging.info(f"Abriendo JSON {current_path}")
+        f = open(str(current_path), "rb")
+        data = orjson.loads(f.read())
+
 
     logging.debug(def_name)
-    return {
-        "dict_total_events": dict_total_events,
-        "dict_events_dominio_pais": dict_events_dominio_pais
-    }
-# pprint(total_accept_per_dominio_pais("SURA", "2023-01-01"))
+    return data
+# for date in dates:
+#     print("date", date)
+#     pprint(total_accept_per_dominio_pais("SURA", date))
 
 
 def detalle_drop(
@@ -319,51 +377,74 @@ def detalle_drop(
     name_date = date_.month
     name_date = calendar[name_date]
 
-    data = get_json(
-        def_name = def_name,
-        customer = customer,
-        date = date,
-        aql_name = aql_name
-    )
-    
-    paises = qradar.nombre_pais()
-    total = 0
-    dict_total_events = {}
-    dict_events_dominio_pais = {}
-    for event in data["events"]:
-        if not event["ClientCountry (personalizado)"]:
-            event["ClientCountry (personalizado)"] = "None"
-        pais = paises[event["ClientCountry (personalizado)"]]
-        name_dominio = event["Origen de registro"]
-        recuento_event =  int(event["Recuento de sucesos (Suma)"])
-        total += recuento_event
-        
-        if name_dominio not in dict_events_dominio_pais:
-            dict_events_dominio_pais[name_dominio] = {
-                "paises": {},
-                "Total": recuento_event
-            }
-        else:
-            dict_events_dominio_pais[name_dominio]["Total"] += recuento_event
+    path_data_qradar: Path = Path(__file__).parent/"data_qradar"
+    if not path_data_qradar.exists():
+        path_data_qradar.mkdir()
 
-        if pais not in dict_events_dominio_pais[name_dominio]["paises"]:
-            dict_events_dominio_pais[name_dominio]["paises"][pais] = recuento_event
-        else:
-            dict_events_dominio_pais[name_dominio]["paises"][pais] += recuento_event
+    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
+    if not current_path.exists():
+        logging.info(f"Creando JSON {current_path}")
+
+        data = get_json(
+            def_name = def_name,
+            customer = customer,
+            date = date,
+            aql_name = aql_name
+        )
         
-        if name_dominio not in dict_total_events:
-            dict_total_events[name_dominio] = recuento_event
-        else:
-            dict_total_events[name_dominio] += recuento_event
-    
-    dict_total_events["Total"] = total
+        paises = qradar.nombre_pais()
+        total = 0
+        dict_total_events = {}
+        dict_events_dominio_pais = {}
+        for event in data["events"]:
+            if not event["ClientCountry (personalizado)"]:
+                event["ClientCountry (personalizado)"] = "None"
+            pais = paises[event["ClientCountry (personalizado)"]]
+            name_dominio = event["Origen de registro"]
+            recuento_event =  int(event["Recuento de sucesos (Suma)"])
+            total += recuento_event
+            
+            if name_dominio not in dict_events_dominio_pais:
+                dict_events_dominio_pais[name_dominio] = {
+                    "paises": {},
+                    "Total": recuento_event
+                }
+            else:
+                dict_events_dominio_pais[name_dominio]["Total"] += recuento_event
+
+            if pais not in dict_events_dominio_pais[name_dominio]["paises"]:
+                dict_events_dominio_pais[name_dominio]["paises"][pais] = recuento_event
+            else:
+                dict_events_dominio_pais[name_dominio]["paises"][pais] += recuento_event
+            
+            if name_dominio not in dict_total_events:
+                dict_total_events[name_dominio] = recuento_event
+            else:
+                dict_total_events[name_dominio] += recuento_event
+        
+        dict_total_events["Total"] = '{:,}'.format(total).replace(',','.')
+
+        data =  {
+            "dict_total_events": dict_total_events,
+            "dict_events_dominio_pais": dict_events_dominio_pais,
+            "name_date": name_date,
+            "year": year
+        }
+        current_path.touch()
+        f = current_path.open("wb")
+        f.write(orjson.dumps(data))
+        f.close()
+    else:
+        logging.info(f"Abriendo JSON {current_path}")
+        f = open(str(current_path), "rb")
+        data = orjson.loads(f.read())
+
 
     logging.debug(def_name)
-    return {
-        "dict_total_events": dict_total_events,
-        "dict_events_dominio_pais": dict_events_dominio_pais
-    }
-# pprint(detalle_drop("SURA", "2023-01-01"))
+    return data
+# for date in dates:
+#     print("date", date)
+#     print(detalle_drop("SURA", date))
 
 
 def tabla_reque_acep_boque_per_dominio(
@@ -375,20 +456,22 @@ def tabla_reque_acep_boque_per_dominio(
     def_name = "tabla_reque_acep_boque_per_dominio"
     logging.debug(def_name)
 
-    total_requirements = event_total_log_source(
+    total_requirements_ = event_total_log_source(
         customer = customer,
         date = date
     )
     logging.info("total_requirements")
+    pprint(total_requirements_)
+    total_requirements = total_requirements_["dict_total_events"]
+    logging.info("total_requirements_")
     pprint(total_requirements)
-
 
     requirements_accep = total_accept_per_dominio_pais(
         customer = customer,
         date = date
     )
     logging.info("requirements_accep")
-    pprint(requirements_accep)
+    # pprint(requirements_accep)
     
     total_requirements_accep = requirements_accep["dict_total_events"]
     logging.info("total_requirements_accep")
@@ -399,7 +482,7 @@ def tabla_reque_acep_boque_per_dominio(
         date = date
     )
     logging.info("requirements_drop")
-    pprint(requirements_drop)
+    # pprint(requirements_drop)
     
     total_requirements_drop = requirements_drop["dict_total_events"]
     logging.info("total_requirements_drop")
@@ -407,14 +490,26 @@ def tabla_reque_acep_boque_per_dominio(
     
     dict_dominio ={}
     for dominio in total_requirements:
+        if dominio == "Total":
+             dict_dominio[dominio] = {
+                "Total de Requerimientos": total_requirements[dominio], 
+                "Requerimientos Aceptados": total_requirements_accep[dominio],
+                "Requerimientos Bloqueados": total_requirements_drop[dominio]
+            }
         dict_dominio[dominio] = {
-            "Total de Requerimientos": '{:,}'.format(total_requirements[dominio]).replace(',','.'), 
-            "Requerimientos Aceptados": '{:,}'.format(total_requirements_accep[dominio]).replace(',','.'),
-            "Requerimientos Bloqueados": '{:,}'.format(total_requirements_drop[dominio]).replace(',','.')
+            "Total de Requerimientos": total_requirements[dominio], 
+            "Requerimientos Aceptados": total_requirements_accep[dominio],
+            "Requerimientos Bloqueados": total_requirements_drop[dominio]
         }
+        # dict_dominio[dominio] = {
+        #     "Total de Requerimientos": '{:,}'.format(total_requirements[dominio]).replace(',','.'), 
+        #     "Requerimientos Aceptados": '{:,}'.format(total_requirements_accep[dominio]).replace(',','.'),
+        #     "Requerimientos Bloqueados": '{:,}'.format(total_requirements_drop[dominio]).replace(',','.')
+        # }
+
     
     logging.info("TABLA 1")
-    pprint(dict_dominio)
+    logging.info(dict_dominio)
 
     total_requirements_drop_paises = requirements_drop["dict_events_dominio_pais"]
     total_requirements_accep_paises = requirements_accep["dict_events_dominio_pais"]
@@ -440,7 +535,9 @@ def tabla_reque_acep_boque_per_dominio(
 
     logging.debug(def_name)
     return dict_dominio
-# pprint(tabla_reque_acep_boque_per_dominio("SURA", "2023-01-01"))
+# for date in dates:
+#     print("date", date)
+#     pprint(tabla_reque_acep_boque_per_dominio("SURA", date))
 
 
 ###############################################################################
@@ -462,10 +559,9 @@ def customers_firepower():
     dict_customers_firepower = {
         customer: customers[customer] for customer in customers_firepower
     }
-    print(dict_customers_firepower)
+    
     logging.debug(def_name)
     return dict_customers_firepower
-# print(customers_firepower())
 
 
 def create_dict_top3_top_10(
@@ -473,8 +569,8 @@ def create_dict_top3_top_10(
     ips_evertec: list,
     dict_base: dict,
     ip: tuple,
-    position_top3: int,
-    position_top10: int
+    position_top3: str,
+    position_top10: str
 ):
     """Llenar el dict"""
     if ip[0] in ips_evertec:
@@ -506,6 +602,8 @@ def create_dict_top3_top_10(
             "total": ip[1]["total"],
             "ips_origen": ip[1]["ips_origen"]
         }
+    
+    # print(dict_base.keys())
 
 
 def create_data_table(dict_base: dict) -> dict:
@@ -518,6 +616,7 @@ def create_data_table(dict_base: dict) -> dict:
             for top10_ip in dict_base[pos_final][clas_]["ips_destino"]:
                 dict_info_final[pos_final][clas_][top10_ip] = {}
                 for ip in dict_base[pos_final][clas_]["ips_destino"][top10_ip]["ips"]:
+                    ip = str(ip)
                     dict_info_final[pos_final][clas_][top10_ip][ip] = {
                         "Identificación/Riesgo": dict_base[pos_final][clas_]["ips_destino"][top10_ip]["ips"][ip]["identification"],
                         "Cantidad de eventos": dict_base[pos_final][clas_]["ips_destino"][top10_ip]["ips"][ip]["total"],
@@ -532,7 +631,7 @@ def create_data_table(dict_base: dict) -> dict:
                     )
 
                     for pos_origen, ip_origen_ in enumerate(ips_origen_desc):
-                        ip_origen_temp = ip_origen_[0]
+                        ip_origen_temp = str(ip_origen_[0])
                         # risk = qradar.curl_score_ip_get(ip=ip_origen_temp)
                         risk = 1
                         if risk < int(4):
@@ -547,10 +646,11 @@ def create_data_table(dict_base: dict) -> dict:
                             "Cantidad de eventos": data_,
                             "Identificación/Riesgo": riesgo
                         }
+    # print(dict_info_final.keys())
     return dict_info_final
 
 
-def total_firepower(
+def total_firepower_mala_con_el_guardado(
     customer: str,
     date: str,
     aql_name: str = "EVERTEC_LLEAL_Test2"
@@ -635,19 +735,18 @@ def total_firepower(
             "total": total
         }
 
-
         clasificationes_top = []
         for pos, clasification_ in enumerate(dict_clasifications_desc):
             if pos == 0:
                 continue
             clasificationes_top.append(clasification_[0])
             
-        print("clasificationes_top", len(clasificationes_top))
+        logging.info(f"clasificationes_top {len(clasificationes_top)}")
         ips_evertec = qradar.ips_evertec()
         dict_clasification_top3_top_10 = {}
         dict_clasification_all_top = {}
         for position_top3, clasification_top in enumerate(clasificationes_top):
-            position_top3 = position_top3+1
+            position_top3 = str(position_top3+1)
             ips_destino = dict_clasifications_ip[clasification_top]["ips_destino"]
             ips_destino_desc = sorted(
                 ips_destino.items(),
@@ -656,7 +755,7 @@ def total_firepower(
             )
             
             for position_top10, ip in enumerate(ips_destino_desc):
-                position_top10 = position_top10+1
+                position_top10 = str(position_top10+1)
                 create_dict_top3_top_10(
                     clasification_top = clasification_top,
                     ips_evertec = ips_evertec,
@@ -666,9 +765,9 @@ def total_firepower(
                     position_top10 = position_top10
                 )
                  
-                if position_top3 > 3:
+                if position_top3 > "3":
                     continue
-                if position_top10 > 9:
+                if position_top10 > "9":
                     continue
                
                 create_dict_top3_top_10(
@@ -689,7 +788,10 @@ def total_firepower(
             dict_base = dict_clasification_all_top
 
         )
-        
+        print(data_grah.keys())
+        print(table_top.keys())
+        print(table_all.keys())
+
         data = {
             "data_grah": data_grah,
             "table_top": table_top,
@@ -697,22 +799,166 @@ def total_firepower(
             "name_date": name_date,
             "year": year
         } 
-
+        print("--------------->")
+        print(data.keys())
         current_path.touch()
-        f = current_path.open("w")
-        f.write(json.dumps(data))
+        f = current_path.open("wb")
+        f.write(orjson.dumps(data, option = orjson.OPT_STRICT_INTEGER))
         f.close()
     else:
         logging.info(f"Abriendo JSON {current_path}")
-        f = open(str(current_path))
-        data = json.load(f)
+        f = open(str(current_path), "rb")
+        data = orjson.loads(f.read())
 
     return data
-
-# dates = ["2023-02-01","2023-01-01", "2022-12-01"]
 # for date in dates:
 #     print("date", date)
-#     total_firepower(customer = "EVERTEC", date = date)
+#     pprint(total_firepower(customer = "EVERTEC", date = date))
+
+
+def total_firepower(
+    customer: str,
+    date: str,
+    aql_name: str = "EVERTEC_LLEAL_Test2"
+) -> dict:
+    """Datos para la grafica de 
+    """
+    def_name = f"total_firepower"
+    logging.debug(def_name)
+    
+    calendar = get_otrs.calendar_spanish()
+    calendar = calendar["calendar_num"]
+    date_ = datetime.strptime(date, "%Y-%m-%d")
+    year = date_.year
+    name_date = date_.month
+    name_date = calendar[name_date]
+
+    data = get_json(
+        def_name = def_name,
+        customer = customer,
+        date = date,
+        aql_name = aql_name
+    )
+
+    total = 0
+    dict_clasifications = {}
+    dict_clasifications_ip = {}
+    for event in data["events"]:
+        clasification = event["Classification (personalizado)"]
+        recuento_event =  int(event["Recuento de sucesos"])
+        if clasification not in dict_clasifications:
+            dict_clasifications[clasification] = recuento_event
+        else: 
+            dict_clasifications[clasification] += recuento_event
+        
+        ip_destino = event['IP de destino']
+        ip_origen = event['IP de origen']
+        if clasification not in dict_clasifications_ip:
+            dict_clasifications_ip[clasification] = {"ips_destino": {}}
+        
+        if ip_destino not in dict_clasifications_ip[clasification]["ips_destino"]:
+            dict_clasifications_ip[clasification]["ips_destino"][ip_destino] = {
+                "ips_origen": {ip_origen: recuento_event},
+                "total": recuento_event
+            }  
+        else:
+            dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["total"] += recuento_event
+        
+        if ip_origen not in dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["ips_origen"]:
+            dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["ips_origen"][ip_origen] = recuento_event
+        else:
+            dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["ips_origen"][ip_origen] += recuento_event
+        
+        total += recuento_event
+    dict_clasifications["Total"] = total
+
+    dict_clasifications_desc = sorted(
+        dict_clasifications.items(),
+        key=lambda x:x[1], 
+        reverse=True
+    )
+
+    data_grah_x = []
+    data_grah_y_temp = []
+    for value in dict_clasifications_desc[1:]:
+        data_grah_x.append(value[0])
+        data_grah_y_temp.append(value[1])
+
+    data_grah_y = [{"name": "Eventos", "data": data_grah_y_temp}]
+    total = '{:,}'.format(total).replace(',','.')
+    
+    data_grah = {
+        "data_grah_x": data_grah_x,
+        "data_grah_y": data_grah_y,
+        "total": total
+    }
+
+    clasificationes_top = []
+    for pos, clasification_ in enumerate(dict_clasifications_desc):
+        if pos == 0:
+            continue
+        clasificationes_top.append(clasification_[0])
+        
+    logging.info(f"clasificationes_top {len(clasificationes_top)}")
+    ips_evertec = qradar.ips_evertec()
+    dict_clasification_top3_top_10 = {}
+    dict_clasification_all_top = {}
+    for position_top3, clasification_top in enumerate(clasificationes_top):
+        position_top3 = str(position_top3+1)
+        ips_destino = dict_clasifications_ip[clasification_top]["ips_destino"]
+        ips_destino_desc = sorted(
+            ips_destino.items(),
+            key=lambda x:x[1]["total"], 
+            reverse=True
+        )
+        
+        for position_top10, ip in enumerate(ips_destino_desc):
+            position_top10 = str(position_top10+1)
+            create_dict_top3_top_10(
+                clasification_top = clasification_top,
+                ips_evertec = ips_evertec,
+                dict_base = dict_clasification_all_top,
+                ip = ip,
+                position_top3 = position_top3,
+                position_top10 = position_top10
+            )
+                
+            if position_top3 > "3":
+                continue
+            if position_top10 > "9":
+                continue
+            
+            create_dict_top3_top_10(
+                clasification_top = clasification_top,
+                ips_evertec = ips_evertec,
+                dict_base = dict_clasification_top3_top_10,
+                ip = ip,
+                position_top3 = position_top3,
+                position_top10 = position_top10
+            )
+                    
+        table_top = create_data_table(
+            dict_base = dict_clasification_top3_top_10
+
+        )
+
+        table_all = create_data_table(
+            dict_base = dict_clasification_all_top
+
+        )
+     
+    data = {
+        "data_grah": data_grah,
+        "table_top": table_top,
+        "table_all": table_all,
+        "name_date": name_date,
+        "year": year
+    } 
+        
+    return data
+# for date in dates:
+#     print("date", date)
+#     pprint(total_firepower(customer = "EVERTEC", date = date))
 
 ###############################################################################
 #################################--Arbor--#####################################
@@ -835,16 +1081,19 @@ def blocked_events(
         }
 
         current_path.touch()
-        f = current_path.open("w")
-        f.write(json.dumps(data))
+        f = current_path.open("wb")
+        f.write(orjson.dumps(data))
         f.close()
     else:
         logging.info(f"Abriendo JSON {current_path}")
-        f = open(str(current_path))
-        data = json.load(f)
+        f = open(str(current_path), "rb")
+        data = orjson.loads(f.read())
 
     logging.debug(def_name)
     return data
+# for date in dates:
+#     print("date", date)
+#     pprint(blocked_events("AAN", date))
 
 
 def total_blocked_events():
@@ -1058,20 +1307,57 @@ def events_paises(
         }
 
         current_path.touch()
-        f = current_path.open("w")
-        f.write(json.dumps(data))
+        f = current_path.open("wb")
+        f.write(orjson.dumps(data))
         f.close()
     else:
         logging.info(f"Abriendo JSON {current_path}")
-        f = open(str(current_path))
-        data = json.load(f)
+        f = open(str(current_path), "rb")
+        data = orjson.loads(f.read())
 
     logging.debug(def_name)
     return data
+# for date in dates:
+#     print("date", date)
+#     pprint(events_paises("AAN", date))
 
+
+
+def update_all():
+    ##############--Cloudflare--############
+    for date in dates:
+        print("date", date)
+        event_total_log_source("SURA", date)
+
+    for date in dates:
+        print("date", date)
+        total_accept_per_dominio_pais("SURA", date)
+
+    for date in dates:
+        print("date", date)
+        detalle_drop("SURA", date)
+
+    for date in dates:
+        print("date", date)
+        tabla_reque_acep_boque_per_dominio("SURA", date)
+
+    ################--Firepower--#########
+    for date in dates:
+        print("date", date)
+        total_firepower(customer = "EVERTEC", date = date)
+
+    #################--Arbor--#########
+    for date in dates:
+        print("date", date)
+        blocked_events("AAN", date)
+
+    for date in dates:
+        print("date", date)
+        events_paises("AAN", date)
+
+# update_all()
 
 ##########EJEMPLO##############
-
 # test = qradar.start_time_offense("64754")
 # print("test", test)
 

@@ -84,40 +84,40 @@ def index():
         if service == "cloudflare":
             customers_actives = get_qradar.customers_cloudflare()
 
-            # if customer:
-            #     dates_actives = get_qradar.dates_actives()
-            #     current_customer_name = customers_actives[customer]
+            if customer:
+                dates_actives = get_qradar.dates_actives()
+                current_customer_name = customers_actives[customer]
 
-            #     if date:
-            #         table_1 = get_qradar.tabla_reque_acep_boque_per_dominio(
-            #             customer = customer,
-            #             date = date
-            #         )
+                # if date:
+                #     table_1 = get_qradar.tabla_reque_acep_boque_per_dominio(
+                #         customer = customer,
+                #         date = date
+                #     )
                     
-            #         return render_template(
-            #             "analysis_qradar/cloudflare/index.html",
-            #             page={"title": ""},
-            #             services = services,
-            #             current_service = service,
-            #             customers_actives = customers_actives,
-            #             current_customer = customer,
-            #             current_customer_name = current_customer_name,
-            #             dates_actives = dates_actives,
-            #             current_date = date,
-            #             current_pos = pos,
-            #             table_1 = table_1 
-            #         )
+                #     return render_template(
+                #         "analysis_qradar/cloudflare/index.html",
+                #         page={"title": ""},
+                #         services = services,
+                #         current_service = service,
+                #         customers_actives = customers_actives,
+                #         current_customer = customer,
+                #         current_customer_name = current_customer_name,
+                #         dates_actives = dates_actives,
+                #         current_date = date,
+                #         current_pos = pos,
+                #         table_1 = table_1 
+                #     )
 
-            #     return render_template(
-            #         "analysis_qradar/cloudflare/index.html",
-            #         page={"title": ""},
-            #         services = services,
-            #         current_service = service,
-            #         customers_actives = customers_actives,
-            #         current_customer = customer,
-            #         current_customer_name = current_customer_name,
-            #         dates_actives = dates_actives
-            #     )
+                return render_template(
+                    "analysis_qradar/cloudflare/index.html",
+                    page={"title": ""},
+                    services = services,
+                    current_service = service,
+                    customers_actives = customers_actives,
+                    current_customer = customer,
+                    current_customer_name = current_customer_name,
+                    dates_actives = dates_actives
+                )
                 
             return render_template(
                 "analysis_qradar/cloudflare/index.html",

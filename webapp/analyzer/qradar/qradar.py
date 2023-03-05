@@ -188,7 +188,6 @@ def ariel_results(
             script = f"ariel/searches/{search_id}/results"
         )
 
-
 ###################--SOPORTE--#################################
 
 

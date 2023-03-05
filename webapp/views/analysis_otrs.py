@@ -1,12 +1,7 @@
 from flask import Blueprint
 from flask import render_template
 from flask import request
-from flask import redirect
-from flask import url_for
 
-
-from webapp.analyzer.otrs.models.customer_company import CustomerCompany
-from webapp.analyzer.otrs.models.service import Service
 from webapp.analyzer import get_otrs
 
 from pprint import pprint
@@ -369,13 +364,13 @@ def attend():
             if queue == "analysts":
                 queue_id = 9
             
-            data_grah_general = get_otrs.get_count_tickets_users_years(
+            data_grah_general = get_otrs.get_count_tickets_users(
                 queue_id = queue_id
             )
             users_actives = data_grah_general["total_tickets_users"]
 
             if user:
-                data = get_otrs.get_tickets_users_years(user_id=user)
+                data = get_otrs.get_tickets_users(user_id=user)
                 data_grah_general = data["data_grah_general"]
                 data_total_table_year = data["data_total_table"]
                 data_grah_services = data["data_grah_services"]
@@ -384,7 +379,7 @@ def attend():
                 data_grah_customers_year = data["dict_grah_year_customers"]
 
                 if year:
-                    data = get_otrs.get_tickets_users_years(
+                    data = get_otrs.get_tickets_users(
                         user_id = user,
                         year = year
                     )
@@ -397,7 +392,7 @@ def attend():
                     dict_grah_year = data["dict_grah_year"]
 
                     if month:
-                        data = get_otrs.get_tickets_users_years(
+                        data = get_otrs.get_tickets_users(
                         user_id = user,
                         year = year,
                         month = month
@@ -415,17 +410,17 @@ def attend():
                             return render_template(
                                 "analysis_otrs/users/index_table.html",
                                 page={"title": ""},
-                                queues=queues,
-                                current_queue=queue,
-                                users_actives=users_actives,
-                                current_user=user,
-                                current_year=year,
-                                current_month=month,
-                                current_table_day=table_day,
-                                data_total_year=data_total_table_year,
-                                data_total_month=data_total_table_month,
-                                data_total_table_day=data_total_table_day,
-                                data_tickets=data_tickets
+                                queues = queues,
+                                current_queue = queue,
+                                users_actives = users_actives,
+                                current_user = user,
+                                current_year = year,
+                                current_month = month,
+                                current_table_day = table_day,
+                                data_total_year = data_total_table_year,
+                                data_total_month = data_total_table_month,
+                                data_total_table_day = data_total_table_day,
+                                data_tickets = data_tickets
                             )
 
                         return render_template(
