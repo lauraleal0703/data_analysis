@@ -20,7 +20,7 @@
                     title="Ver el detalle del cliente"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer[0] }}">
-                    {{ customer[0] }}={{ customer[1] }}
+                    {{ customer[0] }}={{ customer[1]["total"] }}
                 </a>
                 {% endfor %}
             </div>

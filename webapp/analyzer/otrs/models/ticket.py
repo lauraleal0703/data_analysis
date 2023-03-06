@@ -301,7 +301,6 @@ class Ticket(db.Base):
 		if time == "month":
 			start_period = datetime.strftime(datetime.today() - timedelta(days=7), "%Y-%m-%d")
 			end_period = datetime.strftime(datetime.today() + timedelta(days=1), "%Y-%m-%d")
-			print(start_period, end_period)
 		if time == "year":
 			start_period = "2022-01-01"
 			end_period = "2023-01-01"

@@ -113,11 +113,16 @@ def index():
                 )
             
             try:
-                data_grah = get_otrs.get_count_tickets_customers_years(queue_id=queue_id)
-                customers_actives = data_grah["total_tickets_customers"]
+                data_grah = get_otrs.get_count_tickets_years(
+                    queue_id = queue_id,
+                    customers = True
+                )
+
             except Exception as e:
-                    current_app.logger.error(f"{str(request.url)}: {e}")
-                    return redirect(request.url)
+                current_app.logger.error(f"{str(request.url)}: {e}")
+                return redirect(request.url)
+            
+            customers_actives = data_grah["list_total_tickets"]
             
             if customer:
 
@@ -397,19 +402,25 @@ def attend():
                 queue_id = 9
             
             try:
-                data_grah_general = get_otrs.get_count_tickets_users(
-                    queue_id = queue_id
+                data_grah_general = get_otrs.get_count_tickets_years(
+                    queue_id = queue_id,
+                    users = True
                 )
+
             except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
                     return redirect(request.url)
             
-            users_actives = data_grah_general["total_tickets_users"]
+            users_actives = data_grah_general["list_total_tickets"]
 
             if user:
                 
                 try:
-                    data = get_otrs.get_tickets_users(user_id=user)
+                    data = get_otrs.get_tickets_filtred(
+                        user_id = user,
+                        queue_id = queue_id,
+                        users = True
+                    )
                 except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
                     return redirect(request.url)
@@ -424,9 +435,11 @@ def attend():
                 if year:
 
                     try:
-                        data = get_otrs.get_tickets_users(
+                        data = get_otrs.get_tickets_filtred(
                             user_id = user,
-                            year = year
+                            queue_id = queue_id,
+                            year = year,
+                            users = True
                         )
                     except Exception as e:
                         current_app.logger.error(f"{str(request.url)}: {e}")
@@ -443,10 +456,12 @@ def attend():
                     if month:
                         
                         try:
-                            data = get_otrs.get_tickets_users(
+                            data = get_otrs.get_tickets_filtred(
                                 user_id = user,
+                                queue_id = queue_id,
                                 year = year,
-                                month = month
+                                month = month,
+                                users = True
                             )
                         except Exception as e:
                             current_app.logger.error(f"{str(request.url)}: {e}")

@@ -14,7 +14,7 @@
                     title="Ver el detalle del usuario"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ user[0] }}">
-                    {{ user[1]["user"]["name"] }}={{ user[1]["total"] }}
+                    {{ user[1]["search"]["name"] }}={{ user[1]["total"] }}
                 </a>
                 {% endfor %}
             </div>
