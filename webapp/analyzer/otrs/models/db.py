@@ -8,6 +8,7 @@ engine = create_engine(
     pool_size=100, pool_recycle=280
 )
 Session = scoped_session(sessionmaker(bind=engine))
+# Session = sessionmaker(bind=engine)
 session = Session()
 
 Base = declarative_base()
