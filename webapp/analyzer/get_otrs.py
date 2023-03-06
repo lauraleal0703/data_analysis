@@ -435,109 +435,104 @@ def get_count_tickets_customers_years(
     """
     def_name = "get_count_tickets_customers_years"
     logging.debug(def_name)
-    try:
-        customers = customers_by_period(queue_id = queue_id)
-        customers_temp = list(customers.keys()) 
-        years = list(range(datetime.today().year, 2017, -1))
-        total_tickets_customers = {}
-        dict_tickets_customers: t.Dict[str, t.List] = {}
-        total_tickets = 0
-        total_tickets_customers_year = {}
-        for year in years:
-            total_tickets_customers_year[year] = {}
-            for customer_id in customers_temp:
-                data_temp = Ticket.tickets_period_filtered_with(
-                    start_period = f"{year}-01-01",
-                    end_period = f"{year+1}-01-01", 
-                    customer_id = customer_id,
-                    queue_id = queue_id,
-                    count = True
-                )
-                if customer_id not in total_tickets_customers_year:
-                    total_tickets_customers_year[year][customer_id] = data_temp
-                else:
-                    total_tickets_customers_year[year][customer_id] += data_temp
+    customers = customers_by_period(queue_id = queue_id)
+    customers_temp = list(customers.keys()) 
+    years = list(range(datetime.today().year, 2017, -1))
+    total_tickets_customers = {}
+    dict_tickets_customers: t.Dict[str, t.List] = {}
+    total_tickets = 0
+    total_tickets_customers_year = {}
+    for year in years:
+        total_tickets_customers_year[year] = {}
+        for customer_id in customers_temp:
+            data_temp = Ticket.tickets_period_filtered_with(
+                start_period = f"{year}-01-01",
+                end_period = f"{year+1}-01-01", 
+                customer_id = customer_id,
+                queue_id = queue_id,
+                count = True
+            )
+            if customer_id not in total_tickets_customers_year:
+                total_tickets_customers_year[year][customer_id] = data_temp
+            else:
+                total_tickets_customers_year[year][customer_id] += data_temp
 
-                if customer_id not in total_tickets_customers:
-                    total_tickets_customers[customer_id] = data_temp
-                    dict_tickets_customers[customer_id] = [data_temp]
-                    total_tickets = data_temp
-                else:
-                    total_tickets_customers[customer_id] += data_temp
-                    dict_tickets_customers[customer_id].append(data_temp)
-                    total_tickets += data_temp
-                    
-        total_tickets_customers = sorted(
-            total_tickets_customers.items(),
+            if customer_id not in total_tickets_customers:
+                total_tickets_customers[customer_id] = data_temp
+                dict_tickets_customers[customer_id] = [data_temp]
+                total_tickets = data_temp
+            else:
+                total_tickets_customers[customer_id] += data_temp
+                dict_tickets_customers[customer_id].append(data_temp)
+                total_tickets += data_temp
+                
+    total_tickets_customers = sorted(
+        total_tickets_customers.items(),
+        key=lambda x:x[1],
+        reverse=True
+    )
+
+    dict_year_total = {}
+    for year_ in total_tickets_customers_year:
+        dict_year_total_temp_y = []
+        dict_year_total[year_] = {
+            "data_grah_x": [],
+            "data_grah_y": [],
+            "total": 0
+        }
+        order_desc = sorted(
+            total_tickets_customers_year[year_].items(),
             key=lambda x:x[1],
             reverse=True
         )
-
-        dict_year_total = {}
-        for year_ in total_tickets_customers_year:
-            dict_year_total_temp_y = []
-            dict_year_total[year_] = {
-                "data_grah_x": [],
-                "data_grah_y": [],
-                "total": 0
-            }
-            order_desc = sorted(
-                total_tickets_customers_year[year_].items(),
-                key=lambda x:x[1],
-                reverse=True
-            )
-            for cust in order_desc:
-                if cust[1] != 0:
-                    dict_year_total[year_]["data_grah_x"].append(cust[0])
-                    dict_year_total_temp_y.append(cust[1])
-                total = sum(dict_year_total_temp_y)
-                total = '{:,}'.format(total).replace(',','.')
-                dict_year_total[year_]["total"] = total
-            
-            dict_year_total[year_]["data_grah_y"].append({
-                "name": "Tickets",
-                "data": dict_year_total_temp_y
-            })
-
-        ##Ordenando DESC
-        data_x = []
-        total_tickets_years = []
-        for customer_temp in total_tickets_customers:
-            customer_id = customer_temp[0]
-            data_x.append(customer_id)
-            total_tickets_years.append(customer_temp[1])
-
-        data_grah = []
-        for pos, year in enumerate(years):
-            tickets_year = []
-            for customer_id in data_x:
-                data_temp = dict_tickets_customers[customer_id][pos]
-                tickets_year.append(data_temp)
-                data_grah_temp = {
-                    "name": year,
-                    "data": tickets_year
-                }
-            data_grah.append(data_grah_temp)
-        data_grah_temp = {
-            "name": "Total",
-            "data": total_tickets_years
-        }
-        data_grah.append(data_grah_temp)
-
-        total_tickets = '{:,}'.format(total_tickets).replace(',','.')
-        logging.debug(def_name)
+        for cust in order_desc:
+            if cust[1] != 0:
+                dict_year_total[year_]["data_grah_x"].append(cust[0])
+                dict_year_total_temp_y.append(cust[1])
+            total = sum(dict_year_total_temp_y)
+            total = '{:,}'.format(total).replace(',','.')
+            dict_year_total[year_]["total"] = total
         
-        return {
-            "total_tickets_customers": total_tickets_customers,
-            "data_grah_x": data_x,
-            "data_grah_y": data_grah,
-            "total_tickets": total_tickets,
-            "dict_year_total": dict_year_total
-        }
-    except Exception as e:
-        logging.error(f"{def_name}: {e}")
-        db.session.rollback()
+        dict_year_total[year_]["data_grah_y"].append({
+            "name": "Tickets",
+            "data": dict_year_total_temp_y
+        })
 
+    ##Ordenando DESC
+    data_x = []
+    total_tickets_years = []
+    for customer_temp in total_tickets_customers:
+        customer_id = customer_temp[0]
+        data_x.append(customer_id)
+        total_tickets_years.append(customer_temp[1])
+
+    data_grah = []
+    for pos, year in enumerate(years):
+        tickets_year = []
+        for customer_id in data_x:
+            data_temp = dict_tickets_customers[customer_id][pos]
+            tickets_year.append(data_temp)
+            data_grah_temp = {
+                "name": year,
+                "data": tickets_year
+            }
+        data_grah.append(data_grah_temp)
+    data_grah_temp = {
+        "name": "Total",
+        "data": total_tickets_years
+    }
+    data_grah.append(data_grah_temp)
+
+    total_tickets = '{:,}'.format(total_tickets).replace(',','.')
+    logging.debug(def_name)
+    
+    return {
+        "total_tickets_customers": total_tickets_customers,
+        "data_grah_x": data_x,
+        "data_grah_y": data_grah,
+        "total_tickets": total_tickets,
+        "dict_year_total": dict_year_total
+    }
 # get_count_tickets_customers_years(6)
 
 

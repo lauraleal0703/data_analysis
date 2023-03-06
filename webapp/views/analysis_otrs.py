@@ -1,6 +1,8 @@
 from flask import Blueprint
 from flask import render_template
 from flask import request
+from flask import current_app
+from flask import redirect
 
 from webapp.analyzer import get_otrs
 
@@ -44,9 +46,14 @@ def index():
             
             if queue == "conflictMonth":
                 time = "month"
-                data_tickets_conflic = get_otrs.get_tickets_conflic(
-                    time = time
-                )
+                
+                try:
+                    data_tickets_conflic = get_otrs.get_tickets_conflic(
+                        time = time
+                    )
+                except Exception as e:
+                    current_app.logger.error(f"{str(request.url)}: {e}")
+                    return redirect(request.url)
 
                 return render_template(
                     "analysis_otrs/customers/index_table.html",
@@ -61,9 +68,14 @@ def index():
             
             if queue == "conflictYear":
                 time = "year"
-                data_tickets_conflic = get_otrs.get_tickets_conflic(
-                    time = time
-                )
+                
+                try:
+                    data_tickets_conflic = get_otrs.get_tickets_conflic(
+                        time = time
+                    )
+                except Exception as e:
+                    current_app.logger.error(f"{str(request.url)}: {e}")
+                    return redirect(request.url)
 
                 return render_template(
                     "analysis_otrs/customers/index_table.html",
@@ -79,9 +91,14 @@ def index():
             
             if queue == "conflictTwoYear":
                 time = "twoYear"
-                data_tickets_conflic = get_otrs.get_tickets_conflic(
-                    time = time
-                )
+                
+                try:
+                    data_tickets_conflic = get_otrs.get_tickets_conflic(
+                        time = time
+                    )
+                except Exception as e:
+                    current_app.logger.error(f"{str(request.url)}: {e}")
+                    return redirect(request.url)
 
                 return render_template(
                     "analysis_otrs/customers/index_table.html",
@@ -95,14 +112,24 @@ def index():
                     mensaje = "OK"
                 )
             
-            data_grah = get_otrs.get_count_tickets_customers_years(queue_id=queue_id)
-            customers_actives = data_grah["total_tickets_customers"]
+            try:
+                data_grah = get_otrs.get_count_tickets_customers_years(queue_id=queue_id)
+                customers_actives = data_grah["total_tickets_customers"]
+            except Exception as e:
+                    current_app.logger.error(f"{str(request.url)}: {e}")
+                    return redirect(request.url)
             
             if customer:
-                data = get_otrs.get_tickets_customer_years(
-                    customer_id = customer,
-                    queue_id = queue_id
-                )
+
+                try:
+                    data = get_otrs.get_tickets_customer_years(
+                        customer_id = customer,
+                        queue_id = queue_id
+                    )
+                except Exception as e:
+                    current_app.logger.error(f"{str(request.url)}: {e}")
+                    return redirect(request.url)
+                
                 data_grah = data
                 customer_name = data["customer_name"]
                 data_total = data["data_total"]
@@ -182,11 +209,16 @@ def index():
                     )
                     
                 if year:
-                    data = get_otrs.get_tickets_customer_months_year(
-                        customer_id = customer,
-                        queue_id = queue_id,
-                        year=year
-                    )
+                    try:
+                        data = get_otrs.get_tickets_customer_months_year(
+                            customer_id = customer,
+                            queue_id = queue_id,
+                            year=year
+                        )
+                    except Exception as e:
+                        current_app.logger.error(f"{str(request.url)}: {e}")
+                        return redirect(request.url)
+                    
                     data_grah = data
                     customer_name = data["customer_name"]
                     data_total = data["data_total"]
@@ -364,13 +396,24 @@ def attend():
             if queue == "analysts":
                 queue_id = 9
             
-            data_grah_general = get_otrs.get_count_tickets_users(
-                queue_id = queue_id
-            )
+            try:
+                data_grah_general = get_otrs.get_count_tickets_users(
+                    queue_id = queue_id
+                )
+            except Exception as e:
+                    current_app.logger.error(f"{str(request.url)}: {e}")
+                    return redirect(request.url)
+            
             users_actives = data_grah_general["total_tickets_users"]
 
             if user:
-                data = get_otrs.get_tickets_users(user_id=user)
+                
+                try:
+                    data = get_otrs.get_tickets_users(user_id=user)
+                except Exception as e:
+                    current_app.logger.error(f"{str(request.url)}: {e}")
+                    return redirect(request.url)
+                
                 data_grah_general = data["data_grah_general"]
                 data_total_table_year = data["data_total_table"]
                 data_grah_services = data["data_grah_services"]
@@ -379,10 +422,16 @@ def attend():
                 data_grah_customers_year = data["dict_grah_year_customers"]
 
                 if year:
-                    data = get_otrs.get_tickets_users(
-                        user_id = user,
-                        year = year
-                    )
+
+                    try:
+                        data = get_otrs.get_tickets_users(
+                            user_id = user,
+                            year = year
+                        )
+                    except Exception as e:
+                        current_app.logger.error(f"{str(request.url)}: {e}")
+                        return redirect(request.url)
+                    
                     data_grah_general = data["data_grah_general"]
                     data_total_table_month = data["data_total_table"]
                     data_grah_services = data["data_grah_services"]
@@ -392,11 +441,17 @@ def attend():
                     dict_grah_year = data["dict_grah_year"]
 
                     if month:
-                        data = get_otrs.get_tickets_users(
-                        user_id = user,
-                        year = year,
-                        month = month
-                        )
+                        
+                        try:
+                            data = get_otrs.get_tickets_users(
+                                user_id = user,
+                                year = year,
+                                month = month
+                            )
+                        except Exception as e:
+                            current_app.logger.error(f"{str(request.url)}: {e}")
+                            return redirect(request.url)
+                        
                         data_grah_general = data["data_grah_general"]
                         data_total_table_day = data["data_total_table"]
                         data_grah_services = data["data_grah_services"]

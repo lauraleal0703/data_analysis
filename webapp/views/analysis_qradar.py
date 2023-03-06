@@ -3,6 +3,8 @@ from flask import render_template
 from flask import request
 from flask import redirect
 from flask import url_for
+from flask import current_app
+from flask import redirect
 
 
 from webapp.analyzer import get_qradar
@@ -28,23 +30,39 @@ def index():
         date = request.args.get("date", type=str)
 
         if service == "arbor":
-            customers_actives = get_qradar.customers_arbor()
-            total_blocked_events = get_qradar.total_blocked_events()
+            
+            try:
+                customers_actives = get_qradar.customers_arbor()
+                total_blocked_events = get_qradar.total_blocked_events()
+            except Exception as e:
+                current_app.logger.error(f"{str(request.url)}: {e}")
+                return redirect(request.url)
 
             if customer:
-                dates_actives = get_qradar.dates_actives()
+                
+                try:
+                    dates_actives = get_qradar.dates_actives()
+                except Exception as e:
+                    current_app.logger.error(f"{str(request.url)}: {e}")
+                    return redirect(request.url)
+                
                 current_customer_name = customers_actives[customer]
 
                 if date:
-                    data_grah_events = get_qradar.blocked_events(
-                        customer = customer,
-                        date = date
-                    )
+                    
+                    try: 
+                        data_grah_events = get_qradar.blocked_events(
+                            customer = customer,
+                            date = date
+                        )
 
-                    data_grah_events_paises = get_qradar.events_paises(
-                        customer = customer,
-                        date = date
-                    )
+                        data_grah_events_paises = get_qradar.events_paises(
+                            customer = customer,
+                            date = date
+                        )
+                    except Exception as e:
+                        current_app.logger.error(f"{str(request.url)}: {e}")
+                        return redirect(request.url)
 
                     return render_template(
                         "analysis_qradar/arbor/index.html",
@@ -82,10 +100,21 @@ def index():
             )
         
         if service == "cloudflare":
-            customers_actives = get_qradar.customers_cloudflare()
+            
+            try:
+                customers_actives = get_qradar.customers_cloudflare()
+            except Exception as e:
+                current_app.logger.error(f"{str(request.url)}: {e}")
+                return redirect(request.url)
 
             if customer:
-                dates_actives = get_qradar.dates_actives()
+                
+                try:
+                    dates_actives = get_qradar.dates_actives()
+                except Exception as e:
+                    current_app.logger.error(f"{str(request.url)}: {e}")
+                    return redirect(request.url)
+
                 current_customer_name = customers_actives[customer]
 
                 # if date:
@@ -128,17 +157,28 @@ def index():
             )
         
         if service == "firepower":
-            customers_actives = get_qradar.customers_firepower()
+            
+            try: 
+                customers_actives = get_qradar.customers_firepower()
+            except Exception as e:
+                current_app.logger.error(f"{str(request.url)}: {e}")
+                return redirect(request.url)
             
             if customer:
                 dates_actives = get_qradar.dates_actives()
                 current_customer_name = customers_actives[customer]
 
                 if date:
-                    data = get_qradar.total_firepower(
-                        customer = customer,
-                        date = date
-                    )
+
+                    try:
+                        data = get_qradar.total_firepower(
+                            customer = customer,
+                            date = date
+                        )
+                    except Exception as e:
+                        current_app.logger.error(f"{str(request.url)}: {e}")
+                        return redirect(request.url)
+
                     if date != "2023-01-01":
                         data_grah = data["data_grah"]
                         data_table_top_1 = data["table_top"]["1"]

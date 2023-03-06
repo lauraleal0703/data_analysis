@@ -172,8 +172,8 @@ def get_json(
         return {}
     
     logging.info(f'TOTAL DE EVENTOS {def_name} -> Total: {len(data["events"])}')
-    logging.info("EVENTOS DEL TIPO")
-    pprint(data["events"][0])
+    # logging.info("EVENTOS DEL TIPO")
+    # pprint(data["events"][0])
     return data
 
 
