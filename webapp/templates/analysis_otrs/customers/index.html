@@ -4,14 +4,13 @@
 {% include "analysis_otrs/customers/menu.html" %}
 
 <div class="card">
-    
     <div class="card-header">
         {% if page.title %}
-        <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+        <div class="p-3 bg-light rounded text-center">
             <h3 class="text-muted">{{ page.title }}</h3>
         </div>
         {% endif %}
-        <!-- Clientes activos los últimos 3 meses -->
+        <!-- Clientes activos -->
         {% if customers_actives %}
         <div class="row p-1">
             <div class="col">
@@ -20,44 +19,72 @@
                     title="Ver el detalle del cliente"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer[0] }}">
-                    {{ customer[0] }}={{ customer[1]["total"] }}
+                    {{ customer[1]["search"]["name"] }}={{ customer[1]["total"] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        <!-- Los años activos que tiene el cliente -->
-        {% if year_actives %}
+
+        {% if data_total_year %}
         <div class="row p-1">
             <div class="col">
-                {% for year in year_actives %}
+                {% for year in data_total_year %}
                 <a id="menuCustomerYear{{ year }}"
-                    title="Ver el detalle del año del cliente"
+                    title="Ver el detalle del cliente en el año"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ year }}">
-                    {{ year }}
+                    {{ year }}={{ data_total_year[year]}}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
+
+        {% if data_total_month %}
+        <div class="row p-1">
+            <div class="col">
+                {% for month in data_total_month %}
+                <a id="menuCustomerYearMonth{{ month }}"
+                    title="Ver el detalle del cliente en el mes del año"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ month }}">
+                    {{ month }}={{ data_total_month[month] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if data_total_day %}
+        <div class="row p-1">
+            <div class="col">
+                {% for day in data_total_day %}
+                <a class="btn btn-sm btn-secondary">
+                    {{ day }}={{ data_total_day[day] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
     </div>
-    
     <div class="card-body">
         <div class="table-responsive">
+
             <!-- VISTA POR LOS TICKETS DEL AÑO -->
-            {% if data_grah %}
+            {% if data_grah_general %}
             <div>
                 <figure class="highcharts-figure">
                     <div id="container_tickets_customers"></div>
                 </figure>
             </div>
             <div class="accordion" id="accordionOne">
-                {% if data_grah.dict_year_total %}
+                {% if data_grah_general.dict_year_total %}
                 <div class="p-3 mt-4 mb-4 rounded text-center">
                     <h5 class="text-muted">Ver detalle</h5>
                 </div>
-                {% set data_one = data_grah.dict_year_total %}
+                {% set data_one = data_grah_general.dict_year_total %}
                 {% for year in data_one %}
                 <div id="heading{{ year }}">
                     <p class="text-center">
@@ -89,232 +116,154 @@
             </div>
             {% endif %}
 
-            {% if data_total %}
-            <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
-                <thead class="bg-light">
-                    <tr>
-                        {% if current_year %}
-                        <th style="width: 50px;">Mes</th>
-                        {% else %}
-                        <th style="width: 50px;">Año</th>
-                        {% endif %}
-                        <th style="width: 50px;">Total</th>
-                        <th style="width: 50px;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dato in data_total %}
-                    <tr>
-                        <td>
-                            {% if current_year %}
-                            {{ data_total[dato]["name"] }}
-                            {% else %}
-                            {{ dato }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if current_year %}
-                            {{ data_total[dato]["total"] }}
-                            {% else %}
-                            {{ data_total[dato] }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if current_year %}
-                            <a
-                                role="button"
-                                class="btn btn-sm btn-primary"
-                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_table={{ dato }}">
-                                Ver
-                            </a>
-                            {% else %}
-                            <a
-                                role="button"
-                                class="btn btn-sm btn-primary"
-                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ dato }}">
-                                Ver
-                            </a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            {% if data_grah_services %}
+            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+                <h4 class="text-muted">Vista por servicio</h4>
+            </div>
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_tickets_customers_services"></div>
+                </figure>
+            </div>
+
+            <div class="accordion" id="accordionService">
+                {% if data_grah_date_services %}
+                <div class="p-3 mt-4 mb-4 rounded text-center">
+                    <h5 class="text-muted">Ver detalle de los servicios</h5>
+                </div>
+                {% for date in data_grah_date_services %}
+                <div id="headingService{{ date }}">
+                    <p class="text-center">
+                        <button 
+                            class="btn btn-primary"
+                            type="button" 
+                            title="Ver el detalle"
+                            data-toggle="collapse" 
+                            data-target="#collapseService{{ date }}" 
+                            aria-expanded="false" 
+                            aria-controls="#collapseService{{ date }}">
+                            {{ date }}
+                        </button>
+                    </p>
+                </div>
+                <div 
+                    id="collapseService{{ date }}" 
+                    class="collapse" 
+                    aria-labelledby="headingService{{ date }}" 
+                    data-parent="#accordionService">
+                    <div>
+                        <figure class="highcharts-figure">
+                            <div id="total_date_Service{{ date }}"></div>
+                        </figure>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if data_grah_users %}
+            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+                <h4 class="text-muted">Vista por usuarios</h4>
+            </div>
+            <div>
+                <figure class="highcharts-figure">
+                    <div id="container_tickets_users_customers"></div>
+                </figure>
+            </div>
+            <div class="accordion" id="accordionCustomer">
+                {% if data_grah_date_users %}
+                <div class="p-3 mt-4 mb-4 rounded text-center">
+                    <h5 class="text-muted">Ver detalle de los usuarios</h5>
+                </div>
+                {% for date in data_grah_date_users %}
+                <div id="headingCustomer{{ date }}">
+                    <p class="text-center">
+                        <button 
+                            class="btn btn-primary"
+                            type="button" 
+                            title="Ver el detalle"
+                            data-toggle="collapse" 
+                            data-target="#collapseCustomer{{ date }}" 
+                            aria-expanded="false" 
+                            aria-controls="#collapseCustomer{{ date }}">
+                            {{ date }}
+                        </button>
+                    </p>
+                </div>
+                <div 
+                    id="collapseCustomer{{ date }}" 
+                    class="collapse" 
+                    aria-labelledby="headingCustomer{{ date }}" 
+                    data-parent="#accordionCustomer">
+                    <div>
+                        <figure class="highcharts-figure">
+                            <div id="total_date_Users{{ date }}"></div>
+                        </figure>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
             {% endif %}
             
-            <!-- VISTA POR LOS SERVICIOS TOTAL -->
-            {% if data_x_service_total %}
-            <div>
-                <figure class="highcharts-figure">
-                    <div id="container_tickets_customers_service_total"></div>
-                </figure>
-            </div>
-            {% endif %}
-
-            <!-- VISTA POR LOS SERVICIOS DETALLE -->
-            {% if data_grah_service %}
-            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-                <h4 class="text-muted">Detalle de los tickets generados por el cliente {{ customer_name }}</h4>
-            </div>
-            <div>
-                <figure class="highcharts-figure">
-                    <div id="container_tickets_customers_service"></div>
-                </figure>
-            </div>
-            {% endif %}
-
-            {% if data_service %}
-            {% for year_service in data_service %}
-            {% if current_year %}
-            <h5 class="text-muted">* Mes de {{ data_total[year_service]["name"] }} </h5>
-            {% else %}
-            <h5 class="text-muted">* Año {{ year_service }} </h5>
-            {% endif %}
-
+            {% if data_total_table_year or data_total_table_month or data_total_table_day %}
+            <hr>
             <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
                 <thead class="bg-light">
                     <tr>
-                        <th style="width: 50px;">ID</th>
-                        <th style="width: 50px;">Servicio</th>
-                        <th style="width: 50px;">Total</th>
-                        <th style="width: 50px;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for service in data_service[year_service] %}
-                    <tr>
-                        <td>
-                            {{ service }}
-                        </td>
-                        <td>
-                            {{ data_service[year_service][service]["service"]["name"] }}
-                        </td>
-                        <td>
-                            {{ data_service[year_service][service]["tickets"] | length  }}
-                        </td>
-                        
-                        <td>
-                            {% if current_year %}
-                            <a
-                                role="button"
-                                class="btn btn-sm btn-primary"
-                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_service={{ year_service }}&service={{ service }}">
-                                Ver
-                            </a>
-                            {% else %}
-                            <a
-                                role="button"
-                                class="btn btn-sm btn-primary"
-                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ year_service }}&service={{ service }}">
-                                Ver
-                            </a>
+                        <th style="width: 50px;">
+                            {% if data_total_table_year %}
+                            Año
+                            {% elif data_total_table_month %}
+                            Mes
+                            {% elif data_total_table_day %}
+                            Día
                             {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% endfor %}
-            {% endif %}
-
-            <!-- VISTA POR LOS USUARIOS GESTIONADORES -->
-            {% if data_user %}
-            <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-                <h3 class="text-muted">Usuarios que han gestionado los tickets del cliente {{ customer_name }}.</h3>
-            </div>
-            {% for year_user in data_user %}
-            {% if current_year %}
-            <h5 class="text-muted">* Mes de {{ data_total[year_user]["name"] }} </h5>
-            {% else %}
-            <h5 class="text-muted">* Año {{ year_user }} </h5>
-            {% endif %}
-            <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
-                <thead class="bg-light">
-                    <tr>
-                        <th style="width: 50px;">ID</th>
-                        <th style="width: 50px;">Usuario</th>
+                        </th>
                         <th style="width: 50px;">Total</th>
                         <th style="width: 50px;"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for user in data_user[year_user] %}
-                    {% if user != "user_not" %}
-                    <tr>
-                        <td>
-                            {{ user }}
-                        </td>
-                        <td>
-                            {{ data_user[year_user][user]["user"]["name"] }}
-                        </td>
-                        <td>
-                            {{ data_user[year_user][user]["tickets"] | length  }}
-                        </td>
-                        
-                        <td>
-                            {% if current_year %}
-                            <a
-                                role="button"
-                                class="btn btn-sm btn-primary"
-                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_user={{ year_user }}&user={{ user }}">
-                                Ver
-                            </a>
-                            {% else %}
-                            <a
-                                role="button"
-                                class="btn btn-sm btn-primary"
-                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ year_user }}&user={{ user }}">
-                                Ver
-                            </a>
-                            {% endif%}
-                        </td>
-                    </tr>
+                    {% if data_total_table_year %}
+                    {% set data = data_total_table_year %}
+                    {% elif data_total_table_month %}
+                    {% set data = data_total_table_month %}
+                    {% elif data_total_table_day %}
+                    {% set data = data_total_table_day %}
                     {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% if data_user[year_user]["user_not"] %}
-            {% if current_year %}
-            <h5>Usuarios NO asignados a la cola en el mes de {{ data_total[year_user]["name"] }} </h5>
-            {% else %}
-            <h5>Usuarios NO asignados a la cola en el año {{ year_user }}</h5>
-            {% endif %}
-            <table class="table table-bordered table-hover display text-center align-middle" style="width:100%">
-                <thead class="bg-light">
-                    <tr>
-                        <th style="width: 50px;">ID</th>
-                        <th style="width: 50px;">Usuario</th>
-                        <th style="width: 50px;">Total</th>
-                        <th style="width: 50px;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% set data_user = data_user[year_user]["user_not"] %}
-                    {% for user in data_user %}
+                    {% for dato in data %}
                     <tr>
                         <td>
-                            {{ user }}
+                            {{ dato }}
                         </td>
                         <td>
-                            {{ data_user[user]["user"]["name"] }}
+                            {{ data[dato] }}
                         </td>
                         <td>
-                            {{ data_user[user]["tickets"] | length  }}
-                        </td>
-                        
-                        <td>
-                            {% if current_year %}
+                            {% if current_month %}
                             <a
                                 role="button"
+                                title="Ver detalle de los tickets"
                                 class="btn btn-sm btn-primary"
-                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_user={{ year_user }}&user_not={{ user }}">
+                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ current_month }}&table_day={{ dato }}">
+                                Ver
+                            </a>
+                            {% elif current_year %}
+                            <a
+                                role="button"
+                                title="Ver detalle de los tickets"
+                                class="btn btn-sm btn-primary"
+                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&table_month={{ dato }}">
                                 Ver
                             </a>
                             {% else %}
                             <a
                                 role="button"
+                                title="Ver detalle de los tickets"
                                 class="btn btn-sm btn-primary"
-                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ year_user }}&user_not={{ user }}">
+                                href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&table_year={{ dato }}">
                                 Ver
                             </a>
                             {% endif %}
@@ -323,8 +272,6 @@
                     {% endfor %}
                 </tbody>
             </table>
-            {% endif %}
-            {% endfor %}
             {% endif %}
         </div>
     </div>
@@ -334,97 +281,51 @@
     $(document).ready(function() {
         $("#menuOTRSCustomers").addClass("active");
         $("#menuQueue{{ current_queue }}").addClass("active");
-        $("[id='menuCustomer{{ current_customer }}']").addClass("active");
+        $("#menuCustomer{{ current_customer }}").addClass("active");
         $("#menuCustomerYear{{ current_year }}").addClass("active");
-        $("#menuCustomerMonth{{ current_month }}").addClass("active");
+        $("#menuCustomerYearMonth{{ current_month }}").addClass("active");           
     });
 </script>
 
-{% if data_grah %}
+{% if data_grah_general %}
 <script type="text/javascript">
     Highcharts.chart('container_tickets_customers', {
         chart: {
             type: 'column'
         },
-        {% if current_year == 2023 %}
+        {% if current_month %}
         title: {
-            text: 'Se han gestionado {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }}.',
+            text: 'Se gestionaron {{ data_grah_general.total_tickets | safe }} tickets para el cliente {{ data_grah_general.customer_name | safe  }} en el mes de {{ current_month }}.',
             align: 'center'
         },
         {% elif current_year %}
         title: {
-            text: 'Se gestionaron {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }}.',
+            text: 'Se gestionaron {{ data_grah_general.total_tickets | safe }} tickets para el cliente {{ data_grah_general.customer_name | safe  }} en el año {{ current_year }}.',
             align: 'center'
         },
-        {% elif customer_name %}
+        {% elif current_customer %}
         title: {
-            text: 'Se gestionaron {{ total_tickets }} tickets para el cliente {{ customer_name }}.',
+            text: 'Se gestionaron {{ data_grah_general.total_tickets | safe }} tickets para el cliente {{ data_grah_general.customer_name }}',
             align: 'center'
         },
         {% elif current_queue == "administrators" %}
         title: {
-            text: 'Han sido generados {{ data_grah.total_tickets | safe }} tickets por los clientes de AS para ser atendidos por los Administradores.',
+            text: 'Han sido generados {{ data_grah_general.total_tickets | safe }} tickets por los clientes de AS para ser atendidos por los Administradores.',
             align: 'center'
         },
         {% elif current_queue == "analysts" %}
         title: {
-            text: 'Han sido generados {{ data_grah.total_tickets | safe }} tickets por los clientes de AS para ser atendidos por los Analistas.',
-            align: 'center'
-        },
-        {% endif %}
-        xAxis: {
-            categories: {{ data_grah.data_grah_x | safe }},
-            crosshair: true
-        },
-        yAxis: {
-            min: 0,
-            title: {
-                text: 'Número de tickets'
-            }
-        },
-        tooltip: {
-            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-            '<td style="padding:0"><b>{point.y}</b></td></tr>',
-            footerFormat: '</table>',
-            shared: true,
-            useHTML: true
-        },
-        plotOptions: {
-            column: {
-            pointPadding: 0.2,
-            borderWidth: 0
-            }
-        },
-        series: {{ data_grah.data_grah_y | safe }}
-    });
-</script>
-{% endif %}
-
-{% if data_grah_service %}
-<script type="text/javascript">
-    Highcharts.chart('container_tickets_customers_service', {
-        chart: {
-            type: 'column'
-        },
-        {% if current_year == 2023 %}
-        title: {
-            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }} distribuidos en las siguientes plataformas.',
-            align: 'center'
-        },
-        {% elif current_year %}
-        title: {
-            text: 'Se gestionaron {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }} distribuidos en las siguientes plataformas.',
+            text: 'Han sido generados {{ data_grah_general.total_tickets | safe }} tickets por los clientes de AS para ser atendidos por los Analistas.',
             align: 'center'
         },
         {% else %}
         title: {
-            text: 'Se gestionaron {{ total_tickets }} tickets para el cliente {{ customer_name }} distribuidos en las siguientes plataformas.',
+            text: '',
             align: 'center'
         },
         {% endif %}
         xAxis: {
-            categories: {{ data_x_service | safe }},
+            categories: {{ data_grah_general.data_grah_x | safe }},
             crosshair: true
         },
         yAxis: {
@@ -447,30 +348,87 @@
             borderWidth: 0
             }
         },
-        series: {{ data_grah_service | safe }}
+        series: {{ data_grah_general.data_grah_y | safe }}
     });
 </script>
 {% endif %}
 
-{% if data_x_service_total %}
+{% if data_grah_services %}
 <script type="text/javascript">
-    Highcharts.chart('container_tickets_customers_service_total', {
+    Highcharts.chart('container_tickets_customers_services', {
+        chart: {
+            height: 800,
+            type: 'column'
+        },
+        {% if current_month %}
+        title: {
+            text: 'Han sido atendidos {{ data_grah_services.total_tickets | safe }} tickets en el mes de {{ current_month }} para el cliente {{ data_grah_services.customer_name | safe }} distribuidos en los siguientes servicios.',
+            align: 'center'
+        },
+        {% elif current_year %}
+        title: {
+            text: 'Han sido atendidos {{ data_grah_services.total_tickets | safe }} tickets en el año {{ current_year }} para el cliente {{ data_grah_services.customer_name | safe }} distribuidos en los siguientes servicios.',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: 'Han sido atendidos {{ data_grah_services.total_tickets | safe }} tickets para el cliente {{ data_grah_services.customer_name | safe }} distribuidos en los siguientes servicios.',
+            align: 'center'
+        },
+        {% endif %}
+        xAxis: {
+            categories: {{ data_grah_services.data_grah_x | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de tickets'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.0f}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah_services.data_grah_y | safe }}
+    });
+</script>
+{% endif %}
+
+{% if data_grah_users %}
+<script type="text/javascript">
+    Highcharts.chart('container_tickets_users_customers', {
         chart: {
             type: 'column'
         },
-        {% if current_year == 2023 %}
+        {% if current_month %}
         title: {
-            text: 'Se han gestinado {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }} distribuidos en las siguientes plataformas.',
+            text: 'Han sido atendidos {{ data_grah_users.total_tickets | safe }} tickets en el mes de {{ current_month }} para el cliente {{ data_grah_users.customer_name | safe }} distribuidos en los siguientes usuarios.',
             align: 'center'
         },
-        {% elif current_year  %}
+        {% elif current_year %}
         title: {
-            text: 'Se gestionaron {{ total_tickets }} tickets para el cliente {{ customer_name }} en el año {{ current_year }} distribuidos en las siguientes plataformas.',
+            text: 'Han sido atendidos {{ data_grah_users.total_tickets | safe }} tickets en el año {{ current_year }} para el cliente {{ data_grah_users.customer_name | safe }} distribuidos en los siguientes usuarios.',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: 'Han sido atendidos {{ data_grah_users.total_tickets | safe }} tickets para el cliente {{ data_grah_users.customer_name | safe }} distribuidos en los siguientes usuarios.',
             align: 'center'
         },
         {% endif %}
         xAxis: {
-            categories: {{ data_x_service_total | safe }},
+            categories: {{ data_grah_users.data_grah_x | safe }},
             crosshair: true
         },
         yAxis: {
@@ -493,15 +451,14 @@
             borderWidth: 0
             }
         },
-        series: {{ data_grah_service_total | safe }}
+        series: {{ data_grah_users.data_grah_y | safe }}
     });
 </script>
 {% endif %}
 
-
-{% if data_grah %}
-{% if data_grah.dict_year_total %}
-{% set data_one = data_grah.dict_year_total %}
+{% if data_grah_general %}
+{% if data_grah_general.dict_year_total %}
+{% set data_one = data_grah_general.dict_year_total %}
 {% for year in data_one %}
 {% set data_grah = data_one[year] %}
 <script type="text/javascript">
@@ -549,6 +506,90 @@
 </script>
 {% endfor %}
 {% endif %}
+{% endif %}
+
+{% if data_grah_date_services %}
+{% for date in data_grah_date_services %}
+{% set data_grah = data_grah_date_services[date] %}
+<script type="text/javascript">
+    Highcharts.chart('total_date_Service{{ date }}', {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'Se gestionaron {{ data_grah.total }} tickets.',
+            align: 'center'
+        },
+        xAxis: {
+            categories: {{ data_grah.data_grah_x | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de tickets'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah.data_grah_y | safe }}
+    });
+</script>
+{% endfor %}
+{% endif %}
+
+{% if data_grah_date_users %}
+{% for date in data_grah_date_users %}
+{% set data_grah = data_grah_date_users[date] %}
+<script type="text/javascript">
+    Highcharts.chart('total_date_Users{{ date }}', {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'Se gestionaron {{ data_grah.total }} tickets.',
+            align: 'center'
+        },
+        xAxis: {
+            categories: {{ data_grah.data_grah_x  | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Número de tickets'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+            }
+        },
+        series: {{ data_grah.data_grah_y | safe }}
+    });
+</script>
+{% endfor %}
 {% endif %}
 
 

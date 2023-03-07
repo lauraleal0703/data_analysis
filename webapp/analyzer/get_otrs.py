@@ -14,13 +14,12 @@ except:
     from qradar import qradar
 
 
-import orjson
-from pathlib import Path
+import typing as t
 from pprint import pprint
 from datetime import datetime
-from datetime import timedelta
 from dateutil.relativedelta import relativedelta
-import typing as t
+
+
 
 import logging
 logging.basicConfig(
@@ -91,7 +90,7 @@ def customers_actives() -> dict:
     }
 
 
-def customers_by_period_init(
+def customers_by_period(
     queue_id: int, 
     customer_id: str=None
 ) -> dict:
@@ -192,96 +191,6 @@ def customers_by_period_init(
    
     logging.debug(def_name)
     return customers_actives_temp
-
-
-def customers_by_period(
-    queue_id: int, 
-    customer_id: str=None
-) -> dict:
-    """Obtener un diciconario con id de los clientes
-    y las fechas en las que han estado activos en AS y
-    guardarlo dado que la función demora 10 seg
-    Se toman los activos de los ultimos 3 meses
-    
-    Parameters
-    ----------
-    queue_id: int
-        ID de la cola
-    customer_id: int
-        ID del cliente
-    
-    Return
-    ------
-    {customer_id: 
-        "name": str,
-        "start": "%Y-%m-%d", 
-        "end": "%Y-%m-%d"
-        "years_actives": [year]}
-        
-        Un diccionario de clientes/cliente
-    """
-    def_name =  f"customers_by_period_queue_id_{queue_id}"
-    logging.debug(def_name)
-
-    path_data_qradar: Path = Path(__file__).parent/"data_otrs"
-    if not path_data_qradar.exists():
-        path_data_qradar.mkdir()
-    
-    current_path = path_data_qradar / f"{def_name}.json"
-    if not current_path.exists():
-        logging.info(f"Creando JSON {current_path}")
-        
-        customers_actives_temp  = {}
-        customers_temp = customers_actives()
-        for customer in customers_temp:
-            start_ticket = Ticket.tickets_filtered_with(
-                queue_id = queue_id, 
-                customer_id = customer,
-                first_ticket = True
-            )
-
-            if start_ticket:
-                start_day: datetime = start_ticket.create_time
-                end_ticket = Ticket.tickets_filtered_with(
-                    queue_id = queue_id, 
-                    customer_id = customer,
-                    last_ticket = True
-                )
-        
-                end_day: datetime = end_ticket.create_time
-                end_day_limit = datetime.today() - relativedelta(months=2)
-                if end_day < end_day_limit:
-                    continue
-                list_year_temp = [int(start_day.year)]
-                if start_day.year < end_day.year:
-                    year_init = int(start_day.year)
-                    while True:
-                        next_year = year_init+1
-                        list_year_temp.append(next_year)
-                        if next_year == int(end_day.year):
-                            break
-                        year_init = next_year 
-                customers_actives_temp[customer] = {
-                    "name": customers_temp[customer],
-                    "start": datetime.strftime(start_day, "%Y-%m-%d"),
-                    "end": datetime.strftime(end_day, "%Y-%m-%d"),
-                    "years_actives":  sorted(list_year_temp)
-                }
-        data = customers_actives_temp
-        current_path.touch()
-        f = current_path.open("wb")
-        f.write(orjson.dumps(data))
-        f.close()
-    else:
-        logging.info(f"Abriendo JSON {current_path}")
-        f = open(str(current_path), "rb")
-        data = orjson.loads(f.read())
-    
-    if customer_id:
-        return data[customer_id]
-    
-    logging.debug(def_name)
-    return data
 
 
 
@@ -622,10 +531,9 @@ def search_grah(
     search: str, 
     dict_tickets: dict,
     data_total = dict
-)-> list:
+)-> dict:
     """Obtener los datos de la grafica de un parametro especifico"""
-    def_name = "search_grah"
-    
+
     search_temp = []
     dict_grah_year = {}
     for date in dict_tickets:
@@ -677,201 +585,6 @@ def search_grah(
 
 
 def get_tickets_filtred(
-    user_id: t.Optional[int] = None,
-    customer_id: t.Optional[str] = None,
-    users: bool = False,
-    customers: bool = False,
-    queue_id: t.Optional[int] = None,
-    year: t.Optional[int] = None,
-    month: t.Optional[str] = None
-) -> dict:
-    """Obtener todos los tickets de un usuario
-    en toda su estadia o en un año en especifico
-    Lo ideal seria usar el queue_id en la
-    list_customers_active 
-    
-    Da los datos directos para la gráfica.
-    https://www.highcharts.com/demo/column-basic
-
-    Parameters
-    ----------
-    queue_id: int
-        ID de la cola
-    
-    Return
-    ------
-    dict
-    """
-    def_name = "get_tickets_users_years"
-    logging.debug(def_name)
-
-    calendar_spanish_ = calendar_spanish()
-    calendar_spanish_temp = calendar_spanish_["calendar_num"]
-    calendar_spanish_temp_ = calendar_spanish_["calendar_name"]
-    users_actives_temp = users_actives()
-    customers_active = customers_actives()
-    list_customers_active = list(customers_active.keys())
-    user_name = users_actives_temp[str(user_id)]
-
-    if not year:
-        dates = list(range(datetime.today().year, 2017, -1))
-    else:
-        dates = [year]
-    
-    if month:
-        month = calendar_spanish_temp_[month]
-
-    dict_tickets = {}
-    for date in dates:
-        if month:
-            if month == 12:
-                logging.info(f"IniciaQ {def_name}")
-                data_temp = Ticket.tickets_period_filtered_with(
-                    start_period = f"{date}-{month}-01",
-                    end_period = f"{date+1}-01-01",
-                    user_id = user_id,
-                    customers = list_customers_active
-                )
-                logging.info(f"FinQ {def_name} Nº={len(data_temp)}")
-            else:
-                logging.info(f"IniciaQ {def_name}")
-                data_temp = Ticket.tickets_period_filtered_with(
-                    start_period = f"{date}-{month}-01",
-                    end_period = f"{date}-{month+1}-01",
-                    user_id = user_id,
-                    customers = list_customers_active
-                )
-                logging.info(f"FinQ {def_name} Nº={len(data_temp)}")
-        else:
-            logging.info(f"IniciaQ {def_name}")
-            data_temp = Ticket.tickets_period_filtered_with(
-                start_period = f"{date}-01-01",
-                end_period = f"{date+1}-01-01",
-                user_id = user_id,
-                customers = list_customers_active
-            )
-            logging.info(f"FinQ {def_name} Nº={len(data_temp)}")
-        
-        if not data_temp:
-            continue
-        
-        for ticket in data_temp:
-            ticket: Ticket
-
-            if year:
-                date_temp: datetime = ticket.create_time
-                date = calendar_spanish_temp[date_temp.month]
-            
-            if month:
-                date_temp: datetime = ticket.create_time
-                date = date_temp.day
-            
-            if date not in dict_tickets:
-                dict_tickets[date] = {}
-            
-            if "total" not in dict_tickets[date]:
-                dict_tickets[date]["total"] = {
-                    "total": 1,
-                    "tickets": [ticket]
-                }
-            else:
-                dict_tickets[date]["total"]["total"] += 1
-                dict_tickets[date]["total"]["tickets"].append(ticket)
-
-            make_search(
-                search = "queues",
-                search_id = ticket.queue_id,
-                name = ticket.queue.name,
-                date = date,
-                dict_tickets = dict_tickets,
-                ticket = ticket
-            )
-
-            make_search(
-                search = "services",
-                search_id = ticket.service_id,
-                name = ticket.service.name if ticket.service else ticket.service_id,
-                date = date,
-                dict_tickets = dict_tickets,
-                ticket = ticket
-            )
-
-            make_search(
-                search = "customers",
-                search_id = ticket.customer_id,
-                name = ticket.customer_id,
-                date = date,
-                dict_tickets = dict_tickets,
-                ticket = ticket
-            )
-
-    data_x = []
-    data_y = []
-    data_total = {}
-    for date in dict_tickets:
-        data_total[date] = dict_tickets[date]["total"]["total"]
-        data_x.append(date)
-        data_y.append(dict_tickets[date]["total"]["total"])
-    
-    data_grah_y_temp = {
-        "name": "Total",
-        "data": data_y
-    }
-
-    data_grah_y = search_grah(
-        search = "queues",
-        dict_tickets = dict_tickets,
-        data_total = data_grah_y_temp
-    )
-    data_grah_general =  {
-        "user_name": user_name,
-        "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
-        "data_grah_x": data_x,
-        "data_grah_y": data_grah_y["data_grah_y"]
-    }
-    dict_grah_year = data_grah_y["dict_grah_year"]
-
-    data_grah_y_services = search_grah(
-        search = "services",
-        dict_tickets = dict_tickets,
-        data_total = data_grah_y_temp
-    )
-    data_grah_services =  {
-        "user_name": user_name,
-        "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
-        "data_grah_x": data_x,
-        "data_grah_y": data_grah_y_services["data_grah_y"]
-    }
-    dict_grah_year_services = data_grah_y_services["dict_grah_year"]
-
-    data_grah_y_customers = search_grah(
-        search = "customers",
-        dict_tickets = dict_tickets,
-        data_total = data_grah_y_temp
-    )
-
-    data_grah_customers =  {
-        "user_name": user_name,
-        "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
-        "data_grah_x": data_x,
-        "data_grah_y": data_grah_y_customers["data_grah_y"]
-    }
-    dict_grah_year_customers = data_grah_y_customers["dict_grah_year"]
-
-    logging.debug(def_name)
-    return {
-        "dict_tickets": dict_tickets,
-        "data_total_table": data_total,
-        "data_grah_general": data_grah_general,
-        "data_grah_services": data_grah_services,
-        "data_grah_customers": data_grah_customers,
-        "dict_grah_year_services": dict_grah_year_services,
-        "dict_grah_year_customers": dict_grah_year_customers,
-        "dict_grah_year": dict_grah_year
-    }
-
-
-def get_tickets_filtred_prueba(
     user_id: t.Optional[int] = None,
     customer_id: t.Optional[str] = None,
     queue_id: t.Optional[int] = None,
@@ -927,6 +640,7 @@ def get_tickets_filtred_prueba(
         dates.reverse()
         customer_name = customer["name"]
     
+    logging.debug(def_name)
     if year:
         dates = [year]
     
@@ -1035,24 +749,14 @@ def get_tickets_filtred_prueba(
                 )
 
             if customers:
-                if ticket.user_id not in users_temp:
-                    make_search(
-                        search = "users_not_found",
-                        search_id = ticket.user_id,
-                        name = ticket.user.full_name,
-                        date = date,
-                        dict_tickets = dict_tickets,
-                        ticket = ticket
-                    )
-                else:
-                    make_search(
-                        search = "users",
-                        search_id = ticket.user_id,
-                        name = ticket.user.full_name,
-                        date = date,
-                        dict_tickets = dict_tickets,
-                        ticket = ticket
-                    )
+                make_search(
+                    search = "users",
+                    search_id = ticket.user_id,
+                    name = ticket.user.full_name,
+                    date = date,
+                    dict_tickets = dict_tickets,
+                    ticket = ticket
+                )
 
             make_search(
                 search = "services",
@@ -1088,7 +792,6 @@ def get_tickets_filtred_prueba(
             "data_grah_x": data_x,
             "data_grah_y": data_grah_y["data_grah_y"]
         }
-        dict_grah_year = data_grah_y["dict_grah_year"]
 
         data_grah_y_customers = search_grah(
             search = "customers",
@@ -1101,59 +804,65 @@ def get_tickets_filtred_prueba(
             "data_grah_x": data_x,
             "data_grah_y": data_grah_y_customers["data_grah_y"]
         }
-        dict_grah_year_customers = data_grah_y_customers["dict_grah_year"]
+        data_grah_date_customers = data_grah_y_customers["dict_grah_year"]
+
+        data_grah_y_services = search_grah(
+            search = "services",
+            dict_tickets = dict_tickets,
+            data_total = data_grah_y_temp
+        )
+        data_grah_services =  {
+            "user_name": user_name,
+            "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
+            "data_grah_x": data_x,
+            "data_grah_y": data_grah_y_services["data_grah_y"]
+        }
+        data_grah_date_services = data_grah_y_services["dict_grah_year"]
     
     if customers:
+        data_grah_general =  {
+            "customer_name": customer_name,
+            "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
+            "data_grah_x": data_x,
+            "data_grah_y": [data_grah_y_temp]
+        }
+
         data_grah_y = search_grah(
             search = "users",
             dict_tickets = dict_tickets,
             data_total = data_grah_y_temp
         )
         data_grah_users =  {
-            "user_name": user_name,
+            "customer_name": customer_name,
             "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
             "data_grah_x": data_x,
             "data_grah_y": data_grah_y["data_grah_y"]
         }
-        data_grah_users_year = data_grah_y["dict_grah_year"]
+        data_grah_date_users = data_grah_y["dict_grah_year"]
 
-        data_grah_y = search_grah(
-            search = "users_not_found",
+        data_grah_y_services = search_grah(
+            search = "services",
             dict_tickets = dict_tickets,
             data_total = data_grah_y_temp
         )
-        data_grah_users_not_found =  {
-            "user_name": user_name,
+        data_grah_services =  {
+            "customer_name": customer_name,
             "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
             "data_grah_x": data_x,
-            "data_grah_y": data_grah_y["data_grah_y"]
+            "data_grah_y": data_grah_y_services["data_grah_y"]
         }
-        data_grah_users_not_found_year = data_grah_y["dict_grah_year"]
-
-    data_grah_y_services = search_grah(
-        search = "services",
-        dict_tickets = dict_tickets,
-        data_total = data_grah_y_temp
-    )
-    data_grah_services =  {
-        "user_name": user_name,
-        "total_tickets": '{:,}'.format(sum(data_y)).replace(',','.'),
-        "data_grah_x": data_x,
-        "data_grah_y": data_grah_y_services["data_grah_y"]
-    }
-    dict_grah_year_services = data_grah_y_services["dict_grah_year"]
+        data_grah_date_services = data_grah_y_services["dict_grah_year"]
 
     if users:
         logging.debug(def_name)
         return {
             "dict_tickets": dict_tickets,
             "data_total_table": data_total,
-            "data_grah_customers": data_grah_customers,
-            "dict_grah_year_customers": dict_grah_year_customers,
             "data_grah_general": data_grah_general,
-            "dict_grah_year": dict_grah_year,
+            "data_grah_customers": data_grah_customers,
+            "data_grah_date_customers": data_grah_date_customers,
             "data_grah_services": data_grah_services,
-            "dict_grah_year_services": dict_grah_year_services
+            "data_grah_date_services": data_grah_date_services
         }
     
     if customers:
@@ -1161,214 +870,12 @@ def get_tickets_filtred_prueba(
         return {
             "dict_tickets": dict_tickets,
             "data_total_table": data_total,
+            "data_grah_general": data_grah_general,
             "data_grah_users": data_grah_users,
-            "data_grah_users_year": data_grah_users_year,
-            "data_grah_users_not_found": data_grah_users_not_found,
-            "data_grah_users_not_found_year": data_grah_users_not_found_year,
+            "data_grah_date_users": data_grah_date_users,
             "data_grah_services": data_grah_services,
-            "dict_grah_year_services": dict_grah_year_services
+            "data_grah_date_services": data_grah_date_services
         }
-get_tickets_filtred_prueba(
-    queue_id = 6, 
-    customer_id = "AAN", 
-    customers = True)
-
-
-def get_tickets_customer_years(
-    queue_id: int,
-    customer_id: str
-) -> dict:
-    """Obtener los datos de los años activos de un customer_id
-    en una cola dada.
-    
-    Da los datos directos para la gráfica.
-    https://www.highcharts.com/demo/column-basic
-
-    Parameters
-    ----------
-    queue_id: int
-        ID de la cola
-    customer_id: int
-        ID del cliente
-    
-    Return
-    ------
-    dict
-    """
-    def_name = "get_tickets_customer_years"
-    logging.debug(def_name)
-
-    if queue_id == 6:
-        users =  users_administrators()
-        users = users["administrators"]
-    if queue_id == 9:
-        users = users_analysts()
-        users = users["analysts"]
-
-    customer = customers_by_period(
-        queue_id = queue_id,
-        customer_id = customer_id
-    )
-
-    years: list = customer["years_actives"]
-    years.reverse()
-    customer_name = customer["name"]
-
-    data_x = []
-    data_total = {}
-    data_tickets = {}
-    data_user_total = {}
-    data_user_not_total = {}
-    data_user = {}
-    data_service_total = {}
-    data_service = {}
-    data_grah_temp = []
-    for year in years:
-        data_x.append(year)
-        logging.info(f"IniciaQ {def_name}")
-        data_temp = Ticket.tickets_period_filtered_with(
-            start_period = f"{year}-01-01",
-            end_period = f"{year+1}-01-01", 
-            customer_id = customer_id, 
-            queue_id = queue_id
-        )
-        logging.info(f"FinQ {def_name} Nº={len(data_temp)}")
-        data_grah_temp.append(len(data_temp))
-        data_total[year] = len(data_temp)
-        data_tickets[year] = data_temp
-
-        data_user_total[year] = {}
-        data_user_not_total[year] = {}
-        data_user[year] = {}
-        data_service_total[year] = {}
-        data_service[year] = {}
-
-        for ticket in data_temp:
-            ticket: Ticket
-            
-            
-            if ticket.user_id not in users:
-                if "user_not" not in data_user[year]:
-                    data_user[year]["user_not"] = {}
-                if ticket.user_id not in data_user[year]["user_not"]:
-                    data_user_not_total[year][ticket.user_id] =  {
-                        "user": {
-                            "name": ticket.user.full_name
-                        },
-                        "total": 1
-                    }
-                    data_user[year]["user_not"][ticket.user_id] = {
-                        "user": {
-                            "name": ticket.user.full_name
-                        },
-                        "tickets": [ticket]
-                    }
-                    
-                else:
-                    data_user[year]["user_not"][ticket.user_id]["tickets"].append(
-                        ticket
-                    )
-                    data_user_not_total[year][ticket.user_id]["total"] += 1
-            
-            else:  
-                if ticket.user_id not in data_user[year]:
-                    data_user_total[year][ticket.user_id] = {
-                        "user": {
-                            "name": ticket.user.full_name
-                        },
-                        "total": 1
-                    }
-                    data_user[year][ticket.user_id] = {
-                        "user": {
-                            "name": ticket.user.full_name
-                        },
-                        "tickets": [ticket]
-                    }
-                else:
-                    data_user[year][ticket.user_id]["tickets"].append(ticket)
-                    data_user_total[year][ticket.user_id]["total"] += 1
-
-
-            if ticket.service_id not in data_service[year]:
-                data_service_total[year][ticket.service_id] = {
-                    "service": {
-                            "name": (
-                                ticket.service.name
-                                if ticket.service else "Undefined"
-                            )
-                        },
-                    "total": 1
-                }
-                data_service[year][ticket.service_id] = {
-                    "service": {
-                        "name": (
-                            ticket.service.name 
-                            if ticket.service else "Undefined"
-                        )
-                    },
-                    "tickets": [ticket]
-                }
-            else:
-                data_service[year][ticket.service_id]["tickets"].append(ticket)
-                data_service_total[year][ticket.service_id]["total"] += 1
-    
-    total_tickets = sum(data_grah_temp)
-    data_grah = [{"name": "Tickets", "data": data_grah_temp}]
-    
-    data_x_service = []
-    dict_service_temp = {}
-    for year_ in data_service:
-        data_x_service.append(year_)
-        for service_ in data_service[year_]:
-            if service_ not in dict_service_temp:
-                dict_service_temp[service_] = (
-                    data_service[year_][service_]["service"]["name"]
-                )
-    
-    dict_service: t.Dict[t.Union[int, str], t.List] = {}
-    for service_temp in dict_service_temp:
-        dict_service[service_temp] = []
-        for year_temp in data_service:
-            if service_temp in data_service[year_temp]:
-                total = len(data_service[year_temp][service_temp]["tickets"])
-            else:
-                total = 0
-            dict_service[service_temp].append(total)
-
-    dict_service_sum = {ser: sum(dict_service[ser])  for ser in dict_service}
-    dict_service_sum = sorted(
-        dict_service_sum.items(),
-        key=lambda x:x[1], 
-        reverse=True
-    )
-
-    data_grah_service = []
-    for service_temp in dict_service_sum:
-        service_temp = service_temp[0]
-        dato_temp = {
-            "name": dict_service_temp[service_temp],
-            "data": dict_service[service_temp]
-        }
-        data_grah_service.append(dato_temp)
-
-    total_tickets = '{:,}'.format(total_tickets).replace(',','.')
-    logging.debug(def_name)
-    return {
-        "customer_name": customer_name,
-        "data_total": data_total,
-        "data_tickets": data_tickets,
-        "data_service": data_service,
-        "data_service_total": data_service_total, 
-        "data_grah_x": data_x, 
-        "data_grah_y": data_grah, 
-        "total_tickets": total_tickets,
-        "data_user": data_user,
-        "data_user_total": data_user_total,
-        "data_user_not_total": data_user_not_total,
-        "data_grah_service": data_grah_service, 
-        "data_x_service": data_x_service
-    }
-get_tickets_customer_years(6, "AAN")
 
 
 ###############################################################################
@@ -1409,6 +916,12 @@ def get_tickets_conflic(
  
     logging.debug(def_name)
     return data_total
+
+
+
+###############################################################################
+############################# EJEMPLOS ########################################
+###############################################################################
 
 
 ###Prueba dado un ticket.id, se tiene el ID de QRadar

@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "analysis_otrs/index_users/menu.html" %}
+{% include "analysis_otrs/users/menu.html" %}
 
 <div class="card">
     <div class="card-header">
+        {% if page.title %}
+        <div class="p-3 bg-light rounded text-center">
+            <h3 class="text-muted">{{ page.title }}</h3>
+        </div>
+        {% endif %}
         {% if users_actives %}
         <div class="row p-1">
             <div class="col">
@@ -12,27 +17,13 @@
                 <a id="menuUser{{ user[0] }}"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ user[0] }}">
-                    {{ user[1]["user"]["name"] }}={{ user[1]["total"] }}
+                    {{ user[1]["search"]["name"] }}={{ user[1]["total"] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-       
-        {% if data_total_table %}
-        <div class="row p-1">
-            <div class="col">
-                {% for table_year in data_total_table %}
-                <a id="menuUserYearTable{{ table_year }}"
-                    class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&table_year={{ table_year }}">
-                    {{ table_year }}={{ data_total_table[table_year] }}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        
+
         {% if data_total_year %}
         <div class="row p-1">
             <div class="col">
@@ -46,21 +37,24 @@
             </div>
         </div>
         {% endif %}
-        
-        {% if data_total_table_month %}
+       
+        {% if data_total_table_year %}
+        <div class="p-1 bg-light rounded text-left">
+            <h5 class="text-muted">Ver detalle de la tabla del año</h5>
+        </div>
         <div class="row p-1">
             <div class="col">
-                {% for table_month in data_total_table_month %}
-                <a id="menuUserYearMonthTable{{ table_month }}"
+                {% for table_year in data_total_table_year %}
+                <a id="menuUserYearTable{{ table_year }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&table_month={{ table_month }}">
-                    {{ table_month }}={{ data_total_table_month[table_month] }}
+                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&table_year={{ table_year }}">
+                    {{ table_year }}={{ data_total_table_year[table_year] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-
+        
         {% if data_total_month %}
         <div class="row p-1">
             <div class="col">
@@ -75,7 +69,27 @@
         </div>
         {% endif %}
 
+        {% if data_total_table_month %}
+        <div class="p-1 bg-light rounded text-left">
+            <h5 class="text-muted">Ver detalle de la tabla del mes</h5>
+        </div>
+        <div class="row p-1">
+            <div class="col">
+                {% for table_month in data_total_table_month %}
+                <a id="menuUserYearMonthTable{{ table_month }}"
+                    class="btn btn-sm btn-outline-primary"
+                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&table_month={{ table_month }}">
+                    {{ table_month }}={{ data_total_table_month[table_month] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         {% if data_total_table_day %}
+        <div class="p-1 bg-light rounded text-left">
+            <h5 class="text-muted">Ver detalle de la tabla del día</h5>
+        </div>
         <div class="row p-1">
             <div class="col">
                 {% for table_day in data_total_table_day %}
@@ -93,7 +107,7 @@
     <div class="card-body">
         <div class="table-responsive">
             {% if data_tickets %}
-            <table id="tablaTicketsCustomer" class="table table-bordered display text-center" style="width: 100%">
+            <table id="tablaTicketsUsers" class="table table-bordered display text-center" style="width: 100%">
                 <thead class="bg-light">
                     <tr>
                         <th style="width: 5%">ID</th>
@@ -191,13 +205,34 @@
             {% endif %}
         </div>
     </div>
+    
     <div class="card-footer">
-        <a
-            role="button"
-            class="btn btn-sm btn-secondary"
-            href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}">
-            Volver
-        </a>
+        {% if data_tickets %}
+        <div class="card-footer">
+            {% if current_month %}
+            <a
+                role="button"
+                class="btn btn-sm btn-secondary"
+                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ current_month }}">
+                Volver
+            </a>
+            {% elif current_year %}
+            <a
+                role="button"
+                class="btn btn-sm btn-secondary"
+                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}">
+                Volver
+            </a>
+            {% else %}
+            <a
+                role="button"
+                class="btn btn-sm btn-secondary"
+                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}">
+                Volver
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -212,14 +247,14 @@
         $("#menuUserYearMonth{{ current_month }}").addClass("active");
         $("#menuUserYearMonthDayTable{{ current_table_day }}").addClass("active");
         
-        $("#tablaTicketsCustomer thead tr:eq(1) th").each(function() {
+        $("#tablaTicketsUsers thead tr:eq(1) th").each(function() {
             let title = $(this).text();
             if (title != "") {
                 $(this).html("<input type='text' class='form-control form-control-sm text-center column-search' />");
             }
         });
         
-        var table = $("#tablaTicketsCustomer").DataTable({
+        var table = $("#tablaTicketsUsers").DataTable({
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -229,7 +264,7 @@
             ]
         });
 
-        $("#tablaTicketsCustomer thead").on("keyup", ".column-search", function () {
+        $("#tablaTicketsUsers thead").on("keyup", ".column-search", function () {
             table
             .column( $(this).parent().index() )
             .search( this.value )

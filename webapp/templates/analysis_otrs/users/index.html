@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "analysis_otrs/index_users/menu.html" %}
+{% include "analysis_otrs/users/menu.html" %}
 
 <div class="card">
     <div class="card-header">
+        {% if page.title %}
+        <div class="p-3 bg-light rounded text-center">
+            <h3 class="text-muted">{{ page.title }}</h3>
+        </div>
+        {% endif %}
         <!-- Usuarios activos -->
         {% if users_actives %}
         <div class="row p-1">
@@ -45,6 +50,18 @@
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ month }}">
                     {{ month }}={{ data_total_month[month] }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if data_total_day %}
+        <div class="row p-1">
+            <div class="col">
+                {% for day in data_total_day %}
+                <a class="btn btn-sm btn-secondary">
+                    {{ day }}={{ data_total_day[day] }}
                 </a>
                 {% endfor %}
             </div>
@@ -110,33 +127,33 @@
             </div>
 
             <div class="accordion" id="accordionService">
-                {% if data_grah_services_year %}
+                {% if data_grah_date_services %}
                 <div class="p-3 mt-4 mb-4 rounded text-center">
                     <h5 class="text-muted">Ver detalle de los servicios</h5>
                 </div>
-                {% for year in data_grah_services_year %}
-                <div id="headingService{{ year }}">
+                {% for date in data_grah_date_services %}
+                <div id="headingService{{ date }}">
                     <p class="text-center">
                         <button 
                             class="btn btn-primary"
                             type="button" 
-                            title="Ver el detalle del año"
+                            title="Ver el detalle"
                             data-toggle="collapse" 
-                            data-target="#collapseService{{ year }}" 
+                            data-target="#collapseService{{ date }}" 
                             aria-expanded="false" 
-                            aria-controls="#collapseService{{ year }}">
-                            {{ year }}
+                            aria-controls="#collapseService{{ date }}">
+                            {{ date }}
                         </button>
                     </p>
                 </div>
                 <div 
-                    id="collapseService{{ year }}" 
+                    id="collapseService{{ date }}" 
                     class="collapse" 
-                    aria-labelledby="headingService{{ year }}" 
+                    aria-labelledby="headingService{{ date }}" 
                     data-parent="#accordionService">
                     <div>
                         <figure class="highcharts-figure">
-                            <div id="total_year_Service{{ year }}"></div>
+                            <div id="total_date_Service{{ date }}"></div>
                         </figure>
                     </div>
                 </div>
@@ -155,33 +172,33 @@
                 </figure>
             </div>
             <div class="accordion" id="accordionCustomer">
-                {% if data_grah_customers_year %}
+                {% if data_grah_date_customers %}
                 <div class="p-3 mt-4 mb-4 rounded text-center">
                     <h5 class="text-muted">Ver detalle de los clientes</h5>
                 </div>
-                {% for year in data_grah_customers_year %}
-                <div id="headingCustomer{{ year }}">
+                {% for date in data_grah_date_customers %}
+                <div id="headingCustomer{{ date }}">
                     <p class="text-center">
                         <button 
                             class="btn btn-primary"
                             type="button" 
                             title="Ver el detalle del año"
                             data-toggle="collapse" 
-                            data-target="#collapseCustomer{{ year }}" 
+                            data-target="#collapseCustomer{{ date }}" 
                             aria-expanded="false" 
-                            aria-controls="#collapseCustomer{{ year }}">
-                            {{ year }}
+                            aria-controls="#collapseCustomer{{ date }}">
+                            {{ date }}
                         </button>
                     </p>
                 </div>
                 <div 
-                    id="collapseCustomer{{ year }}" 
+                    id="collapseCustomer{{ date }}" 
                     class="collapse" 
-                    aria-labelledby="headingCustomer{{ year }}" 
+                    aria-labelledby="headingCustomer{{ date }}" 
                     data-parent="#accordionCustomer">
                     <div>
                         <figure class="highcharts-figure">
-                            <div id="total_year_Customer{{ year }}"></div>
+                            <div id="total_date_Customer{{ date }}"></div>
                         </figure>
                     </div>
                 </div>
@@ -492,16 +509,16 @@
 {% endif %}
 {% endif %}
 
-{% if data_grah_services_year %}
-{% for year in data_grah_services_year %}
-{% set data_grah = data_grah_services_year[year] %}
+{% if data_grah_date_services %}
+{% for date in data_grah_date_services %}
+{% set data_grah = data_grah_date_services[date] %}
 <script type="text/javascript">
-    Highcharts.chart('total_year_Service{{ year }}', {
+    Highcharts.chart('total_date_Service{{ date }}', {
         chart: {
             type: 'column'
         },
         title: {
-            text: 'Se han gestionado {{ data_grah.total }} tickets.',
+            text: 'Se gestionaron {{ data_grah.total }} tickets.',
             align: 'center'
         },
         xAxis: {
@@ -534,16 +551,16 @@
 {% endfor %}
 {% endif %}
 
-{% if data_grah_customers_year %}
-{% for year in data_grah_customers_year %}
-{% set data_grah = data_grah_customers_year[year] %}
+{% if data_grah_date_customers %}
+{% for date in data_grah_date_customers %}
+{% set data_grah = data_grah_date_customers[date] %}
 <script type="text/javascript">
-    Highcharts.chart('total_year_Customer{{ year }}', {
+    Highcharts.chart('total_date_Customer{{ date }}', {
         chart: {
             type: 'column'
         },
         title: {
-            text: 'Se han gestionado {{ data_grah.total }} tickets.',
+            text: 'Se gestionaron {{ data_grah.total }} tickets.',
             align: 'center'
         },
         xAxis: {
@@ -575,6 +592,5 @@
 </script>
 {% endfor %}
 {% endif %}
-
 
 {% endblock %}

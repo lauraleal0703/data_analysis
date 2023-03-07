@@ -6,249 +6,110 @@
 <div class="card">
     <div class="card-header">
         {% if page.title %}
-        <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
+        <div class="p-3 bg-light rounded text-center">
             <h3 class="text-muted">{{ page.title }}</h3>
         </div>
         {% endif %}
-        {% if mensaje %}
-        <div class="row d-flex align-content-center">
-            <div class="col-1">
-                <div class="alert alert-success text-center" role="alert">
-                    <h5>{{ mensaje }}</h5>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        {% if customers_actives %}
+         <!-- Clientes activos -->
+         {% if customers_actives %}
+         <div class="row p-1">
+             <div class="col">
+                 {% for customer in customers_actives %}
+                 <a id="menuCustomer{{ customer[0] }}"
+                     title="Ver el detalle del cliente"
+                     class="btn btn-sm btn-outline-primary"
+                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer[0] }}">
+                     {{ customer[1]["search"]["name"] }}={{ customer[1]["total"] }}
+                 </a>
+                 {% endfor %}
+             </div>
+         </div>
+         {% endif %}
+
+        {% if data_total_year %}
         <div class="row p-1">
             <div class="col">
-                {% for customer in customers_actives %}
-                <a 
-                    id="menuCustomer{{ customer[0] }}"
-                    title="Ver el detalle del cliente"
-                    class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ customer[0] }}">
-                    {{ customer[0] }}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        <!-- TABLA CON TOTAL POR AÑO -->
-        {% if year_actives_table %}
-        <div class="row p-1">
-            <div class="col">
-                {% for year_table in year_actives_table %}
-                <a 
-                    id="btnCustomerYearTable{{ year_table }}"
-                    title="Ver el detalle del año del cliente"
-                    class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_table={{ year_table }}">
-                    {{ year_table }}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        <!-- SERVICIO DEL AÑO-->
-        {% if current_year_service %}
-        <div class="row p-1">
-            <div class="col">
-                <a 
-                    id="btnCustomerYearService{{ current_year_service }}"
-                    class="btn btn-sm btn-outline-primary">
-                    Servicios del año {{ current_year_service }}
-                </a>
-            </div>
-        </div>
-        {% endif %}
-        {% if data_service_total %}
-        <div class="row p-1">
-            <div class="col">
-                {% for service in data_service_total %}
-                <a 
-                    id="btnCustomerYearServiceID{{ service }}"
-                    title="Ver el detalle del servicio"
-                    class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_service={{ current_year_service }}&service={{ service }}">
-                    {{ data_service_total[service]["service"]["name"] }}={{ data_service_total[service]["total"] }}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        <!-- USUARIOS -->
-        {% if current_year_user %}
-        <div class="row p-1">
-            <div class="col">
-                <a 
-                    id="btnCustomerYearUser{{ current_year_user }}"
-                    class="btn btn-sm btn-outline-primary">
-                    Usuarios del año {{ current_year_user }}
-                </a>
-            </div>
-        </div>
-        {% endif %}
-        {% if data_user_total %}
-        <div class="row p-1">
-            <div class="col">
-                {% for user in data_user_total %}
-                <a 
-                    id="btnCustomerYearUserID{{ user }}"
-                    title="Ver el detalle del usuario"
-                    class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ current_year_user }}&user={{ user }}">
-                    {{ data_user_total[user]["user"]["name"] }}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        <!-- USUARIOS NO ASIGANDOS -->
-        {% if current_year_user_not %}
-        <div class="row p-1">
-            <div class="col">
-                <a 
-                    id="btnCustomerYearUserNot{{ current_year_user_not }}"
-                    class="btn btn-sm btn-outline-primary">
-                    Usuarios no asigados a la cola del año {{ current_year_user_not }}
-                </a>
-            </div>
-        </div>
-        {% endif %}
-        {% if data_user_not_total %}
-        <div class="row p-1">
-            <div class="col">
-                {% for user in data_user_not_total %}
-                <a 
-                    id="btnCustomerYearUserNotID{{ user }}"
-                    title="Ver el detalle del usuario en conflicto"
-                    class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year_user={{ current_year_user_not }}&user_not={{ user }}">
-                    {{ data_user_not_total[user]["user"]["name"] }}={{ data_user_not_total[user]["total"] }}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        <!-- Los años activos que tiene el cliente -->
-        {% if year_actives %}
-        <div class="row p-1">
-            <div class="col">
-                {% for year in year_actives %}
-                <a 
-                    id="menuCustomerYear{{ year }}"
-                    title="Ver el detalle del año del cliente"
+                {% for year in data_total_year %}
+                <a id="menuCustomerYear{{ year }}"
                     class="btn btn-sm btn-outline-primary"
                     href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ year }}">
-                    {{ year }}={{ year_actives[year] }}
+                    {{ year }}={{ data_total_year[year] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        <!-- Meses activos del año en la tabla -->
-        {% if months_actives_table %}
+       
+        {% if data_total_table_year %}
+        <div class="p-1 bg-light rounded text-left">
+            <h5 class="text-muted">Ver detalle de la tabla del año</h5>
+        </div>
         <div class="row p-1">
             <div class="col">
-                {% for month_table in months_actives_table %}
-                <a 
-                    id="btnCustomerMonthTable{{ month_table[0] }}"
-                    title="Ver el detalle del mes"
+                {% for table_year in data_total_table_year %}
+                <a id="menuCustomerYearTable{{ table_year }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_table={{ month_table[0] }}">
-                    {{ month_table[1]["name"] }}={{ month_table[1]["total"] }}
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&table_year={{ table_year }}">
+                    {{ table_year }}={{ data_total_table_year[table_year] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        <!-- SERVICIO DEL MES-->
-        {% if current_month_service %}
+        
+        {% if data_total_month %}
         <div class="row p-1">
             <div class="col">
-                <a 
-                    id="btnCustomerMonthService{{ current_month_service }}"
-                    class="btn btn-sm btn-outline-primary">
-                    Servicios del mes de {{ month_service_name[current_month_service]["name"] }}
-                </a>
-            </div>
-        </div>
-        {% endif %}
-        {% if data_service_total_month %}
-        <div class="row p-1">
-            <div class="col">
-                {% for service in data_service_total_month %}
-                <a 
-                    id="btnCustomerYearMonthServiceID{{ service }}"
-                    title="Ver el detalle del servicio"
+                {% for month in data_total_month %}
+                <a id="menuCustomerYearMonth{{ month }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_service={{ current_month_service }}&service={{ service }}">
-                    {{ data_service_total_month[service]["service"]["name"] }}={{ data_service_total_month[service]["total"] }}
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ month }}">
+                    {{ month }}={{ data_total_month[month] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        <!-- USUARIOS MONTH-->
-        {% if current_month_user %}
-        <div class="row p-1">
-            <div class="col">
-                <a 
-                    id="btnCustomerYearMonthUser{{ current_month_user }}"
-                    class="btn btn-sm btn-outline-primary">
-                    Usuarios del mes de {{ month_user_name[current_month_user]["name"] }}
-                </a>
-            </div>
+        
+        {% if data_total_table_month %}
+        <div class="p-1 bg-light rounded text-left">
+            <h5 class="text-muted">Ver detalle de la tabla del mes</h5>
         </div>
-        {% endif %}
-        {% if data_user_total_month %}
         <div class="row p-1">
             <div class="col">
-                {% for user in data_user_total_month %}
-                <a 
-                    id="btnCustomerYearUserID{{ user }}"
-                    title="Ver el detalle del usuario"
+                {% for table_month in data_total_table_month %}
+                <a id="menuCustomerYearMonthTable{{ table_month }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_user={{ current_month_user }}&user={{ user }}">
-                    {{ data_user_total_month[user]["user"]["name"] }}={{ data_user_total_month[user]["total"] }}
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&table_month={{ table_month }}">
+                    {{ table_month }}={{ data_total_table_month[table_month] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        <!-- USUARIOS NO ASIGANDOS MONTH -->
-        {% if current_month_user_not %}
-        <div class="row p-1">
-            <div class="col">
-                <a 
-                    id="btnCustomerYearMonthUserNot{{ current_month_user_not }}"
-                    class="btn btn-sm btn-outline-primary">
-                    Usuarios del mes de {{ month_user_name[current_month_user_not]["name"] }}
-                </a>
-            </div>
+
+        {% if data_total_table_day %}
+        <div class="p-1 bg-light rounded text-left">
+            <h5 class="text-muted">Ver detalle de la tabla del día</h5>
         </div>
-        {% endif %}
-        {% if data_user_not_total_month %}
         <div class="row p-1">
             <div class="col">
-                {% for user in data_user_not_total_month %}
-                <a 
-                    id="btnCustomerYearUserNotID{{ user }}"
-                    title="Ver el detalle del usuario"
+                {% for table_day in data_total_table_day %}
+                <a id="menuCustomerYearMonthDayTable{{ table_day }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month_user={{ current_month_user }}&user_not={{ user }}">
-                    {{ data_user_not_total_month[user]["user"]["name"] }}={{ data_user_not_total_month[user]["total"] }}
+                    href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ current_month }}&table_day={{ table_day }}">
+                    {{ table_day }}={{ data_total_table_day[table_day] }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
+
     </div>
     <div class="card-body">
         <div class="table-responsive">
             {% if data_tickets %}
-            <table id="tablaTicketsCustomer" class="table table-bordered display text-center" style="width:100%">
+            <table id="tablaTicketsCustomer" class="table table-bordered display text-center" style="width: 100%">
                 <thead class="bg-light">
                     <tr>
                         <th style="width: 5%">ID</th>
@@ -296,11 +157,7 @@
                             {{ ticket.title }}
                         </td>
                         <td>
-                            {% if ticket.user %}
                             {{ ticket.user.full_name }}
-                            {% else %}
-                            {{ ticket.user_id }}
-                            {% endif %}
                         </td>
                         <td>
                             {% if ticket.service %}
@@ -348,137 +205,37 @@
                 </tbody>
             </table>
             {% endif %}
-
-            {% if data_tickets_conflic %}
-            <table id="tablaTicketsConflic" class="table table-bordered display text-center" style="width:100%">
-                <thead class="bg-light">
-                    <tr>
-                        <th style="width: 5%">ID</th>
-                        <th style="width: 5%">TN</th>
-                        <th style="width: 5%">Creación</th>
-                        <th style="width: 5%">Titulo</th>
-                        <th style="width: 5%">Responsable</th>
-                        <th style="width: 5%">Servicio</th>
-                        <th style="width: 5%">Cliente</th>
-                        <th style="width: 5%">Estado</th>
-                        <th style="width: 5%">Tipo</th>
-                        <th style="width: 5%">Prioridad</th>
-                        <th style="width: 5%">Cola</th>
-                        <th style="width: 5%">T.Cola</th>
-                        <th style="width: 5%"></th>
-                    </tr>
-                    <tr>
-                        <th style="width: 5%">ID</th>
-                        <th style="width: 5%">TN</th>
-                        <th style="width: 5%">Creación</th>
-                        <th style="width: 5%">Titulo</th>
-                        <th style="width: 5%">Responsable</th>
-                        <th style="width: 5%">Servicio</th>
-                        <th style="width: 5%">Cliente</th>
-                        <th style="width: 5%">Estado</th>
-                        <th style="width: 5%">Tipo</th>
-                        <th style="width: 5%">Prioridad</th>
-                        <th style="width: 5%">Cola</th>
-                        <th style="width: 5%">T.Cola</th>
-                        <th style="width: 5%"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for queue_id in data_tickets_conflic %}
-                    {% set tickets = data_tickets_conflic[queue_id] %}
-                    {% for ticket in tickets %}
-                    <tr>
-                        <td>
-                            {{ ticket.id }}
-                        </td>
-                        <td>
-                            {{ ticket.tn }}
-                        </td>
-                        <td>
-                            {{ ticket.create_time }}
-                        </td>
-                        <td>
-                            {{ ticket.title }}
-                        </td>
-                        <td>
-                            {% if ticket.user %}
-                            {{ ticket.user.full_name }}
-                            {% else %}
-                            {{ ticket.user_id }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if ticket.service %}
-                            {{ ticket.service.name }}
-                            {% else %}
-                            {{ ticket.service_id }}
-                            {% endif %}
-
-                        </td>
-                        <td>
-                            {{ ticket.customer_id }}
-                        </td>
-                        <td>
-                            {% if ticket.ticket_state %}
-                            {{ ticket.ticket_state.name }}
-                            {% else %}
-                            {{ ticket.ticket_state_id }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if ticket.type %}
-                            {{ ticket.type.name }}
-                            {% else %}
-                            {% endif %}
-                        </td>
-                        <td> 
-                            {% if ticket.ticket_priority %}
-                            {{ ticket.ticket_priority.name }}
-                            {% else %}
-                            {{ ticket.ticket_priority_id }}
-                            {% endif %}
-                        </td>
-                        <td> 
-                            {{ ticket.queue_id }}
-                        </td>
-                        <td> 
-                            {% if queue_id == 6 %}
-                                Ticket Administración
-                            {% elif queue_id == 9 %}
-                                Ticket Análisis
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a 
-                                class="btn btn-sm btn-outline-primary" 
-                                target="_blank"
-                                href="https://otrs.adaptivesecurity.cl/otrs/index.pl?Action=AgentTicketZoom;TicketID={{ ticket.id }}">
-                                <i class="fa fa-search"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% endif %}
         </div>
     </div>
     <div class="card-footer">
-        {% if current_year %}
+        {% if data_tickets %}
+        {% if current_month %}
+        <a
+            role="button"
+            class="btn btn-sm btn-secondary"
+            href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}&month={{ current_month }}">
+            Volver
+        </a>
+        {% elif current_year %}
         <a
             role="button"
             class="btn btn-sm btn-secondary"
             href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}&year={{ current_year }}">
             Volver
         </a>
-        {% elif current_customer %}
+        {% else %}
         <a
             role="button"
             class="btn btn-sm btn-secondary"
             href="/analysis_otrs?queue={{ current_queue }}&customer={{ current_customer }}">
             Volver
         </a>
+        {% endif %}
+        {% endif %}
+        {% if message %}
+        <div class="alert alert-primary text-center" role="alert">
+            <h3 class="text-muted">{{ message }}</h3>
+        </div>
         {% endif %}
     </div>
 </div>
@@ -487,20 +244,12 @@
     $(document).ready(function() {
         $("#menuOTRSCustomers").addClass("active");
         $("#menuQueue{{ current_queue }}").addClass("active");
-        $("[id='menuCustomer{{ current_customer }}']").addClass("active");
-        $("#btnCustomerYearTable{{ current_year_table }}").addClass("active");
-        $("#btnCustomerYearService{{ current_year_service }}").addClass("active");
-        $("#btnCustomerYearServiceID{{ current_service }}").addClass("active");
-        $("#btnCustomerYearUser{{ current_year_user }}").addClass("active");
-        $("#btnCustomerYearUserID{{ current_user }}").addClass("active");
-        $("#btnCustomerYearUserNot{{ current_year_user_not }}").addClass("active");
-        $("#btnCustomerYearUserNotID{{ current_user_not }}").addClass("active");
+        $("#menuCustomer{{ current_customer }}").addClass("active");
+        $("#menuCustomerYearTable{{ current_table_year }}").addClass("active");
         $("#menuCustomerYear{{ current_year }}").addClass("active");
-        $("#btnCustomerMonthTable{{ current_month_table }}").addClass("active");
-        $("#btnCustomerMonthService{{ current_month_service }}").addClass("active");
-        $("#btnCustomerYearMonthServiceID{{ current_service_month }}").addClass("active");
-        $("#btnCustomerYearMonthUser{{ current_month_user }}").addClass("active");
-        $("#btnCustomerYearMonthUserNot{{ current_month_user_not }}").addClass("active");
+        $("#menuCustomerYearMonthTable{{ current_table_month }}").addClass("active");
+        $("#menuCustomerYearMonth{{ current_month }}").addClass("active");
+        $("#menuCustomerYearMonthDayTable{{ current_table_day }}").addClass("active");
         
         $("#tablaTicketsCustomer thead tr:eq(1) th").each(function() {
             let title = $(this).text();
@@ -521,31 +270,6 @@
 
         $("#tablaTicketsCustomer thead").on("keyup", ".column-search", function () {
             table
-            .column( $(this).parent().index() )
-            .search( this.value )
-            .draw();
-        });
-
-
-        $("#tablaTicketsConflic thead tr:eq(1) th").each(function() {
-            let title = $(this).text();
-            if (title != "") {
-                $(this).html("<input type='text' class='form-control form-control-sm text-center column-search' />");
-            }
-        });
-        
-        var tableConflic = $("#tablaTicketsConflic").DataTable({
-            orderCellsTop: true,
-            ordering: true,
-            order: [],
-            dom: 'Bfrtip',
-            buttons: [
-                'csv', 'excel', 'pdf'
-            ]
-        });
-
-        $("#tablaTicketsConflic thead").on("keyup", ".column-search", function () {
-            tableConflic
             .column( $(this).parent().index() )
             .search( this.value )
             .draw();
