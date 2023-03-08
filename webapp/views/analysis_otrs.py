@@ -21,13 +21,14 @@ def index():
     }
 
     if request.method == "GET":
+        refresh = request.args.get("refresh", type=int)
         queue = request.args.get("queue", type=str)
         customer = request.args.get("customer", type=str)
-        year = request.args.get("year", type=int)
+        year = request.args.get("year", type=str)
         table_month = request.args.get("table_month", type=str)
-        table_year = request.args.get("table_year", type=int)
+        table_year = request.args.get("table_year", type=str)
         month = request.args.get("month", type=str)
-        table_day = request.args.get("table_day", type=int)
+        table_day = request.args.get("table_day", type=str)
         
 
         if queue:
@@ -41,10 +42,12 @@ def index():
                 time = "month"
                 try:
                     data_tickets_conflic = get_otrs.get_tickets_conflic(
-                        time = time
+                        time = time,
+                        refresh = refresh
                     )
                 except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
+                current_date = data_tickets_conflic["current_date"]
 
                 return render_template(
                     "analysis_otrs/customers/index_table.html",
@@ -54,30 +57,34 @@ def index():
                     queues = queues,
                     current_queue = queue,
                     data_tickets_conflic = data_tickets_conflic,
-                    message = "OK"
+                    current_date = current_date
                 )
             
             try:
                 data_grah_general = get_otrs.get_count_tickets_years(
                     queue_id = queue_id,
-                    customers = True
+                    customers = True,
+                    refresh = refresh
                 )
 
             except Exception as e:
                 current_app.logger.error(f"{str(request.url)}: {e}")
             
             customers_actives = data_grah_general["list_total_tickets"]
+            current_date = data_grah_general["current_date"]
             
             if customer:
                 try:
                     data = get_otrs.get_tickets_filtred(
                         customer_id = customer,
                         queue_id = queue_id,
-                        customers = True
+                        customers = True,
+                        refresh = refresh
                     )
                 except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
                 
+                current_date = data["current_date"]
                 data_grah_general = data["data_grah_general"]
                 data_total_table_year = data["data_total_table"]
                 data_grah_services = data["data_grah_services"]
@@ -91,11 +98,13 @@ def index():
                             customer_id = customer,
                             queue_id = queue_id,
                             year = year,
-                            customers = True
+                            customers = True,
+                            refresh = refresh
                         )
                     except Exception as e:
                         current_app.logger.error(f"{str(request.url)}: {e}")
                     
+                    current_date = data["current_date"]
                     data_grah_general = data["data_grah_general"]
                     data_total_table_month = data["data_total_table"]
                     data_grah_services = data["data_grah_services"]
@@ -110,11 +119,13 @@ def index():
                                 queue_id = queue_id,
                                 year = year,
                                 month = month,
-                                customers = True
+                                customers = True,
+                                refresh = refresh
                             )
                         except Exception as e:
                             current_app.logger.error(f"{str(request.url)}: {e}")
                         
+                        current_date = data["current_date"]
                         data_grah_general = data["data_grah_general"]
                         data_total_table_day = data["data_total_table"]
                         data_grah_services = data["data_grah_services"]
@@ -131,6 +142,7 @@ def index():
                                 queues = queues,
                                 current_queue = queue,
                                 customers_actives=customers_actives,
+                                current_date = current_date,
                                 current_customer=customer,
                                 current_year = year,
                                 current_month = month,
@@ -147,6 +159,7 @@ def index():
                             queues = queues,
                             current_queue = queue,
                             customers_actives = customers_actives,
+                            current_date = current_date,
                             current_customer = customer,
                             current_year = year,
                             current_month = month,
@@ -170,6 +183,7 @@ def index():
                             queues = queues,
                             current_queue = queue,
                             customers_actives = customers_actives,
+                            current_date = current_date,
                             current_customer = customer,
                             current_year = year,
                             current_table_month = table_month,
@@ -185,6 +199,7 @@ def index():
                         queues = queues,
                         current_queue = queue,
                         customers_actives = customers_actives,
+                        current_date = current_date,
                         current_customer = customer,
                         current_year = year,
                         data_total_year = data_total_table_year,
@@ -206,6 +221,7 @@ def index():
                         queues = queues,
                         current_queue = queue,
                         customers_actives = customers_actives,
+                        current_date = current_date,
                         current_customer = customer,
                         current_table_year = table_year,
                         data_total_year = data_total_table_year,
@@ -219,6 +235,7 @@ def index():
                     queues = queues,
                     current_queue = queue,
                     customers_actives = customers_actives,
+                    current_date = current_date,
                     current_customer = customer,
                     data_total_year = data_total_table_year,
                     data_total_table_year = data_total_table_year,
@@ -235,6 +252,7 @@ def index():
                 queues = queues,
                 current_queue = queue,
                 customers_actives = customers_actives,
+                current_date = current_date,
                 data_grah_general = data_grah_general
             )
         
@@ -256,6 +274,7 @@ def attend():
     }
 
     if request.method == "GET":
+        refresh = request.args.get("refresh", type=int)
         queue = request.args.get("queue", type=str)
         user = request.args.get("user", type=int)
         year = request.args.get("year", type=int)
@@ -274,24 +293,28 @@ def attend():
             try:
                 data_grah_general = get_otrs.get_count_tickets_years(
                     queue_id = queue_id,
-                    users = True
+                    users = True,
+                    refresh = refresh
                 )
 
             except Exception as e:
                 current_app.logger.error(f"{str(request.url)}: {e}")
             
             users_actives = data_grah_general["list_total_tickets"]
+            current_date = data_grah_general["current_date"]
 
             if user:
                 try:
                     data = get_otrs.get_tickets_filtred(
                         user_id = user,
                         queue_id = queue_id,
-                        users = True
+                        users = True,
+                        refresh = refresh
                     )
                 except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
                 
+                current_date = data["current_date"]
                 data_grah_general = data["data_grah_general"]
                 data_total_table_year = data["data_total_table"]
                 data_grah_services = data["data_grah_services"]
@@ -305,11 +328,13 @@ def attend():
                             user_id = user,
                             queue_id = queue_id,
                             year = year,
-                            users = True
+                            users = True,
+                            refresh = refresh
                         )
                     except Exception as e:
                         current_app.logger.error(f"{str(request.url)}: {e}")
                     
+                    current_date = data["current_date"]
                     data_grah_general = data["data_grah_general"]
                     data_total_table_month = data["data_total_table"]
                     data_grah_services = data["data_grah_services"]
@@ -324,11 +349,13 @@ def attend():
                                 queue_id = queue_id,
                                 year = year,
                                 month = month,
-                                users = True
+                                users = True,
+                                refresh = refresh
                             )
                         except Exception as e:
                             current_app.logger.error(f"{str(request.url)}: {e}")
                         
+                        current_date = data["current_date"]
                         data_grah_general = data["data_grah_general"]
                         data_total_table_day = data["data_total_table"]
                         data_grah_services = data["data_grah_services"]
@@ -345,6 +372,7 @@ def attend():
                                 queues = queues,
                                 current_queue = queue,
                                 users_actives = users_actives,
+                                current_date = current_date,
                                 current_user = user,
                                 current_year = year,
                                 current_month = month,
@@ -361,6 +389,7 @@ def attend():
                             queues=queues,
                             current_queue = queue,
                             users_actives = users_actives,
+                            current_date = current_date,
                             current_user = user,
                             current_year = year,
                             current_month = month,
@@ -383,6 +412,7 @@ def attend():
                             queues = queues,
                             current_queue = queue,
                             users_actives = users_actives,
+                            current_date = current_date,
                             current_user = user,
                             current_year = year,
                             current_table_month = table_month,
@@ -398,6 +428,7 @@ def attend():
                         queues = queues,
                         current_queue = queue,
                         users_actives = users_actives,
+                        current_date = current_date,
                         current_user = user,
                         current_year = year,
                         data_total_year = data_total_table_year,
@@ -419,6 +450,7 @@ def attend():
                         queues = queues,
                         current_queue = queue,
                         users_actives = users_actives,
+                        current_date = current_date,
                         current_user = user,
                         current_table_year = table_year,
                         data_total_year = data_total_table_year,
@@ -432,6 +464,7 @@ def attend():
                     queues = queues,
                     current_queue = queue,
                     users_actives = users_actives,
+                    current_date = current_date,
                     current_user = user,
                     data_total_year = data_total_table_year,
                     data_total_table_year = data_total_table_year,
@@ -448,6 +481,7 @@ def attend():
                 queues = queues,
                 current_queue = queue,
                 users_actives = users_actives,
+                current_date = current_date,
                 data_grah_general = data_grah_general
             )
         

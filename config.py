@@ -3,6 +3,7 @@ class Config:
     NAME = "Análisis de datos"
     URL = ""
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = "mariadb+mariadbconnector://datastudio:GYR4nka2nqt*rkv.xpg@172.16.33.8/otrs?charset=utf8mb4"
     SECRET_KEY = "1!-jduZa9-9@d89-6"
 
 class DevelopmentConfig(Config):

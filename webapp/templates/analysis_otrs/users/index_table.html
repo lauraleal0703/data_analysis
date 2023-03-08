@@ -5,6 +5,23 @@
 
 <div class="card">
     <div class="card-header">
+        {% if current_date %}
+        <div class="row">
+            <div class="col text-center">
+                <div class="alert alert-success">
+                    Datos actualizados a la fecha: {{ current_date }}
+                </div>
+            </div>
+
+            <div class="col-2">
+                <a 
+                    href="{{ request.url }}&refresh=1" 
+                    class="btn btn-success">
+                    Actualizar Datos
+                </a>
+            </div>
+        </div>
+        {% endif %}
         {% if page.title %}
         <div class="p-3 bg-light rounded text-center">
             <h3 class="text-muted">{{ page.title }}</h3>
@@ -155,38 +172,22 @@
                             {{ ticket.title }}
                         </td>
                         <td>
-                            {{ ticket.user.full_name }}
+                            {{ ticket["user.full_name"] }}
                         </td>
                         <td>
-                            {% if ticket.service %}
-                            {{ ticket.service.name }}
-                            {% else %}
-                            {{ ticket.service_id }}
-                            {% endif %}
-
+                            {{ ticket["service.name"] }}
                         </td>
                         <td>
                             {{ ticket.customer_id }}
                         </td>
                         <td>
-                            {% if ticket.ticket_state %}
-                            {{ ticket.ticket_state.name }}
-                            {% else %}
-                            {{ ticket.ticket_state_id }}
-                            {% endif %}
+                            {{ ticket["ticket_state.name"] }}
                         </td>
                         <td>
-                            {% if ticket.type %}
-                            {{ ticket.type.name }}
-                            {% else %}
-                            {% endif %}
+                            {{ ticket["type.name"] }}
                         </td>
                         <td> 
-                            {% if ticket.ticket_priority %}
-                            {{ ticket.ticket_priority.name }}
-                            {% else %}
-                            {{ ticket.ticket_priority_id }}
-                            {% endif %}
+                            {{ ticket["ticket_priority.name"] }}
                         </td>
                         <td> 
                             {{ ticket.queue_id }}
