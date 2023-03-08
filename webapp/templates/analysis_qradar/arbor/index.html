@@ -54,18 +54,102 @@
             
 
             <!-- VISTA DE EVENTOS BLOQUEADOS -->
-            {% if data_grah_events %}
+            {% if data_grah_torta %}
             <div>
                 <figure class="highcharts-figure">
                     <div id="container_torta"></div>
                 </figure>
             </div>
-            <div>
-                <figure class="highcharts-figure">
-                    <div id="container_torta_a_barras"></div>
-                </figure>
+           
+
+            <div class="accordion" id="accordionArborOne">
+                <div class="p-3 mt-4 mb-4 rounded text-center">
+                    <h5 class="text-muted">Ver detalle</h5>
+                </div>
+                <div id="headingOne">
+                    <p class="text-center">
+                        <button 
+                            class="btn btn-primary"
+                            type="button" 
+                            title="Ver el detalle en gráfica de torta porcentual"
+                            data-toggle="collapse" 
+                            data-target="#collapseOne" 
+                            aria-expanded="false" 
+                            aria-controls="#collapseOne">
+                            Gráfica de torta porcentual
+                        </button>
+                    </p>
+                </div>
+                <div 
+                    id="collapseOne" 
+                    class="collapse" 
+                    aria-labelledby="headingOne" 
+                    data-parent="#accordionArborOne">
+                    {% if data_grah_torta_percentage %}
+                    <div>
+                        <figure class="highcharts-figure">
+                            <div id="container_torta_percentage"></div>
+                        </figure>
+                    </div>
+                    {% endif %}
+                </div>
+                <div id="headingArborOne">
+                    <p class="text-center">
+                        <button 
+                            class="btn btn-primary"
+                            type="button" 
+                            title="Ver el detalle en gráfica de barras"
+                            data-toggle="collapse" 
+                            data-target="#collapseArborOne" 
+                            aria-expanded="false" 
+                            aria-controls="#collapseArborOne">
+                            Gráfica de barras
+                        </button>
+                    </p>
+                </div>
+                <div 
+                    id="collapseArborOne" 
+                    class="collapse" 
+                    aria-labelledby="headingArborOne" 
+                    data-parent="#accordionArborOne">
+                    {% if data_grah_barras %}
+                    <div>
+                        <figure class="highcharts-figure">
+                            <div id="container_torta_a_barras"></div>
+                        </figure>
+                    </div>
+                    {% endif %}
+                </div>
+                <div id="headingArborTwo">
+                    <p class="text-center">
+                        <button 
+                            class="btn btn-primary"
+                            type="button" 
+                            title="Ver el detalle en gráfica de barras porcentual"
+                            data-toggle="collapse" 
+                            data-target="#collapseArborTwo" 
+                            aria-expanded="false" 
+                            aria-controls="#collapseArborTwo">
+                            Gráfica de barras porcentual
+                        </button>
+                    </p>
+                </div>
+                <div 
+                    id="collapseArborTwo" 
+                    class="collapse" 
+                    aria-labelledby="headingArborTwo" 
+                    data-parent="#accordionArborOne">
+                    {% if data_grah_barras_percentage %}
+                    <div>
+                        <figure class="highcharts-figure">
+                            <div id="container_torta_a_barras_percentage"></div>
+                        </figure>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
             {% endif %}
+
 
             {% if data_grah_events_paises %}
             <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
@@ -233,7 +317,7 @@
 </script>
 {% endif %}
 
-{% if data_grah_events %}
+{% if data_grah_torta %}
 <script type="text/javascript">
     Highcharts.chart('container_torta', {
         chart: {
@@ -244,12 +328,12 @@
         },
         {% if current_pos == 4 %}
         title: {
-            text: 'Se han recibido en el mes de {{ data_grah_events.name_date}} del año {{ data_grah_events.year }} un total de {{ data_grah_events.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
+            text: 'Se han recibido en el mes de {{ data_grah_torta.name_date }} del año {{ data_grah_torta.year }} un total de {{ data_grah_torta.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
             align: 'center'
         },
         {% else %}
         title: {
-            text: 'Se recibieron en el mes de {{ data_grah_events.name_date}} del año {{ data_grah_events.year }} un total de {{ data_grah_events.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
+            text: 'Se recibieron en el mes de {{ data_grah_torta.name_date }} del año {{ data_grah_torta.year }} un total de {{ data_grah_torta.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
             align: 'center'
         },
         {% endif %}
@@ -273,21 +357,76 @@
                 }
             }
         },
-        series: {{ data_grah_events.data_grah  | tojson }}
+        series: {{ data_grah_torta.data_grah  | tojson }}
     });
 </script>
-{% set data_grah = data_grah_events.data_grah_barras %}
+{% endif %}
+
+{% if data_grah_torta_percentage %}
+<script type="text/javascript">
+    Highcharts.chart('container_torta_percentage', {
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        {% if current_pos == 4 %}
+        title: {
+            text: 'Se han recibido en el mes de {{ data_grah_torta_percentage.name_date }} del año {{ data_grah_torta_percentage.year }} un total de {{ data_grah_torta.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: 'Se recibieron en el mes de {{ data_grah_torta_percentage.name_date }} del año {{ data_grah_torta_percentage.year }} un total de {{ data_grah_torta.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
+            align: 'center'
+        },
+        {% endif %}
+        accessibility: {
+            point: {
+            valueSuffix: ''
+            }
+        },
+        tooltip: {
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.3f}%</b></td></tr>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+            dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.y:.3f}%'
+                }
+            }
+        },
+        series: {{ data_grah_torta_percentage.data_grah  | tojson }}
+    });
+</script>
+{% endif %}
+
+{% if data_grah_barras %}
 <script type="text/javascript">
     Highcharts.chart('container_torta_a_barras', {
         chart: {
             type: 'column'
         },
+        {% if current_pos == 4 %}
         title: {
-            text: 'Se recibieron un total de {{ data_grah.total }} eventos.',
+            text: 'Se han recibido en el mes de {{ data_grah_barras.name_date }} del año {{ data_grah_barras.year }} un total de {{ data_grah_torta.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
             align: 'center'
         },
+        {% else %}
+        title: {
+            text: 'Se recibieron en el mes de {{ data_grah_barras.name_date }} del año {{ data_grah_barras.year }} un total de {{ data_grah_torta.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
+            align: 'center'
+        },
+        {% endif %}
         xAxis: {
-            categories: {{ data_grah.data_grah_x | safe }},
+            categories: {{ data_grah_barras.data_grah_x | safe }},
             crosshair: true
         },
         yAxis: {
@@ -306,11 +445,65 @@
         },
         plotOptions: {
             column: {
-            pointPadding: 0.2,
-            borderWidth: 0
+                pointPadding: 0.2,
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.y}'
+                }
             }
         },
-        series: {{ data_grah.data_grah_y | safe }}
+        series: {{ data_grah_barras.data_grah_y | safe }}
+    });
+</script>
+{% endif %}
+
+{% if data_grah_barras_percentage %}
+<script type="text/javascript">
+    Highcharts.chart('container_torta_a_barras_percentage', {
+        chart: {
+            type: 'column'
+        },
+        {% if current_pos == 4 %}
+        title: {
+            text: 'Se han recibido en el mes de {{ data_grah_barras_percentage.name_date }} del año {{ data_grah_barras_percentage.year }} un total de {{ data_grah_torta.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
+            align: 'center'
+        },
+        {% else %}
+        title: {
+            text: 'Se recibieron en el mes de {{ data_grah_barras_percentage.name_date }} del año {{ data_grah_barras_percentage.year }} un total de {{ data_grah_torta.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
+            align: 'center'
+        },
+        {% endif %}
+        xAxis: {
+            categories: {{ data_grah_barras_percentage.data_grah_x | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Porcentaje número de eventos'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.3f}%</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+                pointPadding: 0.2,
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y:.3f}%'
+                }
+            }
+        },
+        series: {{ data_grah_barras_percentage.data_grah_y | safe }}
     });
 </script>
 {% endif %}

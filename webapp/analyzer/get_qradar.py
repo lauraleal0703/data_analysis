@@ -633,13 +633,14 @@ def create_data_table(dict_base: dict) -> dict:
                     for pos_origen, ip_origen_ in enumerate(ips_origen_desc):
                         ip_origen_temp = str(ip_origen_[0])
                         # risk = qradar.curl_score_ip_get(ip=ip_origen_temp)
-                        risk = 1
-                        if risk < int(4):
-                            riesgo = f"Desconocido/Bajo({risk})"
-                        if risk >= int(4) and risk < int(7):
-                            riesgo = f"Desconocido/Medio({risk})"
-                        if risk >= int(7):
-                            riesgo = f"Desconocido/Alto({risk})"
+                        riesgo = "Por calcular"
+                        # risk = 1
+                        # if risk < int(4):
+                        #     riesgo = f"Desconocido/Bajo({risk})"
+                        # if risk >= int(4) and risk < int(7):
+                        #     riesgo = f"Desconocido/Medio({risk})"
+                        # if risk >= int(7):
+                        #     riesgo = f"Desconocido/Alto({risk})"
                         data_ = dict_base[pos_final][clas_]["ips_destino"][top10_ip]["ips"][ip]["ips_origen"][ip_origen_temp]
                         dict_info_final[pos_final][clas_][top10_ip][ip]["ips_origen"][pos_origen+1] = {}
                         dict_info_final[pos_final][clas_][top10_ip][ip]["ips_origen"][pos_origen+1][ip_origen_temp] = {
@@ -648,172 +649,6 @@ def create_data_table(dict_base: dict) -> dict:
                         }
     # print(dict_info_final.keys())
     return dict_info_final
-
-
-def total_firepower_mala_con_el_guardado(
-    customer: str,
-    date: str,
-    aql_name: str = "EVERTEC_LLEAL_Test2"
-) -> dict:
-    """Datos para la grafica de 
-    """
-    def_name = f"total_firepower"
-    logging.debug(def_name)
-    
-    calendar = get_otrs.calendar_spanish()
-    calendar = calendar["calendar_num"]
-    date_ = datetime.strptime(date, "%Y-%m-%d")
-    year = date_.year
-    name_date = date_.month
-    name_date = calendar[name_date]
-
-    path_data_qradar: Path = Path(__file__).parent/"data_qradar"
-    if not path_data_qradar.exists():
-        path_data_qradar.mkdir()
-
-    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
-    if not current_path.exists():
-        logging.info(f"Creando JSON {current_path}")
-
-        data = get_json(
-            def_name = def_name,
-            customer = customer,
-            date = date,
-            aql_name = aql_name
-        )
-
-        total = 0
-        dict_clasifications = {}
-        dict_clasifications_ip = {}
-        for event in data["events"]:
-            clasification = event["Classification (personalizado)"]
-            recuento_event =  int(event["Recuento de sucesos"])
-            if clasification not in dict_clasifications:
-                dict_clasifications[clasification] = recuento_event
-            else: 
-                dict_clasifications[clasification] += recuento_event
-            
-            ip_destino = event['IP de destino']
-            ip_origen = event['IP de origen']
-            if clasification not in dict_clasifications_ip:
-                dict_clasifications_ip[clasification] = {"ips_destino": {}}
-            
-            if ip_destino not in dict_clasifications_ip[clasification]["ips_destino"]:
-                dict_clasifications_ip[clasification]["ips_destino"][ip_destino] = {
-                    "ips_origen": {ip_origen: recuento_event},
-                    "total": recuento_event
-                }  
-            else:
-                dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["total"] += recuento_event
-            
-            if ip_origen not in dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["ips_origen"]:
-                dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["ips_origen"][ip_origen] = recuento_event
-            else:
-                dict_clasifications_ip[clasification]["ips_destino"][ip_destino]["ips_origen"][ip_origen] += recuento_event
-            
-            total += recuento_event
-        dict_clasifications["Total"] = total
-
-        dict_clasifications_desc = sorted(
-            dict_clasifications.items(),
-            key=lambda x:x[1], 
-            reverse=True
-        )
-
-        data_grah_x = []
-        data_grah_y_temp = []
-        for value in dict_clasifications_desc[1:]:
-            data_grah_x.append(value[0])
-            data_grah_y_temp.append(value[1])
-
-        data_grah_y = [{"name": "Eventos", "data": data_grah_y_temp}]
-        total = '{:,}'.format(total).replace(',','.')
-        
-        data_grah = {
-            "data_grah_x": data_grah_x,
-            "data_grah_y": data_grah_y,
-            "total": total
-        }
-
-        clasificationes_top = []
-        for pos, clasification_ in enumerate(dict_clasifications_desc):
-            if pos == 0:
-                continue
-            clasificationes_top.append(clasification_[0])
-            
-        logging.info(f"clasificationes_top {len(clasificationes_top)}")
-        ips_evertec = qradar.ips_evertec()
-        dict_clasification_top3_top_10 = {}
-        dict_clasification_all_top = {}
-        for position_top3, clasification_top in enumerate(clasificationes_top):
-            position_top3 = str(position_top3+1)
-            ips_destino = dict_clasifications_ip[clasification_top]["ips_destino"]
-            ips_destino_desc = sorted(
-                ips_destino.items(),
-                key=lambda x:x[1]["total"], 
-                reverse=True
-            )
-            
-            for position_top10, ip in enumerate(ips_destino_desc):
-                position_top10 = str(position_top10+1)
-                create_dict_top3_top_10(
-                    clasification_top = clasification_top,
-                    ips_evertec = ips_evertec,
-                    dict_base = dict_clasification_all_top,
-                    ip = ip,
-                    position_top3 = position_top3,
-                    position_top10 = position_top10
-                )
-                 
-                if position_top3 > "3":
-                    continue
-                if position_top10 > "9":
-                    continue
-               
-                create_dict_top3_top_10(
-                    clasification_top = clasification_top,
-                    ips_evertec = ips_evertec,
-                    dict_base = dict_clasification_top3_top_10,
-                    ip = ip,
-                    position_top3 = position_top3,
-                    position_top10 = position_top10
-                )
-                    
-        table_top = create_data_table(
-            dict_base = dict_clasification_top3_top_10
-
-        )
-
-        table_all = create_data_table(
-            dict_base = dict_clasification_all_top
-
-        )
-        print(data_grah.keys())
-        print(table_top.keys())
-        print(table_all.keys())
-
-        data = {
-            "data_grah": data_grah,
-            "table_top": table_top,
-            "table_all": table_all,
-            "name_date": name_date,
-            "year": year
-        } 
-        print("--------------->")
-        print(data.keys())
-        current_path.touch()
-        f = current_path.open("wb")
-        f.write(orjson.dumps(data, option = orjson.OPT_STRICT_INTEGER))
-        f.close()
-    else:
-        logging.info(f"Abriendo JSON {current_path}")
-        f = open(str(current_path), "rb")
-        data = orjson.loads(f.read())
-
-    return data
-# for date in dates:
-#     print("date", date)
-#     pprint(total_firepower(customer = "EVERTEC", date = date))
 
 
 def total_firepower(
@@ -880,16 +715,25 @@ def total_firepower(
 
     data_grah_x = []
     data_grah_y_temp = []
+    data_grah_y_temp_percentage = []
     for value in dict_clasifications_desc[1:]:
         data_grah_x.append(value[0])
         data_grah_y_temp.append(value[1])
+        data_grah_y_temp_percentage.append((value[1]*100)/dict_clasifications["Total"])
 
     data_grah_y = [{"name": "Eventos", "data": data_grah_y_temp}]
+    data_grah_y_percentage = [{"name": "Eventos", "data": data_grah_y_temp_percentage}]
     total = '{:,}'.format(total).replace(',','.')
     
     data_grah = {
         "data_grah_x": data_grah_x,
         "data_grah_y": data_grah_y,
+        "total": total
+    }
+
+    data_grah_percentage = {
+        "data_grah_x": data_grah_x,
+        "data_grah_y": data_grah_y_percentage,
         "total": total
     }
 
@@ -939,23 +783,20 @@ def total_firepower(
                     
         table_top = create_data_table(
             dict_base = dict_clasification_top3_top_10
-
         )
 
         table_all = create_data_table(
             dict_base = dict_clasification_all_top
+        )  
 
-        )
-     
-    data = {
+    return {
+        "data_grah_percentage": data_grah_percentage,
         "data_grah": data_grah,
         "table_top": table_top,
         "table_all": table_all,
         "name_date": name_date,
         "year": year
     } 
-        
-    return data
 # for date in dates:
 #     print("date", date)
 #     pprint(total_firepower(customer = "EVERTEC", date = date))
@@ -1001,96 +842,116 @@ def blocked_events(
     name_date = date_.month
     name_date = calendar[name_date]
 
-    path_data_qradar: Path = Path(__file__).parent/"data_qradar"
-    if not path_data_qradar.exists():
-        path_data_qradar.mkdir()
-    
-    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
-    if not current_path.exists():
-        logging.info(f"Creando JSON {current_path}")
-        data = get_json(
-            def_name = def_name,
-            customer = customer,
-            date = date,
-            aql_name = aql_name
-        )
+    data = get_json(
+        def_name = def_name,
+        customer = customer,
+        date = date,
+        aql_name = aql_name
+    )
 
-        data_grah = [{
+    data_grah_torta = {
+        "data_grah": [{
             "name": "Brands",
             "colorByPoint": True,
             "data": []
-        }]
-        translator = Translator()
-        total = 0
-        dict_events_desc = {}
-        for event in data["events"]:
-            name_event = event["Nombre de suceso"]
-            name_event = translator.translate(name_event, dest="es")
-            name_event = name_event.text
-            recuento_event =  event["Recuento de sucesos (Suma)"]
-            total += int(recuento_event)
-            dict_events_desc[name_event] = recuento_event
-        
-        dict_events_desc = sorted(
-            dict_events_desc.items(),
-            key=lambda x:x[1], 
-            reverse=True
-        )
-
-        data_grah_x = []
-        data_grah_y_temp = []
-        total_ = 0
-        for clasifi in dict_events_desc:
-            data_grah_x.append(clasifi[0])
-            data_grah_y_temp.append(int(clasifi[1]))
-            total_ += int(clasifi[1])
+        }],
+        "total": 0,
+        "name_date": name_date,
+        "year": year
+    }
+    data_grah_torta_percentage = {
+        "data_grah": [{
+            "name": "Brands",
+            "colorByPoint": True,
+            "data": []
+        }],
+        "total": 0,
+        "name_date": name_date,
+        "year": year
+    }
+    translator = Translator()
+    total = 0
+    dict_events = {}
+    for event in data["events"]:
+        name_event = event["Nombre de suceso"]
+        name_event = translator.translate(name_event, dest="es")
+        name_event = name_event.text
+        recuento_event =  event["Recuento de sucesos (Suma)"]
+        total += int(recuento_event)
+        dict_events[name_event] = recuento_event
     
-        data_grah_y= [{"name": "Eventos", "data": data_grah_y_temp}]
-        total_ = '{:,}'.format(total_).replace(',','.')
-        data_grah_barras = {
-            "data_grah_x": data_grah_x,
-            "data_grah_y": data_grah_y,
-            "total": total_
-        }
+    dict_events["Total"] = total
 
+    dict_events_desc = sorted(
+        dict_events.items(),
+        key=lambda x:x[1], 
+        reverse=True
+    )
 
-        for pos, event_ in enumerate(dict_events_desc):
-            if pos == 0:
-                data_grah_temp = {
-                    "name": event_[0],
-                    "y": event_[1],
-                    "sliced": True,
-                    "selected": True
-                }
-            else:
-                data_grah_temp = {
-                    "name": event_[0],
-                    "y": event_[1]
-                }
-            
-            data_grah[0]["data"].append(data_grah_temp)
+    data_grah_x = []
+    data_grah_y_temp = []
+    data_grah_y_temp_percentage = []
+    for clasifi in dict_events_desc[1:]:
+        data_grah_x.append(clasifi[0])
+        data_grah_y_temp.append(int(clasifi[1]))
+        data_grah_y_temp_percentage.append(int(clasifi[1]*100)/dict_events["Total"])
+
+    data_grah_y = [{"name": "Eventos", "data": data_grah_y_temp}]
+    data_grah_y_percentage =  [{"name": "Eventos", "data": data_grah_y_temp_percentage}]
+    
+    total = '{:,}'.format(total).replace(',','.')
+
+    data_grah_barras = {
+        "data_grah_x": data_grah_x,
+        "data_grah_y": data_grah_y,
+        "total": total,
+        "name_date": name_date,
+        "year": year
+    }
+
+    data_grah_barras_percentage = {
+        "data_grah_x": data_grah_x,
+        "data_grah_y": data_grah_y_percentage,
+        "total": total,
+        "name_date": name_date,
+        "year": year
+    }
+
+    for pos, event_ in enumerate(dict_events_desc[1:]):
+        if pos == 0:
+            data_grah_temp = {
+                "name": event_[0],
+                "y": event_[1],
+                "sliced": True,
+                "selected": True
+            }
+            data_grah_temp_percentage = {
+                "name": event_[0],
+                "y": (event_[1]*100)/dict_events["Total"],
+                "sliced": True,
+                "selected": True
+            }
+        else:
+            data_grah_temp = {
+                "name": event_[0],
+                "y": event_[1]
+            }
+            data_grah_temp_percentage = {
+                "name": event_[0],
+                "y": (event_[1]*100)/dict_events["Total"]
+            }
         
-        total = '{:,}'.format(total).replace(',','.')
-        
-        data = {
-            "year": year,
-            "name_date": name_date,
-            "data_grah": data_grah,
-            "data_grah_barras": data_grah_barras,
-            "total": total
-        }
-
-        current_path.touch()
-        f = current_path.open("wb")
-        f.write(orjson.dumps(data))
-        f.close()
-    else:
-        logging.info(f"Abriendo JSON {current_path}")
-        f = open(str(current_path), "rb")
-        data = orjson.loads(f.read())
-
-    logging.debug(def_name)
-    return data
+        data_grah_torta["data_grah"][0]["data"].append(data_grah_temp)
+        data_grah_torta["total"] = total
+        data_grah_torta_percentage["data_grah"][0]["data"].append(data_grah_temp_percentage)
+        data_grah_torta_percentage["total"] = total
+    
+    return  {
+        "data_grah_torta": data_grah_torta,
+        "data_grah_torta_percentage": data_grah_torta_percentage,
+        "data_grah_barras": data_grah_barras,
+        "data_grah_barras_percentage": data_grah_barras_percentage
+    }
 # for date in dates:
 #     print("date", date)
 #     pprint(blocked_events("AAN", date))

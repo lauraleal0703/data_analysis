@@ -50,187 +50,232 @@
         </div>
         {% endif %}
 
-        {% if data_table_top_1 %}
-        <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-            <h4 class="text-muted">Detalle del TOP 3</h4>
+        {% if data_grah_percentage %}
+        <div>
+            <figure class="highcharts-figure">
+                <div id="container_1_percentage"></div>
+            </figure>
         </div>
-        {% set tables = [data_table_top_1, data_table_top_2, data_table_top_3] %}
-        {% for table in tables %}
-        {% set position = loop.index %}
-        {% for clas in table %}
-        <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-            <h5 class="text-muted">TOP {{ position }}: {{ clas }}  </h5>
-        </div>
-        <div class="table-responsive">
-            <table id="table_top_{{ position }}" class="table table-bordered display text-center" style="width:100%">
-                <thead class="bg-light">
-                    <tr>
-                        <th style="width: 5%">TOP/Destino</th>
-                        <th style="width: 5%">Destino/Origen</th>
-                        <th style="width: 5%">TOP/Origen</th>
-                        <th style="width: 5%">IP</th>
-                        <th style="width: 5%">Cantidad de eventos</th>
-                        <th style="width: 5%">Identificación/Riesgo</th>
-                    </tr>
-                    <tr>
-                        <th style="width: 5%">TOP/Destino</th>
-                        <th style="width: 5%">Destino/Origen</th>
-                        <th style="width: 5%">TOP/Origen</th>
-                        <th style="width: 5%">IP</th>
-                        <th style="width: 5%">Cantidad de eventos</th>
-                        <th style="width: 5%">Identificación/Riesgo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for top in table[clas] %}
-                    {% set interface = table[clas][top] %}
-                    {% for ip_destino, idata in interface.items() %}
-                    <tr>
-                        <td class="align-middle">
-                            <strong>{{ top }}</strong> 
-                        </td>
-                        <td class="align-middle">
-                            <strong>Destino</strong>
-                        </td>
-                        <td class="align-middle">
-                           
-                        </td>
-                        <td class="align-middle">
-                            <strong>{{ ip_destino }}</strong>
-                        </td>
-                        <td class="align-middle">
-                            <strong>{{ interface[ip_destino]["Cantidad de eventos"] }}</strong>
-                         </td>
-                         <td class="align-middle">
-                            <strong>{{ interface[ip_destino]["Identificación/Riesgo"] }}</strong>
-                         </td>
-                    </tr>
-                        {% for top10 in idata.ips_origen %}
-                        {% set ip_origen = idata.ips_origen %}
-                        {% for ip in ip_origen[top10] %}
-                    <tr>
-                        <td class="align-middle">
-                           
-                        </td> 
-                        <td class="align-middle">
-                           Origen
-                        </td>
-                        <td class="align-middle">
-                            {{ top10 }}
-                        </td> 
-                        <td class="align-middle">
-                            Origen: {{ ip }}
-                        </td>
-                        <td class="align-middle">
-                        {{ ip_origen[top10][ip]["Cantidad de eventos"] }}
-                        </td>
-                        <td class="align-middle">
-                        {{ ip_origen[top10][ip]["Identificación/Riesgo"] }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% endfor %}
-                    {% endfor %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endfor %}
-        {% endfor %}
         {% endif %}
-    
 
-        {% if data_table_1 %}
-        <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-            <h4 class="text-muted">Detalle de todo </h4>
+        {% if data_table_top_1 %}
+        <div class="accordion" id="accordionOne">
+            <div class="p-3 mt-4 mb-4 rounded text-center">
+                <h5 class="text-muted">Detalle del Top 10 del Top 3</h5>
+            </div>
+            {% set tables = [data_table_top_1, data_table_top_2, data_table_top_3] %}
+            {% for table in tables %}
+            {% set position = loop.index %}
+            {% for clas in table %}
+            <div id="heading{{ position }}">
+                <p class="text-center">
+                    <button 
+                        class="btn btn-primary"
+                        type="button" 
+                        title="Ver el detalle"
+                        data-toggle="collapse" 
+                        data-target="#collapse{{ position }}" 
+                        aria-expanded="false" 
+                        aria-controls="#collapse{{ position }}">
+                        TOP {{ position }}: {{ clas }} 
+                    </button>
+                </p>
+            </div>
+            <div 
+                id="collapse{{ position }}" 
+                class="collapse" 
+                aria-labelledby="heading{{ position }}" 
+                data-parent="#accordionOne">
+                <div class="table-responsive">
+                    <table id="table_top_{{ position }}" class="table table-bordered display text-center" style="width:100%">
+                        <thead class="bg-light">
+                            <tr>
+                                <th style="width: 5%">TOP Destino</th>
+                                <th style="width: 5%">Destino/Origen</th>
+                                <th style="width: 5%">TOP Origen</th>
+                                <th style="width: 5%">IP</th>
+                                <th style="width: 5%">Cantidad de eventos</th>
+                                <th style="width: 5%">Identificación/Riesgo</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 5%">TOP Destino</th>
+                                <th style="width: 5%">Destino/Origen</th>
+                                <th style="width: 5%">TOP Origen</th>
+                                <th style="width: 5%">IP</th>
+                                <th style="width: 5%">Cantidad de eventos</th>
+                                <th style="width: 5%">Identificación/Riesgo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for top in table[clas] %}
+                            {% set interface = table[clas][top] %}
+                            {% for ip_destino, idata in interface.items() %}
+                            <tr>
+                                <td class="align-middle">
+                                    <strong>{{ top }}</strong> 
+                                </td>
+                                <td class="align-middle">
+                                    <strong>Destino</strong>
+                                </td>
+                                <td class="align-middle">
+                                   
+                                </td>
+                                <td class="align-middle">
+                                    <strong>{{ ip_destino }}</strong>
+                                </td>
+                                <td class="align-middle">
+                                    <strong>{{ interface[ip_destino]["Cantidad de eventos"] }}</strong>
+                                 </td>
+                                 <td class="align-middle">
+                                    <strong>{{ interface[ip_destino]["Identificación/Riesgo"] }}</strong>
+                                 </td>
+                            </tr>
+                                {% for top10 in idata.ips_origen %}
+                                {% set ip_origen = idata.ips_origen %}
+                                {% for ip in ip_origen[top10] %}
+                            <tr>
+                                <td class="align-middle">
+                                   
+                                </td> 
+                                <td class="align-middle">
+                                   Origen
+                                </td>
+                                <td class="align-middle">
+                                    {{ top10 }}
+                                </td> 
+                                <td class="align-middle">
+                                    Origen: {{ ip }}
+                                </td>
+                                <td class="align-middle">
+                                {{ ip_origen[top10][ip]["Cantidad de eventos"] }}
+                                </td>
+                                <td class="align-middle">
+                                {{ ip_origen[top10][ip]["Identificación/Riesgo"] }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endfor %}
+                            {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
         </div>
-        {% if current_date == "2023-01-01" %}
-        {% set tables = [data_table_1, data_table_2, data_table_3, data_table_4, data_table_5, data_table_6, data_table_7, data_table_8, data_table_9] %}
-        {% else %}
-        {% set tables = [data_table_1, data_table_2, data_table_3, data_table_4, data_table_5, data_table_6, data_table_7, data_table_8, data_table_9, data_table_10, data_table_11] %}
         {% endif %}
-        {% for table in tables %}
-        {% set position = loop.index %}
-        {% for clas in table %}
-        <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-            <h5 class="text-muted">TOP {{ position }}: {{ clas }}  </h5>
+
+        {% if data_table_top_1 %}
+        <div class="accordion" id="accordionTwo">
+            <div class="p-3 mt-4 mb-4 rounded text-center">
+                <h5 class="text-muted">Detalle total</h5>
+            </div>
+            {% if current_date == "2023-01-01" %}
+            {% set tables = [data_table_1, data_table_2, data_table_3, data_table_4, data_table_5, data_table_6, data_table_7, data_table_8, data_table_9] %}
+            {% else %}
+            {% set tables = [data_table_1, data_table_2, data_table_3, data_table_4, data_table_5, data_table_6, data_table_7, data_table_8, data_table_9, data_table_10, data_table_11] %}
+            {% endif %}
+            {% for table in tables %}
+            {% set position = loop.index %}
+            {% for clas in table %}
+            <div id="headingTwo{{ position }}">
+                <p class="text-center">
+                    <button 
+                        class="btn btn-primary"
+                        type="button" 
+                        title="Ver el detalle"
+                        data-toggle="collapse" 
+                        data-target="#collapseTwo{{ position }}" 
+                        aria-expanded="false" 
+                        aria-controls="#collapseTwo{{ position }}">
+                        TOP {{ position }}: {{ clas }} 
+                    </button>
+                </p>
+            </div>
+            <div 
+                id="collapseTwo{{ position }}" 
+                class="collapse" 
+                aria-labelledby="headingTwo{{ position }}" 
+                data-parent="#accordionTwo">
+                <div class="table-responsive">
+                    <table id="table_{{ position }}" class="table table-bordered display text-center" style="width:100%">
+                        <thead class="bg-light">
+                            <tr>
+                                <th style="width: 5%">TOP Destino</th>
+                                <th style="width: 5%">Destino/Origen</th>
+                                <th style="width: 5%">TOP Origen</th>
+                                <th style="width: 5%">IP</th>
+                                <th style="width: 5%">Cantidad de eventos</th>
+                                <th style="width: 5%">Identificación/Riesgo</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 5%">TOP Destino</th>
+                                <th style="width: 5%">Destino/Origen</th>
+                                <th style="width: 5%">TOP Origen</th>
+                                <th style="width: 5%">IP</th>
+                                <th style="width: 5%">Cantidad de eventos</th>
+                                <th style="width: 5%">Identificación/Riesgo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for top in table[clas] %}
+                            {% set interface = table[clas][top] %}
+                            {% for ip_destino, idata in interface.items() %}
+                            <tr>
+                                <td class="align-middle">
+                                    <strong>{{ top }}</strong> 
+                                </td>
+                                <td class="align-middle">
+                                    <strong>Destino</strong>
+                                </td>
+                                <td class="align-middle">
+                                   
+                                </td>
+                                <td class="align-middle">
+                                    <strong>{{ ip_destino }}</strong>
+                                </td>
+                                <td class="align-middle">
+                                    <strong>{{ interface[ip_destino]["Cantidad de eventos"] }}</strong>
+                                 </td>
+                                 <td class="align-middle">
+                                    <strong>{{ interface[ip_destino]["Identificación/Riesgo"] }}</strong>
+                                 </td>
+                            </tr>
+                                {% for top10 in idata.ips_origen %}
+                                {% set ip_origen = idata.ips_origen %}
+                                {% for ip in ip_origen[top10] %}
+                            <tr>
+                                <td class="align-middle">
+                                   
+                                </td> 
+                                <td class="align-middle">
+                                   Origen
+                                </td>
+                                <td class="align-middle">
+                                    {{ top10 }}
+                                </td> 
+                                <td class="align-middle">
+                                    Origen: {{ ip }}
+                                </td>
+                                <td class="align-middle">
+                                {{ ip_origen[top10][ip]["Cantidad de eventos"] }}
+                                </td>
+                                <td class="align-middle">
+                                {{ ip_origen[top10][ip]["Identificación/Riesgo"] }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endfor %}
+                            {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
         </div>
-        <div class="table-responsive">
-            <table id="table_{{ position }}" class="table table-bordered display text-center" style="width:100%">
-                <thead class="bg-light">
-                    <tr>
-                        <th style="width: 5%">TOP/Destino</th>
-                        <th style="width: 5%">Destino/Origen</th>
-                        <th style="width: 5%">TOP/Origen</th>
-                        <th style="width: 5%">IP</th>
-                        <th style="width: 5%">Cantidad de eventos</th>
-                        <th style="width: 5%">Identificación/Riesgo</th>
-                    </tr>
-                    <tr>
-                        <th style="width: 5%">TOP/Destino</th>
-                        <th style="width: 5%">Destino/Origen</th>
-                        <th style="width: 5%">TOP/Origen</th>
-                        <th style="width: 5%">IP</th>
-                        <th style="width: 5%">Cantidad de eventos</th>
-                        <th style="width: 5%">Identificación/Riesgo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for top in table[clas] %}
-                    {% set interface = table[clas][top] %}
-                    {% for ip_destino, idata in interface.items() %}
-                    <tr>
-                        <td class="align-middle">
-                            <strong>{{ top }}</strong> 
-                        </td>
-                        <td class="align-middle">
-                            <strong>Destino</strong>
-                        </td>
-                        <td class="align-middle">
-                           
-                        </td>
-                        <td class="align-middle">
-                            <strong>{{ ip_destino }}</strong>
-                        </td>
-                        <td class="align-middle">
-                            <strong>{{ interface[ip_destino]["Cantidad de eventos"] }}</strong>
-                         </td>
-                         <td class="align-middle">
-                            <strong>{{ interface[ip_destino]["Identificación/Riesgo"] }}</strong>
-                         </td>
-                    </tr>
-                        {% for top10 in idata.ips_origen %}
-                        {% set ip_origen = idata.ips_origen %}
-                        {% for ip in ip_origen[top10] %}
-                    <tr>
-                        <td class="align-middle">
-                           
-                        </td> 
-                        <td class="align-middle">
-                           Origen
-                        </td>
-                        <td class="align-middle">
-                            {{ top10 }}
-                        </td> 
-                        <td class="align-middle">
-                            Origen: {{ ip }}
-                        </td>
-                        <td class="align-middle">
-                        {{ ip_origen[top10][ip]["Cantidad de eventos"] }}
-                        </td>
-                        <td class="align-middle">
-                        {{ ip_origen[top10][ip]["Identificación/Riesgo"] }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% endfor %}
-                    {% endfor %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endfor %}
-        {% endfor %}
         {% endif %}
     </div>
 </div>
@@ -250,7 +295,6 @@
         });
         
         var table = $("#table_top_1").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -275,7 +319,6 @@
         });
         
         var table = $("#table_top_2").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -300,7 +343,6 @@
         });
         
         var table = $("#table_top_3").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -325,7 +367,6 @@
         });
         
         var table = $("#table_1").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -351,7 +392,6 @@
         });
         
         var table = $("#table_2").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -377,10 +417,8 @@
         });
         
         var table = $("#table_3").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
-            pageLength: 5,
             order: [],
             dom: 'Bfrtip',
             buttons: [
@@ -403,7 +441,6 @@
         });
         
         var table = $("#table_4").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -429,7 +466,6 @@
         });
         
         var table = $("#table_5").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -454,7 +490,6 @@
         });
         
         var table = $("#table_6").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -479,7 +514,6 @@
         });
         
         var table = $("#table_7").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -504,7 +538,6 @@
         });
         
         var table = $("#table_8").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -529,7 +562,6 @@
         });
         
         var table = $("#table_9").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -554,7 +586,6 @@
         });
         
         var table = $("#table_10").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -579,7 +610,6 @@
         });
         
         var table = $("#table_11").DataTable({
-            pageLength: 5,
             orderCellsTop: true,
             ordering: true,
             order: [],
@@ -631,13 +661,57 @@
         },
         plotOptions: {
             column: {
-            pointPadding: 0.2,
-            borderWidth: 0
+                pointPadding: 0.2,
+                borderWidth: 0,
             }
         },
         series: {{ data_grah.data_grah_y | safe }}
     });
 </script>
 {% endif %}
+
+{% if data_grah_percentage %}
+<script type="text/javascript">
+    Highcharts.chart('container_1_percentage', {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'El total de eventos del mes {{ name_date }} del año {{ year }} fue de {{ data_grah.total }}.',
+            align: 'center'
+        },
+        xAxis: {
+            categories: {{ data_grah_percentage.data_grah_x  | safe }},
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Porcentaje del número de eventos'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            '<td style="padding:0"><b>{point.y:.3f}%</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+                pointPadding: 0.2,
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y:.3f}%'
+                }
+            }
+        },
+        series: {{ data_grah_percentage.data_grah_y | safe }}
+    });
+</script>
+{% endif %}
+
 
 {% endblock %}

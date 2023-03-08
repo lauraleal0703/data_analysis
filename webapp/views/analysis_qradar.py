@@ -30,40 +30,38 @@ def index():
         date = request.args.get("date", type=str)
 
         if service == "arbor":
-            
             try:
                 customers_actives = get_qradar.customers_arbor()
                 total_blocked_events = get_qradar.total_blocked_events()
             except Exception as e:
                 current_app.logger.error(f"{str(request.url)}: {e}")
-                return redirect(request.url)
 
             if customer:
-                
                 try:
                     dates_actives = get_qradar.dates_actives()
                 except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
-                    return redirect(request.url)
                 
                 current_customer_name = customers_actives[customer]
 
                 if date:
-                    
                     try: 
-                        data_grah_events = get_qradar.blocked_events(
+                        data = get_qradar.blocked_events(
                             customer = customer,
                             date = date
                         )
-
                         data_grah_events_paises = get_qradar.events_paises(
                             customer = customer,
                             date = date
                         )
                     except Exception as e:
                         current_app.logger.error(f"{str(request.url)}: {e}")
-                        return redirect(request.url)
-
+            
+                    data_grah_torta = data["data_grah_torta"]
+                    data_grah_torta_percentage = data["data_grah_torta_percentage"]
+                    data_grah_barras = data["data_grah_barras"]
+                    data_grah_barras_percentage = data["data_grah_barras_percentage"]
+                        
                     return render_template(
                         "analysis_qradar/arbor/index.html",
                         page={"title": ""},
@@ -75,7 +73,10 @@ def index():
                         dates_actives = dates_actives,
                         current_date = date,
                         current_pos = pos,
-                        data_grah_events = data_grah_events,
+                        data_grah_torta = data_grah_torta,
+                        data_grah_torta_percentage = data_grah_torta_percentage,
+                        data_grah_barras = data_grah_barras,
+                        data_grah_barras_percentage = data_grah_barras_percentage,
                         data_grah_events_paises = data_grah_events_paises
                     )
                 
@@ -181,6 +182,7 @@ def index():
 
                     if date != "2023-01-01":
                         data_grah = data["data_grah"]
+                        data_grah_percentage = data["data_grah_percentage"]
                         data_table_top_1 = data["table_top"]["1"]
                         data_table_top_2 = data["table_top"]["2"]
                         data_table_top_3 = data["table_top"]["3"]
@@ -212,6 +214,7 @@ def index():
                             name_date = name_date,
                             year = year,
                             data_grah = data_grah,
+                            data_grah_percentage = data_grah_percentage,
                             data_table_top_1 = data_table_top_1,
                             data_table_top_2 = data_table_top_2,
                             data_table_top_3 = data_table_top_3,
@@ -229,6 +232,7 @@ def index():
                         )
                     else:
                         data_grah = data["data_grah"]
+                        data_grah_percentage = data["data_grah_percentage"]
                         data_table_top_1 = data["table_top"]["1"]
                         data_table_top_2 = data["table_top"]["2"]
                         data_table_top_3 = data["table_top"]["3"]
@@ -258,6 +262,7 @@ def index():
                             name_date = name_date,
                             year = year,
                             data_grah = data_grah,
+                            data_grah_percentage = data_grah_percentage,
                             data_table_top_1 = data_table_top_1,
                             data_table_top_2 = data_table_top_2,
                             data_table_top_3 = data_table_top_3,

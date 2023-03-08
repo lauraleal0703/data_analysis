@@ -209,6 +209,7 @@ label.placeholder {
 ----------------------------------------------------- */
 table th {
     font-size: 13px;
+    text-align: center !important;
 }
 
 table td, table button {
