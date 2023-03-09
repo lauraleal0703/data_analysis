@@ -149,34 +149,34 @@ def get_json(
                 aql_name = aql_name
             )
         )
-        data = {"data": qradar.ariel_results(
+        data_qradar = {"data": qradar.ariel_results(
             search_id = create_id_searches
             ),
             "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         }
         current_path.touch()
         f = current_path.open("wb")
-        f.write(orjson.dumps(data))
+        f.write(orjson.dumps(data_qradar))
         f.close()
     else:
         logging.info(f"Abriendo JSON {current_path}")
         f = open(str(current_path), "rb")
-        data = orjson.loads(f.read())
+        data_qradar = orjson.loads(f.read())
 
-    if "data" not in data:
-        data = {
-            "data": data,
+    if "data" not in data_qradar:
+        data_qradar = {
+            "data": data_qradar,
             "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         }
     
-    if len(data["data"]["events"]) == 0:
+    if len(data_qradar["data"]["events"]) == 0:
         logging.error(def_name)
         return {}
     
-    logging.info(f'TOTAL DE EVENTOS {def_name} -> Total: {len(data["data"]["events"])}')
+    logging.info(f'TOTAL DE EVENTOS {def_name} -> Total: {len(data_qradar["data"]["events"])}')
     # logging.info("EVENTOS DEL TIPO")
     # pprint(data["events"][0])
-    return data
+    return data_qradar
 
 
 ###############################################################################
@@ -259,23 +259,23 @@ def event_total_log_source(
             dict_total_events[name_event] = recuento_event
         
         dict_total_events["Total"] = '{:,}'.format(total).replace(',','.')
-        data = {
+        data_qradar = {
             "dict_total_events": dict_total_events,
             "name_date": name_date,
             "year": year,
-            "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            "current_date": data["current_date"]
         }
         current_path.touch()
         f = current_path.open("wb")
-        f.write(orjson.dumps(data))
+        f.write(orjson.dumps(data_qradar))
         f.close()
     else:
         logging.info(f"Abriendo JSON {current_path}")
         f = open(str(current_path), "rb")
-        data = orjson.loads(f.read())
+        data_qradar = orjson.loads(f.read())
 
     logging.debug(def_name)
-    return data
+    return data_qradar
 # for date in dates:
 #     print("date", date)
 #     print(event_total_log_source("SURA", date))
@@ -346,24 +346,25 @@ def total_accept_per_dominio_pais(
         
         dict_total_events["Total"] = '{:,}'.format(total).replace(',','.')
 
-        data = {
+        data_qradar = {
             "dict_total_events": dict_total_events,
             "dict_events_dominio_pais": dict_events_dominio_pais,
             "name_date": name_date,
-            "year": year
+            "year": year,
+            "current_date": data["current_date"]
         }
         current_path.touch()
         f = current_path.open("wb")
-        f.write(orjson.dumps(data))
+        f.write(orjson.dumps(data_qradar))
         f.close()
     else:
         logging.info(f"Abriendo JSON {current_path}")
         f = open(str(current_path), "rb")
-        data = orjson.loads(f.read())
+        data_qradar = orjson.loads(f.read())
 
 
     logging.debug(def_name)
-    return data
+    return data_qradar
 # for date in dates:
 #     print("date", date)
 #     pprint(total_accept_per_dominio_pais("SURA", date))
@@ -434,24 +435,25 @@ def detalle_drop(
         
         dict_total_events["Total"] = '{:,}'.format(total).replace(',','.')
 
-        data =  {
+        data_qradar =  {
             "dict_total_events": dict_total_events,
             "dict_events_dominio_pais": dict_events_dominio_pais,
             "name_date": name_date,
-            "year": year
+            "year": year,
+            "current_date": data["current_date"]
         }
         current_path.touch()
         f = current_path.open("wb")
-        f.write(orjson.dumps(data))
+        f.write(orjson.dumps(data_qradar))
         f.close()
     else:
         logging.info(f"Abriendo JSON {current_path}")
         f = open(str(current_path), "rb")
-        data = orjson.loads(f.read())
+        data_qradar = orjson.loads(f.read())
 
 
     logging.debug(def_name)
-    return data
+    return data_qradar
 # for date in dates:
 #     print("date", date)
 #     print(detalle_drop("SURA", date))
@@ -981,7 +983,7 @@ def blocked_events(
             "data_grah_torta_percentage": data_grah_torta_percentage,
             "data_grah_barras": data_grah_barras,
             "data_grah_barras_percentage": data_grah_barras_percentage,
-            "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            "current_date": data["current_date"]
         }
         current_path.touch()
         f = current_path.open("wb")
@@ -1183,7 +1185,7 @@ def events_paises(
             "data_grah_continent": data_grah_continent,
             "data_grah_top_continent_pais": data_grah_top_continent_pais,
             "data_grah_top_continent_pais_porcent": data_grah_top_continent_pais_porcent,
-            "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            "current_date": data["current_date"]
         }
 
         current_path.touch()
