@@ -7,3 +7,4 @@ SQLAlchemy==1.4.46
 googletrans==3.1.0a0
 mariadb==1.0.11
 orjson==3.8.7
+Flask-SQLAlchemy==3.0.3

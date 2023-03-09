@@ -33,7 +33,7 @@
                 {% for user in users_actives %}
                 <a id="menuUser{{ user[0] }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ user[0] }}">
+                    href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ user[0] }}">
                     {{ user[1]["search"]["name"] }}={{ user[1]["total"] }}
                 </a>
                 {% endfor %}
@@ -47,7 +47,7 @@
                 {% for year in data_total_year %}
                 <a id="menuUserYear{{ year }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ year }}">
+                    href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ year }}">
                     {{ year }}={{ data_total_year[year] }}
                 </a>
                 {% endfor %}
@@ -64,7 +64,7 @@
                 {% for table_year in data_total_table_year %}
                 <a id="menuUserYearTable{{ table_year }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&table_year={{ table_year }}">
+                    href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&table_year={{ table_year }}">
                     {{ table_year }}={{ data_total_table_year[table_year] }}
                 </a>
                 {% endfor %}
@@ -78,7 +78,7 @@
                 {% for month in data_total_month %}
                 <a id="menuUserYearMonth{{ month }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ month }}">
+                    href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ month }}">
                     {{ month }}={{ data_total_month[month] }}
                 </a>
                 {% endfor %}
@@ -95,7 +95,7 @@
                 {% for table_month in data_total_table_month %}
                 <a id="menuUserYearMonthTable{{ table_month }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&table_month={{ table_month }}">
+                    href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&table_month={{ table_month }}">
                     {{ table_month }}={{ data_total_table_month[table_month] }}
                 </a>
                 {% endfor %}
@@ -112,7 +112,7 @@
                 {% for table_day in data_total_table_day %}
                 <a id="menuUserYearMonthDayTable{{ table_day }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ current_month }}&table_day={{ table_day }}">
+                    href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ current_month }}&table_day={{ table_day }}">
                     {{ table_day }}={{ data_total_table_day[table_day] }}
                 </a>
                 {% endfor %}
@@ -214,21 +214,21 @@
             <a
                 role="button"
                 class="btn btn-sm btn-secondary"
-                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ current_month }}">
+                href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ current_month }}">
                 Volver
             </a>
             {% elif current_year %}
             <a
                 role="button"
                 class="btn btn-sm btn-secondary"
-                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}">
+                href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}">
                 Volver
             </a>
             {% else %}
             <a
                 role="button"
                 class="btn btn-sm btn-secondary"
-                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}">
+                href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}">
                 Volver
             </a>
             {% endif %}

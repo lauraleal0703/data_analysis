@@ -34,7 +34,7 @@
                 {% for customer in customers_actives %}
                 <a id="menuQRadarFirepowerCustomer{{ customer }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_qradar?service={{ current_service }}&customer={{ customer }}">
+                    href="{{ config.URL }}/analysis_qradar?service={{ current_service }}&customer={{ customer }}">
                     {{ customer }}
                 </a>
                 {% endfor %}
@@ -48,7 +48,7 @@
                 {% for date in dates_actives %}
                 <a id="menuQRadarServiceDate{{ date[1]['date'] }}"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_qradar?service={{ current_service }}&customer={{ current_customer }}&pos={{ date[0] }}&date={{ date[1]['date'] }}">
+                    href="{{ config.URL }}/analysis_qradar?service={{ current_service }}&customer={{ current_customer }}&pos={{ date[0] }}&date={{ date[1]['date'] }}">
                     {{ date[1]["date_name"] }}
                 </a>
                 {% endfor %}

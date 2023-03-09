@@ -7,7 +7,7 @@
 		</li>
 		{% for queue in queues %}
 		<li id="menuQueue{{ queue }}" class="nav-item">
-			<a href="/analysis_otrs?queue={{ queue }}">
+			<a href="{{ config.URL }}/analysis_otrs?queue={{ queue }}">
 				<div class="row">
 					<div class="col">
 						<span>{{ queues[queue] }}</span>

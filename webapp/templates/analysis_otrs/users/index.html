@@ -35,7 +35,7 @@
                 <a id="menuUser{{ user[0] }}"
                     title="Ver el detalle del usuario"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ user[0] }}">
+                    href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ user[0] }}">
                     {{ user[1]["search"]["name"] }}={{ user[1]["total"] }}
                 </a>
                 {% endfor %}
@@ -50,7 +50,7 @@
                 <a id="menuUserYear{{ year }}"
                     title="Ver el detalle del usuario en el año"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ year }}">
+                    href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ year }}">
                     {{ year }}={{ data_total_year[year]}}
                 </a>
                 {% endfor %}
@@ -65,7 +65,7 @@
                 <a id="menuUserYearMonth{{ month }}"
                     title="Ver el detalle del usuario en el mes del año"
                     class="btn btn-sm btn-outline-primary"
-                    href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ month }}">
+                    href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ month }}">
                     {{ month }}={{ data_total_month[month] }}
                 </a>
                 {% endfor %}
@@ -264,7 +264,7 @@
                                 role="button"
                                 title="Ver detalle de los tickets"
                                 class="btn btn-sm btn-primary"
-                                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ current_month }}&table_day={{ dato }}">
+                                href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&month={{ current_month }}&table_day={{ dato }}">
                                 Ver
                             </a>
                             {% elif current_year %}
@@ -272,7 +272,7 @@
                                 role="button"
                                 title="Ver detalle de los tickets"
                                 class="btn btn-sm btn-primary"
-                                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&table_month={{ dato }}">
+                                href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&year={{ current_year }}&table_month={{ dato }}">
                                 Ver
                             </a>
                             {% else %}
@@ -280,7 +280,7 @@
                                 role="button"
                                 title="Ver detalle de los tickets"
                                 class="btn btn-sm btn-primary"
-                                href="/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&table_year={{ dato }}">
+                                href="{{ config.URL }}/analysis_otrs/attend?queue={{ current_queue }}&user={{ current_user }}&table_year={{ dato }}">
                                 Ver
                             </a>
                             {% endif %}
