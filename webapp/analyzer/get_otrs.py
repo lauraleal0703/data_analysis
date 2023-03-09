@@ -644,6 +644,7 @@ def get_tickets_filtred(
             def_name = f"get_tickets_filtred_users_{user_id}_{queue_id}_{year}"
         else:
             def_name = f"get_tickets_filtred_users_{user_id}_{queue_id}"
+    
 
     path_data_qradar: Path = Path(__file__).parent/"data_otrs_temp"
     if not path_data_qradar.exists():
@@ -666,6 +667,7 @@ def get_tickets_filtred(
         
         users_actives_temp = users_actives()
         customers_active = customers_actives()
+
         
         if users:
             list_customers_active = list(customers_active.keys())
@@ -687,7 +689,7 @@ def get_tickets_filtred(
             dates: list = customer["years_actives"]
             dates.reverse()
             customer_name = customer["name"]
-        
+
         if year:
             dates = [year]
         

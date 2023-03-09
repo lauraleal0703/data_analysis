@@ -5,6 +5,23 @@
 
 <div class="card">
     <div class="card-header">
+        {% if  current_pos == 4 or current_pos == 3 %}
+        <div class="row">
+            <div class="col text-center">
+                <div class="alert alert-success">
+                    Datos actualizados a la fecha: {{ current_date_data }}
+                </div>
+            </div>
+
+            <div class="col-2">
+                <a 
+                    href="{{ request.url }}&refresh=1" 
+                    class="btn btn-success">
+                    Actualizar Datos
+                </a>
+            </div>
+        </div>
+        {% endif %}
         {% if page.title %}
         <div class="p-3 bg-light rounded text-center">
             <h3 class="text-muted">{{ page.title }}</h3>
@@ -66,24 +83,24 @@
                 <div class="p-3 mt-4 mb-4 rounded text-center">
                     <h5 class="text-muted">Ver detalle</h5>
                 </div>
-                <div id="headingOne">
+                <div id="headingArborOne1">
                     <p class="text-center">
                         <button 
                             class="btn btn-primary"
                             type="button" 
                             title="Ver el detalle en gráfica de torta porcentual"
                             data-toggle="collapse" 
-                            data-target="#collapseOne" 
+                            data-target="#collapseArborOne1" 
                             aria-expanded="false" 
-                            aria-controls="#collapseOne">
-                            Gráfica de torta porcentual
+                            aria-controls="#collapseArborOne1">
+                            Gráfica Torta/Porcentual
                         </button>
                     </p>
                 </div>
                 <div 
-                    id="collapseOne" 
+                    id="collapseArborOne1" 
                     class="collapse" 
-                    aria-labelledby="headingOne" 
+                    aria-labelledby="headingArborOne1" 
                     data-parent="#accordionArborOne">
                     {% if data_grah_torta_percentage %}
                     <div>
@@ -93,24 +110,24 @@
                     </div>
                     {% endif %}
                 </div>
-                <div id="headingArborOne">
+                <div id="headingArborOne2">
                     <p class="text-center">
                         <button 
                             class="btn btn-primary"
                             type="button" 
                             title="Ver el detalle en gráfica de barras"
                             data-toggle="collapse" 
-                            data-target="#collapseArborOne" 
+                            data-target="#collapseArborOne2" 
                             aria-expanded="false" 
-                            aria-controls="#collapseArborOne">
-                            Gráfica de barras
+                            aria-controls="#collapseArborOne2">
+                            Gráfica Barras
                         </button>
                     </p>
                 </div>
                 <div 
-                    id="collapseArborOne" 
+                    id="collapseArborOne2" 
                     class="collapse" 
-                    aria-labelledby="headingArborOne" 
+                    aria-labelledby="headingArborOne2" 
                     data-parent="#accordionArborOne">
                     {% if data_grah_barras %}
                     <div>
@@ -120,24 +137,24 @@
                     </div>
                     {% endif %}
                 </div>
-                <div id="headingArborTwo">
+                <div id="headingArborOne3">
                     <p class="text-center">
                         <button 
                             class="btn btn-primary"
                             type="button" 
                             title="Ver el detalle en gráfica de barras porcentual"
                             data-toggle="collapse" 
-                            data-target="#collapseArborTwo" 
+                            data-target="#collapseArborOne3" 
                             aria-expanded="false" 
-                            aria-controls="#collapseArborTwo">
-                            Gráfica de barras porcentual
+                            aria-controls="#collapseArborOne3">
+                            Gráfica Barras/Porcentual
                         </button>
                     </p>
                 </div>
                 <div 
-                    id="collapseArborTwo" 
+                    id="collapseArborOne3" 
                     class="collapse" 
-                    aria-labelledby="headingArborTwo" 
+                    aria-labelledby="headingArborOne3" 
                     data-parent="#accordionArborOne">
                     {% if data_grah_barras_percentage %}
                     <div>
@@ -153,9 +170,8 @@
 
             {% if data_grah_events_paises %}
             <div class="p-3 mt-4 mb-4 bg-light rounded text-center">
-                <h3 class="text-muted">Resumen de Eventos Relevantes</h3>
+                <h3 class="text-muted">Top 10 de países</h3>
             </div>
-            
             {% if data_grah_events_paises.data_grah_continent %}
             <div>
                 <figure class="highcharts-figure">
@@ -163,32 +179,93 @@
                 </figure>
             </div>
             {% endif %}
-
-            {% if data_grah_events_paises.data_grah_top_continent_pais %}
-            <div>
-                <figure class="highcharts-figure">
-                    <div id="container_barras_comparativas"></div>
-                </figure>
+            <div class="accordion" id="accordionArborTwo">
+                <div class="p-3 mt-4 mb-4 rounded text-center">
+                    <h5 class="text-muted">Ver detalle</h5>
+                </div>
+                <div id="headingArborTwo1">
+                    <p class="text-center">
+                        <button 
+                            class="btn btn-primary"
+                            type="button" 
+                            title="Ver el detalle"
+                            data-toggle="collapse" 
+                            data-target="#collapseArborTwo1" 
+                            aria-expanded="false" 
+                            aria-controls="#collapseArborTwo1">
+                            Gráfica País/Continente
+                        </button>
+                    </p>
+                </div>
+                <div 
+                    id="collapseArborTwo1" 
+                    class="collapse" 
+                    aria-labelledby="headingArborTwo1" 
+                    data-parent="#accordionArborTwo">
+                    {% if data_grah_events_paises.data_grah_top_continent_pais %}
+                    <div>
+                        <figure class="highcharts-figure">
+                            <div id="container_barras_comparativas"></div>
+                        </figure>
+                    </div>
+                    {% endif %}
+                </div>
+                <div id="headingArborTwo2">
+                    <p class="text-center">
+                        <button 
+                            class="btn btn-primary"
+                            type="button" 
+                            title="Ver el detalle en gráfica de barras"
+                            data-toggle="collapse" 
+                            data-target="#collapseArborTwo2" 
+                            aria-expanded="false" 
+                            aria-controls="#collapseArborTwo2">
+                            Gráfica Porcentual
+                        </button>
+                    </p>
+                </div>
+                <div 
+                    id="collapseArborTwo2" 
+                    class="collapse" 
+                    aria-labelledby="headingArborTwo2" 
+                    data-parent="#accordionArborTwo">
+                    {% if data_grah_events_paises.data_grah_top_continent_pais_porcent %}
+                    <div>
+                        <figure class="highcharts-figure">
+                            <div id="container_barras_comparativas_porcent"></div>
+                        </figure>
+                    </div>
+                    {% endif %}
+                </div>
+                <div id="headingArborTwo3">
+                    <p class="text-center">
+                        <button 
+                            class="btn btn-primary"
+                            type="button" 
+                            title="Ver el detalle en gráfica de barras porcentual"
+                            data-toggle="collapse" 
+                            data-target="#collapseArborTwo3" 
+                            aria-expanded="false" 
+                            aria-controls="#collapseArborTwo3">
+                            Gráfica Países
+                        </button>
+                    </p>
+                </div>
+                <div 
+                    id="collapseArborTwo3" 
+                    class="collapse" 
+                    aria-labelledby="headingArborTwo3" 
+                    data-parent="#accordionArborTwo">
+                    {% if data_grah_events_paises.data_grah_top_paises %}
+                    <div>
+                        <figure class="highcharts-figure">
+                            <div id="container_barras"></div>
+                        </figure>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-            {% endif %}
-
-            {% if data_grah_events_paises.data_grah_top_continent_pais_porcent %}
-            <div>
-                <figure class="highcharts-figure">
-                    <div id="container_barras_comparativas_porcent"></div>
-                </figure>
-            </div>
-            {% endif %}
-
-            {% if data_grah_events_paises.data_grah_top_paises %}
-            <div>
-                <figure class="highcharts-figure">
-                    <div id="container_barras"></div>
-                </figure>
-            </div>
-            {% endif %}
-            {% endif %}
-                
+            {% endif %}  
         </div>
     </div>
 </div>
@@ -234,7 +311,7 @@
             },
             {% else %}
             title: {
-                text: 'Se recibieron un total de {{ data_grah.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
+                text: 'Se han recibido un total de {{ data_grah.total }} eventos de la plataforma Arbor del cliente {{ current_customer_name }}.',
                 align: 'center'
             },
             {% endif %}
@@ -449,7 +526,7 @@
                 borderWidth: 0,
                 dataLabels: {
                     enabled: true,
-                    format: '<b>{point.name}</b>: {point.y}'
+                    format: '{point.y}'
                 }
             }
         },

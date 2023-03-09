@@ -21,8 +21,6 @@ logging.basicConfig(
     )
 
 
-dates = ["2023-02-01", "2023-01-01", "2022-12-01"]
-
 ###############################################################################
 ################################--QRadar--#####################################
 ################################--SOPORTE--####################################
@@ -33,28 +31,19 @@ dates = ["2023-02-01", "2023-01-01", "2022-12-01"]
     *Solange ve: IPS (Firepower) y WAF (A10)
     *Jose ve: PAM
 """
-
+dates = ["2023-02-01", "2023-01-01", "2022-12-01"]
 def dates_actives() -> list:
     """OJO, MEJOR ACTUALIZAR MANUAL
     Hay información de 3 meses atrás en QRadar"""
     def_name = "dates_actives"
     logging.debug(def_name)
     
-    list_dates = [
-        (3, {'date': '2023-02-01', 'date_name': '02-2023'}),
-        (2, {'date': '2023-01-01', 'date_name': '01-2023'}),
-        (1, {'date': '2022-12-01', 'date_name': '12-2022'})
-    ]
-
-    if list_dates:
-        return list_dates
-    
     month_init = datetime.today() - relativedelta(months=4)
     date_init_ = f"{month_init.year}-{month_init.month}-01"
     date_init = datetime.strptime(date_init_, "%Y-%m-%d")
     dict_date = {}
     i = 1
-    while i < 4:
+    while i < 5:
         date_temp = date_init + relativedelta(months=1)
         dict_date[i] = {
             "date": datetime.strftime(date_temp, "%Y-%m-%d"), 
@@ -71,11 +60,10 @@ def dates_actives() -> list:
 
     logging.debug(def_name)
     return dict_date
-# pprint(dates_actives())
 
 
 def aql(
-    customer: str,
+    customer_id: str,
     date: str,
     aql_name: str
 ) -> str:
@@ -87,7 +75,7 @@ def aql(
     stop = datetime.strptime(date, "%Y-%m-%d") + relativedelta(months=1)
     stop = datetime.strftime(stop, "%Y-%m-%d")
     
-    if customer == "AAN":
+    if customer_id == "AAN":
         if aql_name == "Informe_Arbor_1":
             Informe_Arbor_1 = f'''SELECT QIDNAME(qid) AS 'Nombre de suceso', UniqueCount(logSourceId) AS 'Origen de registro (Recuento exclusivo)', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', UniqueCount(category) AS 'Categoría de nivel bajo (Recuento exclusivo)', UniqueCount("sourceIP") AS 'IP de origen (Recuento exclusivo)', UniqueCount("sourcePort") AS 'Puerto de origen (Recuento exclusivo)', UniqueCount("destinationIP") AS 'IP de destino (Recuento exclusivo)', UniqueCount("destinationPort") AS 'Puerto de destino (Recuento exclusivo)', COUNT(*) AS 'Recuento' from events where logSourceId='2277' GROUP BY qid order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
             '''
@@ -100,7 +88,7 @@ def aql(
             logging.debug(def_name)
             return TOP_10_Paises
     
-    if customer == "SURA":
+    if customer_id == "SURA":
         if aql_name == "Eventos_totales_Log_Source":
             Eventos_totales_Log_Source = f'''SELECT logsourcename(logSourceId) AS 'Origen de registro', SUM("eventCount") AS 'Recuento de sucesos (Suma)', MIN("startTime") AS 'Hora de inicio (Mínimo)', COUNT(*) AS 'Recuento' from events where "domainId"='11' GROUP BY logSourceId order by "Recuento" desc start '{start} 00:00' stop '{stop} 00:00'
             '''
@@ -123,7 +111,7 @@ def aql(
             logging.debug(def_name)
             return Detalle_drop
         
-    if customer == "EVERTEC":
+    if customer_id == "EVERTEC":
         if aql_name == "EVERTEC_LLEAL_Test2":
             EVERTEC_LLEAL_Test2 = f'''SELECT QIDNAME(qid) as 'Nombre de suceso',"From" as 'From (personalizado)',"Impact" as 'Impact (personalizado)',"eventCount" as 'Recuento de sucesos',"startTime" as 'Hora de inicio',"sourceIP" as 'IP de origen',categoryname(category) as 'Categoría de nivel bajo',"Priority" as 'Priority (personalizado)',"sourcePort" as 'Puerto de origen',"destinationPort" as 'Puerto de destino',"destinationIP" as 'IP de destino',"Classification" as 'Classification (personalizado)' from events where ("creEventList"='120176') or ("creEventList"='120180') or ("creEventList"='120181') or ("creEventList"='120182') or ("creEventList"='125185') or ("creEventList"='125234') or ("creEventList"='125444') or ("creEventList"='125445') or ("creEventList"='125446') or ("creEventList"='125447') or ("creEventList"='125448') or ("creEventList"='125449') or ("creEventList"='125450') or ("creEventList"='125805') or ("creEventList"='125806') or ("creEventList"='125807') order by "startTime" desc start '{start} 00:00' stop '{stop} 00:00'
             '''
@@ -133,9 +121,10 @@ def aql(
 
 def get_json(
     def_name: str,
-    customer: str,
+    customer_id: str,
     date: str,
-    aql_name: str
+    aql_name: str,
+    refresh: bool = False
 ) -> dict:
     """Funcion que permite traer la data de QRadar y guardarla
     en data_qradar para que lueego la consulta sea más rápida"""
@@ -145,19 +134,26 @@ def get_json(
     if not path_data_qradar.exists():
         path_data_qradar.mkdir()
     
-    current_path = path_data_qradar / f"{date}_{customer}_{def_name}.json"
+    current_path = path_data_qradar / f"{date}_{customer_id}_{def_name}.json"
+    
+    if refresh and current_path.exists():
+        logging.info("Borrando json")
+        current_path.unlink()
+
     if not current_path.exists():
         logging.info(f"Creando JSON {current_path}")
         create_id_searches = qradar.ariel_searches_post(
             query_expression = aql(
-                customer = customer,
+                customer_id = customer_id,
                 date = date,
                 aql_name = aql_name
             )
         )
-        data = qradar.ariel_results(
+        data = {"data": qradar.ariel_results(
             search_id = create_id_searches
-        )
+            ),
+            "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        }
         current_path.touch()
         f = current_path.open("wb")
         f.write(orjson.dumps(data))
@@ -212,33 +208,38 @@ def customers_cloudflare():
 
 
 def event_total_log_source(
-    customer: str,
+    customer_id: str,
     date: str,
-    aql_name: str = "Eventos_totales_Log_Source"
+    aql_name: str = "Eventos_totales_Log_Source",
+    refresh: bool = False
 ) -> dict:
     """Datos para la grafica de 
     """
     def_name = f"eventos_totales_Log_Source"
     logging.debug(def_name)
 
-    calendar = get_otrs.calendar_spanish()
-    calendar = calendar["calendar_num"]
-    date_ = datetime.strptime(date, "%Y-%m-%d")
-    year = date_.year
-    name_date = date_.month
-    name_date = calendar[name_date]
-
     path_data_qradar: Path = Path(__file__).parent/"data_qradar"
     if not path_data_qradar.exists():
         path_data_qradar.mkdir()
+    
+    current_path = path_data_qradar / f"{date}_{customer_id}_{def_name}_dict_info_final.json"
+    if refresh and current_path.exists():
+        logging.info("Borrando json")
+        current_path.unlink()
 
-    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
     if not current_path.exists():
         logging.info(f"Creando JSON {current_path}")
 
+        calendar = get_otrs.calendar_spanish()
+        calendar = calendar["calendar_num"]
+        date_ = datetime.strptime(date, "%Y-%m-%d")
+        year = date_.year
+        name_date = date_.month
+        name_date = calendar[name_date]
+
         data = get_json(
             def_name = def_name,
-            customer = customer,
+            customer_id = customer_id,
             date = date,
             aql_name = aql_name
         )
@@ -255,7 +256,8 @@ def event_total_log_source(
         data = {
             "dict_total_events": dict_total_events,
             "name_date": name_date,
-            "year": year
+            "year": year,
+            "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         }
         current_path.touch()
         f = current_path.open("wb")
@@ -274,9 +276,10 @@ def event_total_log_source(
 
 
 def total_accept_per_dominio_pais(
-    customer: str,
+    customer_id: str,
     date: str,
-    aql_name: str = "Total_Accept_per_dominio_Pais"
+    aql_name: str = "Total_Accept_per_dominio_Pais",
+    refresh: bool = False
 ) -> dict:
     """Datos para la grafica de 
     """
@@ -294,13 +297,13 @@ def total_accept_per_dominio_pais(
     if not path_data_qradar.exists():
         path_data_qradar.mkdir()
 
-    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
+    current_path = path_data_qradar / f"{date}_{customer_id}_{def_name}_dict_info_final.json"
     if not current_path.exists():
         logging.info(f"Creando JSON {current_path}")
 
         data = get_json(
             def_name = def_name,
-            customer = customer,
+            customer_id = customer_id,
             date = date,
             aql_name = aql_name
         )
@@ -361,9 +364,10 @@ def total_accept_per_dominio_pais(
 
 
 def detalle_drop(
-    customer: str,
+    customer_id: str,
     date: str,
-    aql_name: str = "Detalle_drop"
+    aql_name: str = "Detalle_drop",
+    refresh: bool = False
 ) -> dict:
     """Datos para la grafica de 
     """
@@ -381,13 +385,13 @@ def detalle_drop(
     if not path_data_qradar.exists():
         path_data_qradar.mkdir()
 
-    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
+    current_path = path_data_qradar / f"{date}_{customer_id}_{def_name}_dict_info_final.json"
     if not current_path.exists():
         logging.info(f"Creando JSON {current_path}")
 
         data = get_json(
             def_name = def_name,
-            customer = customer,
+            customer_id = customer_id,
             date = date,
             aql_name = aql_name
         )
@@ -448,8 +452,9 @@ def detalle_drop(
 
 
 def tabla_reque_acep_boque_per_dominio(
-        customer: str,
-        date: str,
+    customer: str,
+    date: str,
+    refresh: bool = False
 ) -> dict:
     """Datos para la 
     """
@@ -652,9 +657,10 @@ def create_data_table(dict_base: dict) -> dict:
 
 
 def total_firepower(
-    customer: str,
+    customer_id: str,
     date: str,
-    aql_name: str = "EVERTEC_LLEAL_Test2"
+    aql_name: str = "EVERTEC_LLEAL_Test2",
+    refresh: bool = False
 ) -> dict:
     """Datos para la grafica de 
     """
@@ -670,9 +676,10 @@ def total_firepower(
 
     data = get_json(
         def_name = def_name,
-        customer = customer,
+        customer_id = customer_id,
         date = date,
-        aql_name = aql_name
+        aql_name = aql_name,
+        refresh = refresh
     )
 
     total = 0
@@ -795,11 +802,13 @@ def total_firepower(
         "table_top": table_top,
         "table_all": table_all,
         "name_date": name_date,
-        "year": year
+        "year": year,
+        "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
     } 
 # for date in dates:
 #     print("date", date)
 #     pprint(total_firepower(customer = "EVERTEC", date = date))
+
 
 ###############################################################################
 #################################--Arbor--#####################################
@@ -825,199 +834,202 @@ def customers_arbor():
 
 
 def blocked_events(
-    customer: str,
+    customer_id: str,
     date: str,
-    aql_name: str = "Informe_Arbor_1"
+    aql_name: str = "Informe_Arbor_1",
+    refresh: bool = False
 ) -> dict:
     """Datos para la grafica de eventos bloquedos del informe de Arbor
     https://www.highcharts.com/demo/pie-basic
     """
     def_name = f"blocked_events"
-    logging.debug(def_name)
-
-    calendar = get_otrs.calendar_spanish()
-    calendar = calendar["calendar_num"]
-    date_ = datetime.strptime(date, "%Y-%m-%d")
-    year = date_.year
-    name_date = date_.month
-    name_date = calendar[name_date]
-
-    data = get_json(
-        def_name = def_name,
-        customer = customer,
-        date = date,
-        aql_name = aql_name
-    )
-
-    data_grah_torta = {
-        "data_grah": [{
-            "name": "Brands",
-            "colorByPoint": True,
-            "data": []
-        }],
-        "total": 0,
-        "name_date": name_date,
-        "year": year
-    }
-    data_grah_torta_percentage = {
-        "data_grah": [{
-            "name": "Brands",
-            "colorByPoint": True,
-            "data": []
-        }],
-        "total": 0,
-        "name_date": name_date,
-        "year": year
-    }
-    translator = Translator()
-    total = 0
-    dict_events = {}
-    for event in data["events"]:
-        name_event = event["Nombre de suceso"]
-        name_event = translator.translate(name_event, dest="es")
-        name_event = name_event.text
-        recuento_event =  event["Recuento de sucesos (Suma)"]
-        total += int(recuento_event)
-        dict_events[name_event] = recuento_event
     
-    dict_events["Total"] = total
-
-    dict_events_desc = sorted(
-        dict_events.items(),
-        key=lambda x:x[1], 
-        reverse=True
-    )
-
-    data_grah_x = []
-    data_grah_y_temp = []
-    data_grah_y_temp_percentage = []
-    for clasifi in dict_events_desc[1:]:
-        data_grah_x.append(clasifi[0])
-        data_grah_y_temp.append(int(clasifi[1]))
-        data_grah_y_temp_percentage.append(int(clasifi[1]*100)/dict_events["Total"])
-
-    data_grah_y = [{"name": "Eventos", "data": data_grah_y_temp}]
-    data_grah_y_percentage =  [{"name": "Eventos", "data": data_grah_y_temp_percentage}]
+    path_data_qradar: Path = Path(__file__).parent/"data_qradar"
+    if not path_data_qradar.exists():
+        path_data_qradar.mkdir()
     
-    total = '{:,}'.format(total).replace(',','.')
+    current_path = path_data_qradar / f"{date}_{customer_id}_{def_name}_dict_info_final.json"
+    if refresh and current_path.exists():
+        logging.info("Borrando json")
+        current_path.unlink()
+        current_path_all =  path_data_qradar / f"{date}_{customer_id}_{def_name}.json"
+        current_path_all.unlink()
 
-    data_grah_barras = {
-        "data_grah_x": data_grah_x,
-        "data_grah_y": data_grah_y,
-        "total": total,
-        "name_date": name_date,
-        "year": year
-    }
+    if not current_path.exists():
+        logging.info(f"Creando JSON {current_path}")
 
-    data_grah_barras_percentage = {
-        "data_grah_x": data_grah_x,
-        "data_grah_y": data_grah_y_percentage,
-        "total": total,
-        "name_date": name_date,
-        "year": year
-    }
+        calendar = get_otrs.calendar_spanish()
+        calendar = calendar["calendar_num"]
+        date_ = datetime.strptime(date, "%Y-%m-%d")
+        year = date_.year
+        name_date = date_.month
+        name_date = calendar[name_date]
 
-    for pos, event_ in enumerate(dict_events_desc[1:]):
-        if pos == 0:
-            data_grah_temp = {
-                "name": event_[0],
-                "y": event_[1],
-                "sliced": True,
-                "selected": True
-            }
-            data_grah_temp_percentage = {
-                "name": event_[0],
-                "y": (event_[1]*100)/dict_events["Total"],
-                "sliced": True,
-                "selected": True
-            }
-        else:
-            data_grah_temp = {
-                "name": event_[0],
-                "y": event_[1]
-            }
-            data_grah_temp_percentage = {
-                "name": event_[0],
-                "y": (event_[1]*100)/dict_events["Total"]
-            }
+        data = get_json(
+            def_name = def_name,
+            customer_id = customer_id,
+            date = date,
+            aql_name = aql_name
+        )
+
+        data_grah_torta = {
+            "data_grah": [{
+                "name": "Brands",
+                "colorByPoint": True,
+                "data": []
+            }],
+            "total": 0,
+            "name_date": name_date,
+            "year": year
+        }
+        data_grah_torta_percentage = {
+            "data_grah": [{
+                "name": "Brands",
+                "colorByPoint": True,
+                "data": []
+            }],
+            "total": 0,
+            "name_date": name_date,
+            "year": year
+        }
+        translator = Translator()
+        total = 0
+        dict_events = {}
+        for event in data["events"]:
+            name_event = event["Nombre de suceso"]
+            name_event = translator.translate(name_event, dest="es")
+            name_event = name_event.text
+            recuento_event =  event["Recuento de sucesos (Suma)"]
+            total += int(recuento_event)
+            dict_events[name_event] = recuento_event
         
-        data_grah_torta["data_grah"][0]["data"].append(data_grah_temp)
-        data_grah_torta["total"] = total
-        data_grah_torta_percentage["data_grah"][0]["data"].append(data_grah_temp_percentage)
-        data_grah_torta_percentage["total"] = total
+        dict_events["Total"] = total
+
+        dict_events_desc = sorted(
+            dict_events.items(),
+            key=lambda x:x[1], 
+            reverse=True
+        )
+
+        data_grah_x = []
+        data_grah_y_temp = []
+        data_grah_y_temp_percentage = []
+        for clasifi in dict_events_desc[1:]:
+            data_grah_x.append(clasifi[0])
+            data_grah_y_temp.append(int(clasifi[1]))
+            data_grah_y_temp_percentage.append(int(clasifi[1]*100)/dict_events["Total"])
+
+        data_grah_y = [{"name": "Eventos", "data": data_grah_y_temp}]
+        data_grah_y_percentage =  [{"name": "Eventos", "data": data_grah_y_temp_percentage}]
+        
+        total = '{:,}'.format(total).replace(',','.')
+
+        data_grah_barras = {
+            "data_grah_x": data_grah_x,
+            "data_grah_y": data_grah_y,
+            "total": total,
+            "name_date": name_date,
+            "year": year
+        }
+
+        data_grah_barras_percentage = {
+            "data_grah_x": data_grah_x,
+            "data_grah_y": data_grah_y_percentage,
+            "total": total,
+            "name_date": name_date,
+            "year": year
+        }
+
+        for pos, event_ in enumerate(dict_events_desc[1:]):
+            if pos == 0:
+                data_grah_temp = {
+                    "name": event_[0],
+                    "y": event_[1],
+                    "sliced": True,
+                    "selected": True
+                }
+                data_grah_temp_percentage = {
+                    "name": event_[0],
+                    "y": (event_[1]*100)/dict_events["Total"],
+                    "sliced": True,
+                    "selected": True
+                }
+            else:
+                data_grah_temp = {
+                    "name": event_[0],
+                    "y": event_[1]
+                }
+                data_grah_temp_percentage = {
+                    "name": event_[0],
+                    "y": (event_[1]*100)/dict_events["Total"]
+                }
+            
+            data_grah_torta["data_grah"][0]["data"].append(data_grah_temp)
+            data_grah_torta["total"] = total
+            data_grah_torta_percentage["data_grah"][0]["data"].append(data_grah_temp_percentage)
+            data_grah_torta_percentage["total"] = total
+        
+        data_qradar =  {
+            "total": dict_events["Total"],
+            "data_grah_torta": data_grah_torta,
+            "data_grah_torta_percentage": data_grah_torta_percentage,
+            "data_grah_barras": data_grah_barras,
+            "data_grah_barras_percentage": data_grah_barras_percentage,
+            "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        }
+        current_path.touch()
+        f = current_path.open("wb")
+        f.write(orjson.dumps(data_qradar))
+        f.close()
+    else:
+        logging.info(f"Abriendo JSON {current_path}")
+        f = open(str(current_path), "rb")
+        data_qradar = orjson.loads(f.read())
     
-    return  {
-        "data_grah_torta": data_grah_torta,
-        "data_grah_torta_percentage": data_grah_torta_percentage,
-        "data_grah_barras": data_grah_barras,
-        "data_grah_barras_percentage": data_grah_barras_percentage
-    }
+    logging.debug(def_name)
+    return data_qradar
 # for date in dates:
 #     print("date", date)
 #     pprint(blocked_events("AAN", date))
 
 
-def total_blocked_events():
-    """Datos totales de los eventos
-    https://www.highcharts.com/demo/column-basic
-    """
-    def_name = "total_blocked_events"
-    logging.debug(def_name)
-
-    data_grah_x = [
-        "02-2023", 
-        "01-2023", 
-        "12-2022",
-        "11-2022"
-    ]
-    data_grah_y_temp = [
-        3413917,
-        3862522,
-        3236739,
-        3121628
-    ]
-    total = sum(data_grah_y_temp)
-    total = '{:,}'.format(total).replace(',','.')
-    data_grah_y = [{"name": "Eventos Bloqueados", "data": data_grah_y_temp}]
-    
-    logging.debug(def_name)
-    return {
-        "data_grah_x": data_grah_x,
-        "data_grah_y": data_grah_y,
-        "total": total
-    }
-
-
 def events_paises(
-    customer: str,
+    customer_id: str,
     date: str,
-    aql_name: str = "TOP_10_Paises"
+    aql_name: str = "TOP_10_Paises",
+    refresh: bool = False
 ) -> dict:
     """Datos para la grafica de top de paises
     https://www.highcharts.com/demo/column-basic
     https://www.highcharts.com/demo/column-stacked-percent
     """
     def_name = f"events_paises"
-    logging.debug(def_name)
-
-    calendar = get_otrs.calendar_spanish()
-    calendar = calendar["calendar_num"]
-    date_ = datetime.strptime(date, "%Y-%m-%d")
-    year = date_.year
-    name_date = date_.month
-    name_date = calendar[name_date]
-
+    
     path_data_qradar: Path = Path(__file__).parent/"data_qradar"
     if not path_data_qradar.exists():
         path_data_qradar.mkdir()
     
-    current_path = path_data_qradar / f"{date}_{customer}_{def_name}_dict_info_final.json"
+    current_path = path_data_qradar / f"{date}_{customer_id}_{def_name}_dict_info_final.json"
+    if refresh and current_path.exists():
+        logging.info("Borrando json")
+        current_path.unlink()
+        current_path_all =  path_data_qradar / f"{date}_{customer_id}_{def_name}.json"
+        current_path_all.unlink()
+
     if not current_path.exists():
         logging.info(f"Creando JSON {current_path}")
         
+        calendar = get_otrs.calendar_spanish()
+        calendar = calendar["calendar_num"]
+        date_ = datetime.strptime(date, "%Y-%m-%d")
+        year = date_.year
+        name_date = date_.month
+        name_date = calendar[name_date]
+
+        
         data = get_json(
             def_name = def_name,
-            customer = customer,
+            customer_id = customer_id,
             date = date,
             aql_name = aql_name
         )
@@ -1158,63 +1170,131 @@ def events_paises(
             "total": total_top_paises
         }
 
-        data = {
+        data_qradar = {
             "year": year,
             "name_date": name_date,
             "data_grah_top_paises": data_grah_top_paises,
             "data_grah_continent": data_grah_continent,
             "data_grah_top_continent_pais": data_grah_top_continent_pais,
-            "data_grah_top_continent_pais_porcent": data_grah_top_continent_pais_porcent
+            "data_grah_top_continent_pais_porcent": data_grah_top_continent_pais_porcent,
+            "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         }
 
         current_path.touch()
         f = current_path.open("wb")
-        f.write(orjson.dumps(data))
+        f.write(orjson.dumps(data_qradar))
         f.close()
     else:
         logging.info(f"Abriendo JSON {current_path}")
         f = open(str(current_path), "rb")
-        data = orjson.loads(f.read())
+        data_qradar = orjson.loads(f.read())
 
     logging.debug(def_name)
-    return data
+    return data_qradar
 # for date in dates:
 #     print("date", date)
 #     pprint(events_paises("AAN", date))
 
 
+###############################################################################
+#################################--TOTAL--#####################################
+###############################################################################
 
-def update_all():
-    ##############--Cloudflare--############
-    for date in dates:
-        print("date", date)
-        event_total_log_source("SURA", date)
 
-    for date in dates:
-        print("date", date)
-        total_accept_per_dominio_pais("SURA", date)
+def total_events(
+    service: str,
+    customer_id: str
+) -> dict:
+    """Datos totales de los eventos
+    https://www.highcharts.com/demo/column-basic
+    """
+    def_name = "total_blocked_events"
+    logging.debug(def_name)
 
-    for date in dates:
-        print("date", date)
-        detalle_drop("SURA", date)
+    if service == "firepower":
+        if customer_id == "EVERTEC":
+            data_grah_x = []
+            data_grah_y_temp = []
+            for date in dates_actives():
+                date = date[1]["date"]
+                data_grah_x.append(date)
+                data_grah_y_temp.append(blocked_events(
+                    customer_id = customer_id,
+                    date = date
+                )["total"])
+            total = sum(data_grah_y_temp)
+            total = '{:,}'.format(total).replace(',','.')
+            data_grah_y = [{"name": "Eventos Bloqueados", "data": data_grah_y_temp}]
 
-    for date in dates:
-        print("date", date)
-        tabla_reque_acep_boque_per_dominio("SURA", date)
+            data = {
+                "data_grah_x": data_grah_x,
+                "data_grah_y": data_grah_y,
+                "total": total
+            }
 
-    ################--Firepower--#########
-    for date in dates:
-        print("date", date)
-        total_firepower(customer = "EVERTEC", date = date)
+    if service == "arbor":
+        if customer_id == "AAN":
+            data_grah_x = []
+            data_grah_y_temp = []
+            for date in dates_actives():
+                date = date[1]["date"]
+                data_grah_x.append(date)
+                data_grah_y_temp.append(blocked_events(
+                    customer_id = customer_id,
+                    date = date
+                )["total"])
+            total = sum(data_grah_y_temp)
+            total = '{:,}'.format(total).replace(',','.')
+            data_grah_y = [{"name": "Eventos Bloqueados", "data": data_grah_y_temp}]
 
-    #################--Arbor--#########
-    for date in dates:
-        print("date", date)
-        blocked_events("AAN", date)
+            data = {
+                "data_grah_x": data_grah_x,
+                "data_grah_y": data_grah_y,
+                "total": total
+            }
+        
+    logging.debug(def_name)
+    return data
 
-    for date in dates:
-        print("date", date)
-        events_paises("AAN", date)
+
+
+
+
+
+
+
+
+# def update_all():
+#     ##############--Cloudflare--############
+#     for date in dates:
+#         print("date", date)
+#         event_total_log_source("SURA", date)
+
+#     for date in dates:
+#         print("date", date)
+#         total_accept_per_dominio_pais("SURA", date)
+
+#     for date in dates:
+#         print("date", date)
+#         detalle_drop("SURA", date)
+
+#     for date in dates:
+#         print("date", date)
+#         tabla_reque_acep_boque_per_dominio("SURA", date)
+
+#     ################--Firepower--#########
+#     for date in dates:
+#         print("date", date)
+#         total_firepower(customer = "EVERTEC", date = date)
+
+#     #################--Arbor--#########
+#     for date in dates:
+#         print("date", date)
+#         blocked_events("AAN", date)
+
+#     for date in dates:
+#         print("date", date)
+#         events_paises("AAN", date)
 
 # update_all()
 

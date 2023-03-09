@@ -276,12 +276,12 @@ def attend():
     if request.method == "GET":
         refresh = request.args.get("refresh", type=int)
         queue = request.args.get("queue", type=str)
-        user = request.args.get("user", type=int)
-        year = request.args.get("year", type=int)
+        user = request.args.get("user", type=str)
+        year = request.args.get("year", type=str)
         table_month = request.args.get("table_month", type=str)
-        table_year = request.args.get("table_year", type=int)
+        table_year = request.args.get("table_year", type=str)
         month = request.args.get("month", type=str)
-        table_day = request.args.get("table_day", type=int)
+        table_day = request.args.get("table_day", type=str)
 
         if queue:
             if queue == "administrators":
@@ -313,7 +313,7 @@ def attend():
                     )
                 except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
-                
+
                 current_date = data["current_date"]
                 data_grah_general = data["data_grah_general"]
                 data_total_table_year = data["data_total_table"]

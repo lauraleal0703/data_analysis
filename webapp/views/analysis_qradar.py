@@ -18,12 +18,13 @@ analysis_qradar = Blueprint("analysis_qradar", __name__, url_prefix="/analysis_q
 @analysis_qradar.get("/")
 def index():
     services = {
-        "arbor": "Arbor",
         "cloudflare": "Cloudflare",
-        "firepower": "Firepower"
+        "firepower": "Firepower",
+         "arbor": "Arbor"
     }
 
     if request.method == "GET":
+        refresh = request.args.get("refresh", type=int)
         service = request.args.get("service", type=str)
         customer = request.args.get("customer", type=str)
         pos = request.args.get("pos", type=int)
@@ -32,12 +33,15 @@ def index():
         if service == "arbor":
             try:
                 customers_actives = get_qradar.customers_arbor()
-                total_blocked_events = get_qradar.total_blocked_events()
             except Exception as e:
                 current_app.logger.error(f"{str(request.url)}: {e}")
 
             if customer:
                 try:
+                    total_blocked_events = get_qradar.total_events(
+                        service = service,
+                        customer_id = customer
+                    )
                     dates_actives = get_qradar.dates_actives()
                 except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
@@ -47,16 +51,19 @@ def index():
                 if date:
                     try: 
                         data = get_qradar.blocked_events(
-                            customer = customer,
-                            date = date
+                            customer_id = customer,
+                            date = date,
+                            refresh = refresh
                         )
                         data_grah_events_paises = get_qradar.events_paises(
-                            customer = customer,
-                            date = date
+                            customer_id = customer,
+                            date = date,
+                            refresh = refresh
                         )
                     except Exception as e:
                         current_app.logger.error(f"{str(request.url)}: {e}")
-            
+
+                    current_date_data = data["current_date"]
                     data_grah_torta = data["data_grah_torta"]
                     data_grah_torta_percentage = data["data_grah_torta_percentage"]
                     data_grah_barras = data["data_grah_barras"]
@@ -72,6 +79,7 @@ def index():
                         current_customer_name = current_customer_name,
                         dates_actives = dates_actives,
                         current_date = date,
+                        current_date_data = current_date_data,
                         current_pos = pos,
                         data_grah_torta = data_grah_torta,
                         data_grah_torta_percentage = data_grah_torta_percentage,
@@ -120,7 +128,7 @@ def index():
 
                 # if date:
                 #     table_1 = get_qradar.tabla_reque_acep_boque_per_dominio(
-                #         customer = customer,
+                #         customer_id = customer,
                 #         date = date
                 #     )
                     
@@ -170,17 +178,18 @@ def index():
                 current_customer_name = customers_actives[customer]
 
                 if date:
-
                     try:
                         data = get_qradar.total_firepower(
-                            customer = customer,
-                            date = date
+                            customer_id = customer,
+                            date = date,
+                            refresh = refresh
                         )
                     except Exception as e:
                         current_app.logger.error(f"{str(request.url)}: {e}")
                         return redirect(request.url)
 
                     if date != "2023-01-01":
+                        current_date_data = data["current_date"]
                         data_grah = data["data_grah"]
                         data_grah_percentage = data["data_grah_percentage"]
                         data_table_top_1 = data["table_top"]["1"]
@@ -210,6 +219,7 @@ def index():
                             current_customer_name = current_customer_name,
                             dates_actives = dates_actives,
                             current_date = date,
+                            current_date_data = current_date_data,
                             current_pos = pos,
                             name_date = name_date,
                             year = year,
@@ -231,6 +241,7 @@ def index():
                             data_table_11 = data_table_11
                         )
                     else:
+                        current_date_data = data["current_date"]
                         data_grah = data["data_grah"]
                         data_grah_percentage = data["data_grah_percentage"]
                         data_table_top_1 = data["table_top"]["1"]
@@ -259,6 +270,7 @@ def index():
                             dates_actives = dates_actives,
                             current_date = date,
                             current_pos = pos,
+                            current_date_data = current_date_data,
                             name_date = name_date,
                             year = year,
                             data_grah = data_grah,
