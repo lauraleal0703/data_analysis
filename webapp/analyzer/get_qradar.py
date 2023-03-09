@@ -163,11 +163,17 @@ def get_json(
         f = open(str(current_path), "rb")
         data = orjson.loads(f.read())
 
-    if len(data["events"]) == 0:
+    if "data" not in data:
+        data = {
+            "data": data,
+            "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        }
+    
+    if len(data["data"]["events"]) == 0:
         logging.error(def_name)
         return {}
     
-    logging.info(f'TOTAL DE EVENTOS {def_name} -> Total: {len(data["events"])}')
+    logging.info(f'TOTAL DE EVENTOS {def_name} -> Total: {len(data["data"]["events"])}')
     # logging.info("EVENTOS DEL TIPO")
     # pprint(data["events"][0])
     return data
@@ -246,7 +252,7 @@ def event_total_log_source(
     
         total = 0
         dict_total_events = {}
-        for event in data["events"]:
+        for event in data["data"]["events"]:
             name_event = event["Origen de registro"]
             recuento_event =  int(event["Recuento de sucesos (Suma)"])
             total += recuento_event
@@ -312,7 +318,7 @@ def total_accept_per_dominio_pais(
         total = 0
         dict_total_events = {}
         dict_events_dominio_pais = {}
-        for event in data["events"]:
+        for event in data["data"]["events"]:
             if not event["ClientCountry (personalizado)"]:
                 event["ClientCountry (personalizado)"] = "None"
             pais = paises[event["ClientCountry (personalizado)"]]
@@ -400,7 +406,7 @@ def detalle_drop(
         total = 0
         dict_total_events = {}
         dict_events_dominio_pais = {}
-        for event in data["events"]:
+        for event in data["data"]["events"]:
             if not event["ClientCountry (personalizado)"]:
                 event["ClientCountry (personalizado)"] = "None"
             pais = paises[event["ClientCountry (personalizado)"]]
@@ -685,7 +691,7 @@ def total_firepower(
     total = 0
     dict_clasifications = {}
     dict_clasifications_ip = {}
-    for event in data["events"]:
+    for event in data["data"]["events"]:
         clasification = event["Classification (personalizado)"]
         recuento_event =  int(event["Recuento de sucesos"])
         if clasification not in dict_clasifications:
@@ -803,7 +809,7 @@ def total_firepower(
         "table_all": table_all,
         "name_date": name_date,
         "year": year,
-        "current_date": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        "current_date": data["current_date"]
     } 
 # for date in dates:
 #     print("date", date)
@@ -895,7 +901,7 @@ def blocked_events(
         translator = Translator()
         total = 0
         dict_events = {}
-        for event in data["events"]:
+        for event in data["data"]["events"]:
             name_event = event["Nombre de suceso"]
             name_event = translator.translate(name_event, dest="es")
             name_event = name_event.text
@@ -1037,7 +1043,7 @@ def events_paises(
         translator = Translator()
         dict_paises = {}
         dict_continents = {}
-        for pos, event in enumerate(data["events"]):
+        for pos, event in enumerate(data["data"]["events"]):
             name_event = event["País/región geográfica de origen"]
             pais_ = name_event.split(".")
             recuento_event =  event["Recuento de sucesos (Suma)"]
