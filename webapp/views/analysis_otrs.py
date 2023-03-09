@@ -486,7 +486,7 @@ def attend():
             )
         
     return render_template(
-        "analysis_otrs/index_users/index.html",
+        "analysis_otrs/users/index.html",
         page = {"title": """En la pestaña superior puede seleccionar la vista de
             los tickets atendidos por los Administradores o los Analistas de
             Adaptive Security."""
