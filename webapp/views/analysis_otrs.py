@@ -394,6 +394,7 @@ def attend():
                             current_month = month,
                             data_total_year = data_total_table_year,
                             data_total_month = data_total_table_month,
+                            data_total_day = data_total_table_day,
                             data_total_table_day = data_total_table_day,
                             data_grah_general = data_grah_general,
                             data_grah_services = data_grah_services,
