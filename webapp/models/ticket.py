@@ -26,6 +26,17 @@ from webapp.models.ticket_state import TicketState
 from webapp.models.queue import Queue
 from webapp.models.ticket_history import TicketHistory
 from webapp.models.customer_company import CustomerCompany
+from webapp.models.dynamic_field_value import DynamicFieldValue
+
+from webapp.analyzer.qradar import qradar
+
+
+import logging
+logging.basicConfig(
+        format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+        datefmt="%d-%m-%Y %H:%M:%S",
+        level=logging.DEBUG
+    )
 
 
 SelfTicket = TypeVar("SelfTicket", bound="Ticket")
@@ -108,10 +119,24 @@ class Ticket(db.Model):
 	
 
 	def tojson(self: SelfTicket) -> dict:
+		
+		qradar_id = DynamicFieldValue.get_offense_id(self.id)
+		qradar_time_format = ""
+		response_time_format = ""
+		if qradar_id:
+			qradar_time = qradar.start_time_offense(qradar_id)
+			if qradar_time:
+				response_time = (self.create_time + timedelta(hours=1)) - qradar_time
+				response_time_format = str(response_time)
+				logging.debug(f"response_time_format {response_time_format}")
+				qradar_time_format = qradar_time.strftime("%d-%m-%Y %H:%M:%S")
+		else:
+			qradar_time = "Sin Información"
+		
 		dicy_ticket = {
 			"id": self.id,
 			"tn": self.tn,
-			"create_time": self.create_time,
+			"create_time": self.create_time.strftime("%d-%m-%Y %H:%M:%S"),
 			"title": self.title,
 			"type.name": self.type.name if self.type else self.type_id,
 			"user.full_name": self.user.full_name,
@@ -119,9 +144,37 @@ class Ticket(db.Model):
 			"customer_id": self.customer_id,
 			"ticket_state.name": self.ticket_state.name if self.ticket_state else self.ticket_state_id,
 			"ticket_priority.name": self.ticket_priority.name if self.ticket_priority else self.ticket_priority_id,
-			"queue_id": self.queue_id
+			"queue_id": self.queue_id,
+			"qradar_id": qradar_id if qradar_id else "Sin Información",
+			"qradar_time": qradar_time_format if qradar_time_format else "Sin Información",
+			"response_time": response_time_format if response_time_format else "Sin Información"
 		}
+
+		return dicy_ticket
+	
+	def tojson_(self: SelfTicket) -> dict:
 		
+		qradar_id = ""
+		qradar_time_format = ""
+		response_time = ""
+		
+		dicy_ticket = {
+			"id": self.id,
+			"tn": self.tn,
+			"create_time": self.create_time.strftime("%d-%m-%Y %H:%M:%S"),
+			"title": self.title,
+			"type.name": self.type.name if self.type else self.type_id,
+			"user.full_name": self.user.full_name,
+			"service.name": self.service.name if self.service else self.service_id,
+			"customer_id": self.customer_id,
+			"ticket_state.name": self.ticket_state.name if self.ticket_state else self.ticket_state_id,
+			"ticket_priority.name": self.ticket_priority.name if self.ticket_priority else self.ticket_priority_id,
+			"queue_id": self.queue_id,
+			"qradar_id": qradar_id if qradar_id else "Sin Información",
+			"qradar_time": qradar_time_format if qradar_time_format else "Sin Información",
+			"response_time": response_time if response_time else "Sin Información"
+		}
+
 		return dicy_ticket
 
 	####################################################

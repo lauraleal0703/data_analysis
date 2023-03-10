@@ -18,9 +18,9 @@ class DynamicFieldValue(db.Model):
     __tablename__ = 'dynamic_field_value'
     id = Column(Integer, primary_key=True)
     field_id = Column(Integer, ForeignKey("dynamic_field.id"), nullable=False)
-    object_id = Column(String, nullable=False)
+    object_id = Column(Integer, nullable=False)
     value_text = Column(String)
-    value_date = Column(Integer, nullable=True)
+    value_date = Column(DateTime, nullable=True)
     value_int = Column(Integer, nullable=True)
 
     field: DynamicField = relationship("DynamicField", lazy=True)

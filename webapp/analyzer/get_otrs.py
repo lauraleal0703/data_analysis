@@ -1023,10 +1023,9 @@ def get_tickets_conflic(
 ###############################################################################
 
 
-###Prueba dado un ticket.id, se tiene el ID de QRadar
-# test = DynamicFieldValue.get_offense_id(45796)
+# ##Prueba dado un ticket.id, se tiene el ID de QRadar
+# test = DynamicFieldValue.get_offense_id(49043)
 # print(test)
-# OK
 
 ''' 
 for ticket in data_otrs:

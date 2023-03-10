@@ -15,10 +15,18 @@
 
             <div class="col-2">
                 <a 
-                    href="{{ request.url }}&refresh=1" 
+                    {% if current_month %}
+                    href="{{ request.url }}&refresh_month=1" 
+                    {% elif current_year %}
+                    href="{{ request.url }}&refresh_year=1" 
+                    {% elif current_customer %}
+                    href="{{ request.url }}&refresh_user=1" 
+                    {% elif current_queue %}
+                    href="{{ request.url }}&refresh_queue=1" 
+                    {% endif %}
                     class="btn btn-success">
                     Actualizar Datos
-                </a>
+                </a> 
             </div>
         </div>
         {% endif %}

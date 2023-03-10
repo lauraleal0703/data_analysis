@@ -20,13 +20,15 @@ logging.basicConfig(
 ######################################################
 
 def curl_qradar_get(
-        script: str, 
-        headers: t.Optional[dict] = None, 
-        params: t.Optional[dict] = None
-    ) -> dict:
+    script: str, 
+    headers: t.Optional[dict] = None, 
+    params: t.Optional[dict] = None
+) -> dict:
     """Función base para las llamadas a QRadar método get"""
     def_name = "curl_qradar_get"
+    
     logging.debug(def_name)
+    logging.debug(f"parametros {def_name} {script} {headers} {params}")
 
     url_api = "https://172.16.17.10/api"
     r = requests.get(
@@ -36,17 +38,16 @@ def curl_qradar_get(
             headers = headers,
             params = params
         )
-    
     logging.debug(def_name)
     return r.json()
 
 
 
 def curl_qradar_post(
-        script: str, 
-        headers: t.Optional[dict] = None, 
-        params: t.Optional[dict] = None
-    ) -> dict:
+    script: str, 
+    headers: t.Optional[dict] = None, 
+    params: t.Optional[dict] = None
+) -> dict:
     """Función base para las llamadas a QRadar metodo post"""
     def_name = "curl_qradar_post"
     logging.debug(def_name)
@@ -66,9 +67,9 @@ def curl_qradar_post(
 
 ###################--siem--#################################
 def offenses(
-        headers: t.Optional[dict] = None, 
-        params: t.Optional[dict] = None
-    )-> dict:
+    headers: t.Optional[dict] = None, 
+    params: t.Optional[dict] = None
+)-> dict:
     """siem
     
     Parameters
@@ -77,6 +78,7 @@ def offenses(
     headers = {"Range": "items=0-5"}
     Para los params se tienen las opciones de:
     fields, filter, sort. Un ejemplo de su uso sería.
+    headers={"Range": "items=0-2"}
     params={
             "fields": "id,description,start_time,log_sources",
             "filter": "id=59439",
@@ -84,13 +86,14 @@ def offenses(
             }
     Return
     ------
- 
     """
     def_name = "offenses"
     logging.debug(def_name)
+    logging.debug(f"parametros {def_name} {headers} {params}")
+
     return curl_qradar_get(
         script= "siem/offenses", 
-        header = headers, 
+        headers = headers, 
         params = params
     )
 
@@ -118,6 +121,7 @@ def start_time_offense(id_offense: str):
             "filter": f"id={id_offense}"
         }
     )
+    # time.sleep(1)
 
     if data_id_offense:
         logging.debug(def_name)
@@ -127,7 +131,7 @@ def start_time_offense(id_offense: str):
     
     else:
         logging.error(def_name)
-        return []
+        return ""
 
 
 ###################--ariel--#################################
@@ -155,8 +159,8 @@ def ariel_searches_post(query_expression: str)-> dict:
 
 
 def ariel_results(
-        search_id: str,
-        headers : t.Optional[dict] = None):
+    search_id: str,
+    headers : t.Optional[dict] = None):
     """Toma el ID de la búsqueda y trate los datos que se tienen asociados"""
     def_name = "ariel_results"
     logging.debug(def_name)
@@ -191,7 +195,7 @@ def ariel_results(
 ###################--SOPORTE--#################################
 
 
-def nombre_pais():
+def nombre_pais() -> dict:
     """Retorna un diccionario que tiene como key el codigo del país que entrega QRadar
     y su valor es el nombre del país"""
     text_paises = '''ac Isla Ascension
@@ -468,7 +472,7 @@ def nombre_pais():
     return dict_paises
 
 
-def ips_evertec():
+def ips_evertec() -> list:
     """Lista con todas las Redes Evertec
     actualizada 02/03/2023 13:17"""
     parents_network_evertec = [
@@ -670,8 +674,8 @@ def ips_evertec():
 
 
 def curl_score_ip_get(
-        ip: str
-    ) -> dict:
+    ip: str
+) -> dict:
     """Función """
     def_name = "curl_ip_get"
     logging.debug(def_name)

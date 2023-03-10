@@ -1306,6 +1306,8 @@ def total_events(
 
 # update_all()
 
+
+
 ##########EJEMPLO##############
 # test = qradar.start_time_offense("64754")
 # print("test", test)

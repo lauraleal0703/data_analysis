@@ -20,7 +20,10 @@ def index():
     }
 
     if request.method == "GET":
-        refresh = request.args.get("refresh", type=int)
+        refresh_queue = request.args.get("refresh_queue", type=int)
+        refresh_customer = request.args.get("refresh_customer", type=int)
+        refresh_year = request.args.get("refresh_year", type=int)
+        refresh_month = request.args.get("refresh_month", type=int)
         queue = request.args.get("queue", type=str)
         customer = request.args.get("customer", type=str)
         year = request.args.get("year", type=str)
@@ -42,7 +45,7 @@ def index():
                 try:
                     data_tickets_conflic = get_otrs.get_tickets_conflic(
                         time = time,
-                        refresh = refresh
+                        refresh = refresh_queue
                     )
                 except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
@@ -63,7 +66,7 @@ def index():
                 data_grah_general = get_otrs.get_count_tickets_years(
                     queue_id = queue_id,
                     customers = True,
-                    refresh = refresh
+                    refresh = refresh_queue
                 )
 
             except Exception as e:
@@ -78,7 +81,7 @@ def index():
                         customer_id = customer,
                         queue_id = queue_id,
                         customers = True,
-                        refresh = refresh
+                        refresh = refresh_customer
                     )
                 except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
@@ -98,7 +101,7 @@ def index():
                             queue_id = queue_id,
                             year = year,
                             customers = True,
-                            refresh = refresh
+                            refresh = refresh_year
                         )
                     except Exception as e:
                         current_app.logger.error(f"{str(request.url)}: {e}")
@@ -119,7 +122,7 @@ def index():
                                 year = year,
                                 month = month,
                                 customers = True,
-                                refresh = refresh
+                                refresh = refresh_month
                             )
                         except Exception as e:
                             current_app.logger.error(f"{str(request.url)}: {e}")
@@ -273,7 +276,10 @@ def attend():
     }
 
     if request.method == "GET":
-        refresh = request.args.get("refresh", type=int)
+        refresh_queue = request.args.get("refresh_queue", type=int)
+        refresh_user = request.args.get("refresh_user", type=int)
+        refresh_year = request.args.get("refresh_year", type=int)
+        refresh_month = request.args.get("refresh_month", type=int)
         queue = request.args.get("queue", type=str)
         user = request.args.get("user", type=str)
         year = request.args.get("year", type=str)
@@ -293,7 +299,7 @@ def attend():
                 data_grah_general = get_otrs.get_count_tickets_years(
                     queue_id = queue_id,
                     users = True,
-                    refresh = refresh
+                    refresh = refresh_queue
                 )
 
             except Exception as e:
@@ -308,7 +314,7 @@ def attend():
                         user_id = user,
                         queue_id = queue_id,
                         users = True,
-                        refresh = refresh
+                        refresh = refresh_user
                     )
                 except Exception as e:
                     current_app.logger.error(f"{str(request.url)}: {e}")
@@ -328,7 +334,7 @@ def attend():
                             queue_id = queue_id,
                             year = year,
                             users = True,
-                            refresh = refresh
+                            refresh = refresh_year
                         )
                     except Exception as e:
                         current_app.logger.error(f"{str(request.url)}: {e}")
@@ -349,7 +355,7 @@ def attend():
                                 year = year,
                                 month = month,
                                 users = True,
-                                refresh = refresh
+                                refresh = refresh_month
                             )
                         except Exception as e:
                             current_app.logger.error(f"{str(request.url)}: {e}")
