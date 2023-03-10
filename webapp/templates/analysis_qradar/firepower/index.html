@@ -654,10 +654,17 @@
         chart: {
             type: 'column'
         },
+        {% if current_pos == 4 %}
         title: {
-            text: 'El total de eventos del mes {{ name_date }} del año {{ year }} fue de {{ data_grah.total }}.',
+            text: 'Se han recibido en el mes de {{ name_date }} del año {{ year }} un total de {{ data_grah.total }} eventos de la plataforma Firepower del cliente {{ current_customer_name }}.',
             align: 'center'
         },
+        {% else %}
+        title: {
+            text: 'Se recibieron en el mes de {{ name_date }} del año {{ year }} un total de {{ data_grah.total }} eventos de la plataforma Firepower del cliente {{ current_customer_name }}.',
+            align: 'center'
+        },
+        {% endif %}
         xAxis: {
             categories: {{ data_grah.data_grah_x  | safe }},
             crosshair: true
@@ -693,10 +700,17 @@
         chart: {
             type: 'column'
         },
+        {% if current_pos == 4 %}
         title: {
-            text: 'El total de eventos del mes {{ name_date }} del año {{ year }} fue de {{ data_grah.total }}.',
+            text: 'Se han recibido en el mes de {{ name_date }} del año {{ year }} un total de {{ data_grah.total }} eventos de la plataforma Firepower del cliente {{ current_customer_name }}.',
             align: 'center'
         },
+        {% else %}
+        title: {
+            text: 'Se recibieron en el mes de {{ name_date }} del año {{ year }} un total de {{ data_grah.total }} eventos de la plataforma Firepower del cliente {{ current_customer_name }}.',
+            align: 'center'
+        },
+        {% endif %}
         xAxis: {
             categories: {{ data_grah_percentage.data_grah_x  | safe }},
             crosshair: true
