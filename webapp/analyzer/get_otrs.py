@@ -342,6 +342,8 @@ def get_count_tickets_years(
     ------
     dict
     """
+    logging.info(f"---> Variables de entrada {queue_id} {users} {customers} {refresh}")
+
     if customers:
         def_name = f"get_count_tickets_years_customers_queue_id_{queue_id}"
     if users:
@@ -353,11 +355,11 @@ def get_count_tickets_years(
     
     current_path = path_data_qradar / f"{def_name}.json"
     if refresh and current_path.exists():
-        logging.info("Borrando json")
+        logging.info(f"Borrando {current_path}")
         current_path.unlink()
 
     if not current_path.exists():
-        logging.info(f"Creando JSON {current_path}")
+        logging.info(f"Creando {current_path}")
     
         if customers:
             customers_active = customers_by_period(queue_id = queue_id)
@@ -630,6 +632,7 @@ def get_tickets_filtred(
     ------
     dict
     """
+    logging.info(f"---> Variables de entrada {user_id} {customer_id} {queue_id} {year} {month} {users} {customers} {refresh}")
     if customers:
         if year and month:
             def_name = f"get_tickets_filtred_customers_{customer_id}_{queue_id}_{year}_{month}"
@@ -652,15 +655,15 @@ def get_tickets_filtred(
     
     current_path = path_data_qradar / f"{def_name}.json"
     if refresh and current_path.exists():
-        logging.info("Borrando json")
+        logging.info(f"Borrando {current_path}")
         current_path.unlink()
 
     if not current_path.exists():
-        logging.info(f"Creando JSON {current_path}")
+        logging.info(f"Creando {current_path}")
     
     current_path = path_data_qradar / f"{def_name}.json"
     if not current_path.exists():
-        logging.info(f"Creando JSON {current_path}")
+        logging.info(f"Creando {current_path}")
         calendar_spanish_ = calendar_spanish()
         calendar_spanish_temp = calendar_spanish_["calendar_num"]
         calendar_spanish_temp_ = calendar_spanish_["calendar_name"]
@@ -700,7 +703,7 @@ def get_tickets_filtred(
         for date in dates:
             if users:
                 if month:
-                    if month == "12":
+                    if month == 12:
                         data_temp = Ticket.tickets_period_filtered_with(
                             start_period = f"{date}-{month}-01",
                             end_period = f"{int(date)+1}-01-01",
@@ -727,7 +730,7 @@ def get_tickets_filtred(
             
             if customers:
                 if month:
-                    if month == "12":
+                    if month == 12:
                         data_temp = Ticket.tickets_period_filtered_with(
                             start_period = f"{date}-{month}-01",
                             end_period = f"{int(date)+1}-01-01",
@@ -1024,6 +1027,7 @@ def get_tickets_conflic(
 # test = DynamicFieldValue.get_offense_id(45796)
 # print(test)
 # OK
+
 ''' 
 for ticket in data_otrs:
     if len(re.findall(r"Ofensa", ticket.title)) > 0 and len(re.findall(r"\d{5,}", ticket.title)) > 0 and len(set(re.findall(r"\d{5,}|-|\d{5,}", ticket.title))) == 2:
