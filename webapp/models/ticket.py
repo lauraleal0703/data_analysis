@@ -118,7 +118,7 @@ class Ticket(db.Model):
 		).order_by(asc(TicketHistory.create_time)).all()
 	
 
-	def tojson(self: SelfTicket) -> dict:
+	def tojson_(self: SelfTicket) -> dict:
 		
 		qradar_id = DynamicFieldValue.get_offense_id(self.id)
 		qradar_time_format = ""
@@ -152,7 +152,7 @@ class Ticket(db.Model):
 
 		return dicy_ticket
 	
-	def tojson_(self: SelfTicket) -> dict:
+	def tojson(self: SelfTicket) -> dict:
 		
 		qradar_id = ""
 		qradar_time_format = ""
